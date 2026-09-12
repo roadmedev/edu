@@ -1,7 +1,10 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 import { neon } from '@neondatabase/serverless'
 
 const app = new Hono()
+
+app.use('*', cors())
 
 app.get('/', (c) => c.text('Edu Platform API ishlayapti ✅'))
 
