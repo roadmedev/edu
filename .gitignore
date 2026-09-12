@@ -1,6 +1,6 @@
-node_modules
-.next
-.dev.vars
+node_modules/
 .env
-.env.local
-dist
+.dev.vars
+.venv/
+__pycache__/
+bot/.env
