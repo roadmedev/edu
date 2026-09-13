@@ -5,12 +5,25 @@ from aiogram.types import Message, ReplyKeyboardRemove
 
 from states.registration import Registration
 from keyboards.contact_kb import get_phone_keyboard
-from services.auth_services import register_user
+from keyboards.main_menu import get_main_menu
+from services.auth_services import register_user, get_user_by_telegram_id
 
 router = Router()
 
 @router.message(CommandStart())
 async def start_handler(message: Message, state: FSMContext) -> None:
+    
+    result = await get_user_by_telegram_id(message.from_user.id)
+
+    if result.get("user"): 
+        #Foydalanuvchi allaqachon ro'yxatdan o'tgan
+        user = result["user"]
+        await message.answer(
+            f"Xush kelibsiz, {user['full_name']}! 👋",
+            reply_markup=get_main_menu(),
+        )
+
+    #Ro'yxatdan o'tmaganlar uchun
     await state.set_state(Registration.waiting_for_name)
     await message.answer(
         "Salom! Edu Platformasiga xush kelibsiz 👋\n\n" \
@@ -51,5 +64,5 @@ async def process_phone(message: Message, state: FSMContext) -> None:
         f"Ro'yxatdan o'tish yakunlandi! ✅\n\n"
         f"Ism: {data['full_name']}\n"
         f"Telefon: {phone_number}",
-        reply_markup=ReplyKeyboardRemove(),
+        reply_markup=get_main_menu(),
     )

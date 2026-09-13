@@ -19,6 +19,24 @@ app.get('/hello', async (c) => {
   }
 })
 
+app.get('/users/by-telegram/:telegramId', async (c) => {
+  try {
+    const telegramId = c.req.param('telegramId')
+    const sql = neon(c.env.DATABASE_URL)
+    const rows = await sql`
+      SELECT id, full_name, phone_number, telegram_id
+      FROM users
+      WHERE telegram_id = ${telegramId}
+    `
+    if (rows.length === 0) {
+      return c.json({ user: null }, 200)
+    }
+    return c.json({ user: rows[0] })
+  } catch (err) {
+    return c.json({ error: String(err) }, 500)
+  }
+})
+
 // Bot/web'dan kelgan foydalanuvchini ro'yxatdan o'tkazadi
 app.post('/register', async (c) => {
   try {
