@@ -15,3 +15,15 @@ async def get(endpoint: str) -> dict:
             if resp.status != 200:
                 return {"error": f"Server {resp.status} qaytardi", "user": None}
             return await resp.json()
+
+
+async def put(endpoint: str, payload: dict) -> dict:
+    async with aiohttp.ClientSession() as session:
+        async with session.put(f"{API_URL}{endpoint}", json=payload) as resp:
+            return await resp.json()
+
+
+async def delete(endpoint: str) -> dict:
+    async with aiohttp.ClientSession() as session:
+        async with session.delete(f"{API_URL}{endpoint}") as resp:
+            return await resp.json()

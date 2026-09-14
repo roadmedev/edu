@@ -6,6 +6,7 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from states.registration import Registration
 from keyboards.contact_kb import get_phone_keyboard
 from keyboards.main_menu import get_main_menu
+from keyboards.admin_menu import get_admin_menu
 from services.auth_services import register_user, get_user_by_telegram_id
 
 router = Router()
@@ -18,6 +19,7 @@ async def start_handler(message: Message, state: FSMContext) -> None:
     if result.get("user"): 
         #Foydalanuvchi allaqachon ro'yxatdan o'tgan
         user = result["user"]
+        menu = get_admin_menu() if user.get("role") == "admin" else get_main_menu()
         await message.answer(
             "Asosiy menyu",
             reply_markup=get_main_menu(),
