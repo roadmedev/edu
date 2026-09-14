@@ -3,10 +3,6 @@ from aiogram.types import Message
 
 router = Router()
 
-@router.message(F.text == "📚 Kurslar")
-async def show_courses(message: Message) -> None:
-    await message.answer("Tez kunda ...")
-
 @router.message(F.text == "📈 Mening progressim")
 async def show_progress(message: Message) -> None:
     await message.answer("Tez kunda ...")

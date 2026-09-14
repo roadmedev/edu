@@ -19,17 +19,17 @@ async def start_handler(message: Message, state: FSMContext) -> None:
         #Foydalanuvchi allaqachon ro'yxatdan o'tgan
         user = result["user"]
         await message.answer(
-            f"Xush kelibsiz, {user['full_name']}! 👋",
+            "Asosiy menyu",
             reply_markup=get_main_menu(),
         )
-
-    #Ro'yxatdan o'tmaganlar uchun
-    await state.set_state(Registration.waiting_for_name)
-    await message.answer(
-        "Salom! Edu Platformasiga xush kelibsiz 👋\n\n" \
-        "Keling, avval ro'yxatdan o'tamiz. \n"
-        "Familiya, Ism va Sharifingizni to'liq yozing!"
-    )
+    else:
+        #Ro'yxatdan o'tmaganlar uchun
+        await state.set_state(Registration.waiting_for_name)
+        await message.answer(
+            "Assalomu Aleykum! Apex Study telegram bot platformasiga xush kelibsiz 👋" \
+            "Botdan to'liq foydalanish uchun avval ro'yxatdan o'tishingizni so'raymiz. \n"
+            "Familiya, Ism va Sharifingizni to'liq yozing!"
+        )
 
 @router.message(Registration.waiting_for_name)
 async def process_name(message: Message, state: FSMContext) -> None:
