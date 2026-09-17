@@ -274,7 +274,7 @@ const Home = () => {
             </a>
 
             <a
-              href="https://t.me/@apex_studybot"
+              href="https://t.me/apex_studybot"
               target="_blank"
               rel="noreferrer"
               className="telegram-button"
