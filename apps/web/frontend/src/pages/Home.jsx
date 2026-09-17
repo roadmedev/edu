@@ -27,7 +27,7 @@ const Home = () => {
     },
     {
       icon: "🎓",
-      title: "Abituriyentlar",
+      title: "Abituriyentlar uchun maxsus",
       text: "OTMga kirish uchun intensiv va natijaga yo‘naltirilgan tayyorgarlik.",
       level: "Intensive",
     },
@@ -59,7 +59,7 @@ const Home = () => {
           <div className="hero-content">
             <div className="badge">
               <span></span>
-              Bog‘otdagi zamonaviy o‘quv markaz
+              Bog‘ot tumani markazidagi zamonaviy o‘quv markaz
             </div>
 
             <h1>
@@ -94,7 +94,7 @@ const Home = () => {
 
               <div>
                 <strong>20+</strong>
-                <span>Professional ustoz</span>
+                <span>Professional ustozlar</span>
               </div>
 
               <div>
@@ -140,7 +140,7 @@ const Home = () => {
             </h2>
 
             <p>
-              APEX STUDY’da zamonaviy ta’lim dasturlari va professional
+              APEX STUDY | O'quv markazida zamonaviy ta’lim dasturlari va professional
               ustozlar sizning rivojlanishingiz uchun xizmat qiladi.
             </p>
           </div>
@@ -269,12 +269,12 @@ const Home = () => {
           </div>
 
           <div className="contact-actions">
-            <a href="tel:+998900000000" className="primary-button">
+            <a href="tel:+998870879009" className="primary-button">
               📞 Qo‘ng‘iroq qilish
             </a>
 
             <a
-              href="https://t.me/"
+              href="https://t.me/@apex_studybot"
               target="_blank"
               rel="noreferrer"
               className="telegram-button"
