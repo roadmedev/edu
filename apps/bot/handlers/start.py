@@ -11,27 +11,26 @@ from services.auth_services import register_user, get_user_by_telegram_id
 
 router = Router()
 
+
 @router.message(CommandStart())
 async def start_handler(message: Message, state: FSMContext) -> None:
-    
     result = await get_user_by_telegram_id(message.from_user.id)
 
-    if result.get("user"): 
-        #Foydalanuvchi allaqachon ro'yxatdan o'tgan
+    if result.get("user"):
         user = result["user"]
         menu = get_admin_menu() if user.get("role") == "admin" else get_main_menu()
         await message.answer(
-            "Asosiy menyu",
-            reply_markup=get_main_menu(),
+            f"Xush kelibsiz, {user['full_name']}! 👋",
+            reply_markup=menu,
         )
     else:
-        #Ro'yxatdan o'tmaganlar uchun
         await state.set_state(Registration.waiting_for_name)
         await message.answer(
-            "Assalomu Aleykum! Apex Study telegram bot platformasiga xush kelibsiz 👋" \
-            "Botdan to'liq foydalanish uchun avval ro'yxatdan o'tishingizni so'raymiz. \n"
+            "Assalomu Aleykum! Apex Study telegram bot platformasiga xush kelibsiz 👋\n"
+            "Botdan to'liq foydalanish uchun avval ro'yxatdan o'tishingizni so'raymiz.\n\n"
             "Familiya, Ism va Sharifingizni to'liq yozing!"
         )
+
 
 @router.message(Registration.waiting_for_name)
 async def process_name(message: Message, state: FSMContext) -> None:
@@ -42,11 +41,12 @@ async def process_name(message: Message, state: FSMContext) -> None:
         reply_markup=get_phone_keyboard(),
     )
 
+
 @router.message(Registration.waiting_for_phone, F.contact)
 async def process_phone(message: Message, state: FSMContext) -> None:
     phone_number = message.contact.phone_number
     data = await state.update_data(phone_number=phone_number)
-    await state.clear()    
+    await state.clear()
 
     result = await register_user(
         full_name=data["full_name"],
@@ -56,9 +56,8 @@ async def process_phone(message: Message, state: FSMContext) -> None:
 
     if "error" in result:
         await message.answer(
-            "Ro'yxatdan o'tishda xatolik yuz berdi, birozdan so'ng qayta\n" \
-            "urinib ko'ring",
-            retply_markup=ReplyKeyboardRemove(),
+            "Ro'yxatdan o'tishda xatolik yuz berdi, birozdan so'ng qayta urinib ko'ring.",
+            reply_markup=ReplyKeyboardRemove(),
         )
         return
 

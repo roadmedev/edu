@@ -8027,6 +8027,53 @@ app.delete("/admin/teachers/:id", async (c) => {
     return c.json({ error: String(err) }, 500);
   }
 });
+app.get("/courses/:id", async (c) => {
+  try {
+    const courseId = c.req.param("id");
+    const sql = cs(c.env.DATABASE_URL);
+    const [course] = await sql`
+      SELECT
+        c.id, c.title, c.description, c.price,
+        t.full_name AS teacher_name, t.photo_url AS teacher_photo,
+        t.degree AS teacher_degree, t.certificate_info AS teacher_certificate
+      FROM courses c
+      LEFT JOIN teachers t ON t.id = c.teacher_id
+      WHERE c.id = ${courseId}
+    `;
+    if (!course) {
+      return c.json({ error: "Topilmadi" }, 404);
+    }
+    return c.json({ course });
+  } catch (err) {
+    return c.json({ error: String(err) }, 500);
+  }
+});
+app.post("/enroll", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { telegram_id, course_id } = body;
+    if (!telegram_id || !course_id) {
+      return c.json({ error: "telegram_id va course_id talab qilinadi" }, 400);
+    }
+    const sql = cs(c.env.DATABASE_URL);
+    const [user] = await sql`SELECT id FROM users WHERE telegram_id = ${telegram_id}`;
+    if (!user) {
+      return c.json({ error: "Foydalanuvchi topilmadi" }, 404);
+    }
+    const rows = await sql`
+      INSERT INTO enrollments (user_id, course_id, status)
+      VALUES (${user.id}, ${course_id}, 'qarzdor')
+      ON CONFLICT (user_id, course_id) DO NOTHING
+      RETURNING id
+    `;
+    if (rows.length === 0) {
+      return c.json({ already_enrolled: true });
+    }
+    return c.json({ success: true, enrollment_id: rows[0].id });
+  } catch (err) {
+    return c.json({ error: String(err) }, 500);
+  }
+});
 var src_default = app;
 
 // node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
@@ -8076,7 +8123,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-GKgI0O/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-Ly4aMx/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -8108,7 +8155,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-GKgI0O/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-Ly4aMx/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

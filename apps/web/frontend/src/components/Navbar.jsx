@@ -19,6 +19,7 @@ const Navbar = () => {
           <Link to="/about">Biz haqimizda</Link>
           <a href="#courses">Kurslar</a>
           <a href="#advantages">Afzalliklar</a>
+          <a href="#blog">Blog</a>
           <a href="#contact">Aloqa</a>
         </nav>
 
