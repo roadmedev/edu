@@ -467,4 +467,58 @@ app.post('/enroll', async (c) => {
   }
 })
 
+app.get('/admin/payments/debtors', async (c) => {
+  try {
+    const sql = neon(c.env.DATABASE_URL)
+    const rows = await sql`
+      SELECT e.id AS enrollment_id, u.full_name, u.phone_number, c.title AS course_title, c.price
+      FROM enrollments e
+      JOIN users u ON u.id = e.user_id
+      JOIN courses c ON c.id = e.course_id
+      WHERE e.status = 'qarzdor'
+      ORDER BY u.full_name
+    `
+    return c.json({ students: rows })
+  } catch (err) {
+    return c.json({ error: String(err) }, 500)
+  }
+})
+
+app.post('/admin/payments/mark-paid', async (c) => {
+  try {
+    const body = await c.req.json()
+    const { enrollment_id } = body
+
+    if (!enrollment_id) {
+      return c.json({ error: 'enrollment_id talab qilinadi' }, 400)
+    }
+
+    const sql = neon(c.env.DATABASE_URL)
+
+    const [enrollment] = await sql`
+      SELECT e.user_id, c.price
+      FROM enrollments e
+      JOIN courses c ON c.id = e.course_id
+      WHERE e.id = ${enrollment_id}
+    `
+
+    if (!enrollment) {
+      return c.json({ error: 'Yozilish topilmadi' }, 404)
+    }
+
+    await sql`
+      INSERT INTO payments (user_id, amount, month)
+      VALUES (${enrollment.user_id}, ${enrollment.price}, CURRENT_DATE)
+    `
+
+    await sql`
+      UPDATE enrollments SET status = 'active' WHERE id = ${enrollment_id}
+    `
+
+    return c.json({ success: true })
+  } catch (err) {
+    return c.json({ error: String(err) }, 500)
+  }
+})
+
 export default app

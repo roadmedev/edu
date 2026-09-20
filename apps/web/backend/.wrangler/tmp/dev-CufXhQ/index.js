@@ -8074,6 +8074,51 @@ app.post("/enroll", async (c) => {
     return c.json({ error: String(err) }, 500);
   }
 });
+app.get("/admin/payments/debtors", async (c) => {
+  try {
+    const sql = cs(c.env.DATABASE_URL);
+    const rows = await sql`
+      SELECT e.id AS enrollment_id, u.full_name, u.phone_number, c.title AS course_title, c.price
+      FROM enrollments e
+      JOIN users u ON u.id = e.user_id
+      JOIN courses c ON c.id = e.course_id
+      WHERE e.status = 'qarzdor'
+      ORDER BY u.full_name
+    `;
+    return c.json({ students: rows });
+  } catch (err) {
+    return c.json({ error: String(err) }, 500);
+  }
+});
+app.post("/admin/payments/mark-paid", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { enrollment_id } = body;
+    if (!enrollment_id) {
+      return c.json({ error: "enrollment_id talab qilinadi" }, 400);
+    }
+    const sql = cs(c.env.DATABASE_URL);
+    const [enrollment] = await sql`
+      SELECT e.user_id, c.price
+      FROM enrollments e
+      JOIN courses c ON c.id = e.course_id
+      WHERE e.id = ${enrollment_id}
+    `;
+    if (!enrollment) {
+      return c.json({ error: "Yozilish topilmadi" }, 404);
+    }
+    await sql`
+      INSERT INTO payments (user_id, amount, month)
+      VALUES (${enrollment.user_id}, ${enrollment.price}, CURRENT_DATE)
+    `;
+    await sql`
+      UPDATE enrollments SET status = 'active' WHERE id = ${enrollment_id}
+    `;
+    return c.json({ success: true });
+  } catch (err) {
+    return c.json({ error: String(err) }, 500);
+  }
+});
 var src_default = app;
 
 // node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
@@ -8123,7 +8168,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-Ly4aMx/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-k3E3Q4/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -8155,7 +8200,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-Ly4aMx/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-k3E3Q4/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
