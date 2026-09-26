@@ -29,16 +29,18 @@ async def main():
     # api har bir handler va middleware'ga `api` nomi bilan uzatiladi
     dp = Dispatcher(api=api)
     dp.update.outer_middleware(AuthMiddleware())
-
+    #----------------user--------------------#
     dp.include_router(start.router)
     dp.include_router(registration.router)
     dp.include_router(user_courses.router)
+    
     dp.include_router(my_courses.router)
     dp.include_router(course_create.router)
     dp.include_router(teacher_requests.router)
     dp.include_router(teacher_students.router)
     dp.include_router(teacher_attendance.router)
     dp.include_router(teacher_balance.router)
+    dp.include_router(teacher_suggest.router)
     dp.include_router(user_terms.router)
     #--------O'quvchiga aylangan bo'lsa ------#
     dp.include_router(student_my.router)
@@ -50,11 +52,11 @@ async def main():
     dp.include_router(admin_menu.router)
     dp.include_router(admin_teachers.router)
     dp.include_router(admin_students.router)
-    #--------------------------------#
-    dp.include_router(fallback.router)
     dp.include_router(admin_finance.router)
     dp.include_router(admin_suggestions.router)
-    dp.include_router(teacher_suggest.router)
+    #---------------------------------------#
+    dp.include_router(fallback.router)
+
 
     try:
         await dp.start_polling(bot)
