@@ -39,6 +39,7 @@ async def main():
     dp.include_router(teacher_students.router)
     dp.include_router(teacher_attendance.router)
     dp.include_router(teacher_balance.router)
+    dp.include_router(user_terms.router)
     #--------O'quvchiga aylangan bo'lsa ------#
     dp.include_router(student_my.router)
     dp.include_router(student_schedule.router)

@@ -1,20 +1,9193 @@
 var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+var __esm = (fn, res, err) => function __init() {
+  if (err) throw err[0];
+  try {
+    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+  } catch (e) {
+    throw err = [e], e;
+  }
+};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// wrangler-modules-watch:wrangler:modules-watch
+var init_wrangler_modules_watch = __esm({
+  "wrangler-modules-watch:wrangler:modules-watch"() {
+    init_modules_watch_stub();
+  }
+});
+
+// node_modules/wrangler/templates/modules-watch-stub.js
+var init_modules_watch_stub = __esm({
+  "node_modules/wrangler/templates/modules-watch-stub.js"() {
+    init_wrangler_modules_watch();
+  }
+});
+
+// node_modules/drizzle-orm/entity.js
+function is(value, type) {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  if (value instanceof type) {
+    return true;
+  }
+  if (!Object.prototype.hasOwnProperty.call(type, entityKind)) {
+    throw new Error(
+      `Class "${type.name ?? "<unknown>"}" doesn't look like a Drizzle entity. If this is incorrect and the class is provided by Drizzle, please report this as a bug.`
+    );
+  }
+  let cls = Object.getPrototypeOf(value).constructor;
+  if (cls) {
+    while (cls) {
+      if (entityKind in cls && cls[entityKind] === type[entityKind]) {
+        return true;
+      }
+      cls = Object.getPrototypeOf(cls);
+    }
+  }
+  return false;
+}
+var entityKind;
+var init_entity = __esm({
+  "node_modules/drizzle-orm/entity.js"() {
+    init_modules_watch_stub();
+    entityKind = /* @__PURE__ */ Symbol.for("drizzle:entityKind");
+    __name(is, "is");
+  }
+});
+
+// node_modules/drizzle-orm/column.js
+var Column;
+var init_column = __esm({
+  "node_modules/drizzle-orm/column.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    Column = class {
+      static {
+        __name(this, "Column");
+      }
+      constructor(table, config2) {
+        this.table = table;
+        this.config = config2;
+        this.name = config2.name;
+        this.keyAsName = config2.keyAsName;
+        this.notNull = config2.notNull;
+        this.default = config2.default;
+        this.defaultFn = config2.defaultFn;
+        this.onUpdateFn = config2.onUpdateFn;
+        this.hasDefault = config2.hasDefault;
+        this.primary = config2.primaryKey;
+        this.isUnique = config2.isUnique;
+        this.uniqueName = config2.uniqueName;
+        this.uniqueType = config2.uniqueType;
+        this.dataType = config2.dataType;
+        this.columnType = config2.columnType;
+        this.generated = config2.generated;
+        this.generatedIdentity = config2.generatedIdentity;
+      }
+      static [entityKind] = "Column";
+      name;
+      keyAsName;
+      primary;
+      notNull;
+      default;
+      defaultFn;
+      onUpdateFn;
+      hasDefault;
+      isUnique;
+      uniqueName;
+      uniqueType;
+      dataType;
+      columnType;
+      enumValues = void 0;
+      generated = void 0;
+      generatedIdentity = void 0;
+      config;
+      mapFromDriverValue(value) {
+        return value;
+      }
+      mapToDriverValue(value) {
+        return value;
+      }
+      // ** @internal */
+      shouldDisableInsert() {
+        return this.config.generated !== void 0 && this.config.generated.type !== "byDefault";
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/column-builder.js
+var ColumnBuilder;
+var init_column_builder = __esm({
+  "node_modules/drizzle-orm/column-builder.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    ColumnBuilder = class {
+      static {
+        __name(this, "ColumnBuilder");
+      }
+      static [entityKind] = "ColumnBuilder";
+      config;
+      constructor(name, dataType, columnType) {
+        this.config = {
+          name,
+          keyAsName: name === "",
+          notNull: false,
+          default: void 0,
+          hasDefault: false,
+          primaryKey: false,
+          isUnique: false,
+          uniqueName: void 0,
+          uniqueType: void 0,
+          dataType,
+          columnType,
+          generated: void 0
+        };
+      }
+      /**
+       * Changes the data type of the column. Commonly used with `json` columns. Also, useful for branded types.
+       *
+       * @example
+       * ```ts
+       * const users = pgTable('users', {
+       * 	id: integer('id').$type<UserId>().primaryKey(),
+       * 	details: json('details').$type<UserDetails>().notNull(),
+       * });
+       * ```
+       */
+      $type() {
+        return this;
+      }
+      /**
+       * Adds a `not null` clause to the column definition.
+       *
+       * Affects the `select` model of the table - columns *without* `not null` will be nullable on select.
+       */
+      notNull() {
+        this.config.notNull = true;
+        return this;
+      }
+      /**
+       * Adds a `default <value>` clause to the column definition.
+       *
+       * Affects the `insert` model of the table - columns *with* `default` are optional on insert.
+       *
+       * If you need to set a dynamic default value, use {@link $defaultFn} instead.
+       */
+      default(value) {
+        this.config.default = value;
+        this.config.hasDefault = true;
+        return this;
+      }
+      /**
+       * Adds a dynamic default value to the column.
+       * The function will be called when the row is inserted, and the returned value will be used as the column value.
+       *
+       * **Note:** This value does not affect the `drizzle-kit` behavior, it is only used at runtime in `drizzle-orm`.
+       */
+      $defaultFn(fn) {
+        this.config.defaultFn = fn;
+        this.config.hasDefault = true;
+        return this;
+      }
+      /**
+       * Alias for {@link $defaultFn}.
+       */
+      $default = this.$defaultFn;
+      /**
+       * Adds a dynamic update value to the column.
+       * The function will be called when the row is updated, and the returned value will be used as the column value if none is provided.
+       * If no `default` (or `$defaultFn`) value is provided, the function will be called when the row is inserted as well, and the returned value will be used as the column value.
+       *
+       * **Note:** This value does not affect the `drizzle-kit` behavior, it is only used at runtime in `drizzle-orm`.
+       */
+      $onUpdateFn(fn) {
+        this.config.onUpdateFn = fn;
+        this.config.hasDefault = true;
+        return this;
+      }
+      /**
+       * Alias for {@link $onUpdateFn}.
+       */
+      $onUpdate = this.$onUpdateFn;
+      /**
+       * Adds a `primary key` clause to the column definition. This implicitly makes the column `not null`.
+       *
+       * In SQLite, `integer primary key` implicitly makes the column auto-incrementing.
+       */
+      primaryKey() {
+        this.config.primaryKey = true;
+        this.config.notNull = true;
+        return this;
+      }
+      /** @internal Sets the name of the column to the key within the table definition if a name was not given. */
+      setName(name) {
+        if (this.config.name !== "") return;
+        this.config.name = name;
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/table.utils.js
+var TableName;
+var init_table_utils = __esm({
+  "node_modules/drizzle-orm/table.utils.js"() {
+    init_modules_watch_stub();
+    TableName = /* @__PURE__ */ Symbol.for("drizzle:Name");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/foreign-keys.js
+function foreignKey(config2) {
+  function mappedConfig() {
+    const { name, columns, foreignColumns } = config2;
+    return {
+      name,
+      columns,
+      foreignColumns
+    };
+  }
+  __name(mappedConfig, "mappedConfig");
+  return new ForeignKeyBuilder(mappedConfig);
+}
+var ForeignKeyBuilder, ForeignKey;
+var init_foreign_keys = __esm({
+  "node_modules/drizzle-orm/pg-core/foreign-keys.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_table_utils();
+    ForeignKeyBuilder = class {
+      static {
+        __name(this, "ForeignKeyBuilder");
+      }
+      static [entityKind] = "PgForeignKeyBuilder";
+      /** @internal */
+      reference;
+      /** @internal */
+      _onUpdate = "no action";
+      /** @internal */
+      _onDelete = "no action";
+      constructor(config2, actions) {
+        this.reference = () => {
+          const { name, columns, foreignColumns } = config2();
+          return { name, columns, foreignTable: foreignColumns[0].table, foreignColumns };
+        };
+        if (actions) {
+          this._onUpdate = actions.onUpdate;
+          this._onDelete = actions.onDelete;
+        }
+      }
+      onUpdate(action) {
+        this._onUpdate = action === void 0 ? "no action" : action;
+        return this;
+      }
+      onDelete(action) {
+        this._onDelete = action === void 0 ? "no action" : action;
+        return this;
+      }
+      /** @internal */
+      build(table) {
+        return new ForeignKey(table, this);
+      }
+    };
+    ForeignKey = class {
+      static {
+        __name(this, "ForeignKey");
+      }
+      constructor(table, builder) {
+        this.table = table;
+        this.reference = builder.reference;
+        this.onUpdate = builder._onUpdate;
+        this.onDelete = builder._onDelete;
+      }
+      static [entityKind] = "PgForeignKey";
+      reference;
+      onUpdate;
+      onDelete;
+      getName() {
+        const { name, columns, foreignColumns } = this.reference();
+        const columnNames = columns.map((column) => column.name);
+        const foreignColumnNames = foreignColumns.map((column) => column.name);
+        const chunks = [
+          this.table[TableName],
+          ...columnNames,
+          foreignColumns[0].table[TableName],
+          ...foreignColumnNames
+        ];
+        return name ?? `${chunks.join("_")}_fk`;
+      }
+    };
+    __name(foreignKey, "foreignKey");
+  }
+});
+
+// node_modules/drizzle-orm/tracing-utils.js
+function iife(fn, ...args) {
+  return fn(...args);
+}
+var init_tracing_utils = __esm({
+  "node_modules/drizzle-orm/tracing-utils.js"() {
+    init_modules_watch_stub();
+    __name(iife, "iife");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/unique-constraint.js
+function unique(name) {
+  return new UniqueOnConstraintBuilder(name);
+}
+function uniqueKeyName(table, columns) {
+  return `${table[TableName]}_${columns.join("_")}_unique`;
+}
+var UniqueConstraintBuilder, UniqueOnConstraintBuilder, UniqueConstraint;
+var init_unique_constraint = __esm({
+  "node_modules/drizzle-orm/pg-core/unique-constraint.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_table_utils();
+    __name(unique, "unique");
+    __name(uniqueKeyName, "uniqueKeyName");
+    UniqueConstraintBuilder = class {
+      static {
+        __name(this, "UniqueConstraintBuilder");
+      }
+      constructor(columns, name) {
+        this.name = name;
+        this.columns = columns;
+      }
+      static [entityKind] = "PgUniqueConstraintBuilder";
+      /** @internal */
+      columns;
+      /** @internal */
+      nullsNotDistinctConfig = false;
+      nullsNotDistinct() {
+        this.nullsNotDistinctConfig = true;
+        return this;
+      }
+      /** @internal */
+      build(table) {
+        return new UniqueConstraint(table, this.columns, this.nullsNotDistinctConfig, this.name);
+      }
+    };
+    UniqueOnConstraintBuilder = class {
+      static {
+        __name(this, "UniqueOnConstraintBuilder");
+      }
+      static [entityKind] = "PgUniqueOnConstraintBuilder";
+      /** @internal */
+      name;
+      constructor(name) {
+        this.name = name;
+      }
+      on(...columns) {
+        return new UniqueConstraintBuilder(columns, this.name);
+      }
+    };
+    UniqueConstraint = class {
+      static {
+        __name(this, "UniqueConstraint");
+      }
+      constructor(table, columns, nullsNotDistinct, name) {
+        this.table = table;
+        this.columns = columns;
+        this.name = name ?? uniqueKeyName(this.table, this.columns.map((column) => column.name));
+        this.nullsNotDistinct = nullsNotDistinct;
+      }
+      static [entityKind] = "PgUniqueConstraint";
+      columns;
+      name;
+      nullsNotDistinct = false;
+      getName() {
+        return this.name;
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/utils/array.js
+function parsePgArrayValue(arrayString, startFrom, inQuotes) {
+  for (let i = startFrom; i < arrayString.length; i++) {
+    const char2 = arrayString[i];
+    if (char2 === "\\") {
+      i++;
+      continue;
+    }
+    if (char2 === '"') {
+      return [arrayString.slice(startFrom, i).replace(/\\/g, ""), i + 1];
+    }
+    if (inQuotes) {
+      continue;
+    }
+    if (char2 === "," || char2 === "}") {
+      return [arrayString.slice(startFrom, i).replace(/\\/g, ""), i];
+    }
+  }
+  return [arrayString.slice(startFrom).replace(/\\/g, ""), arrayString.length];
+}
+function parsePgNestedArray(arrayString, startFrom = 0) {
+  const result = [];
+  let i = startFrom;
+  let lastCharIsComma = false;
+  while (i < arrayString.length) {
+    const char2 = arrayString[i];
+    if (char2 === ",") {
+      if (lastCharIsComma || i === startFrom) {
+        result.push("");
+      }
+      lastCharIsComma = true;
+      i++;
+      continue;
+    }
+    lastCharIsComma = false;
+    if (char2 === "\\") {
+      i += 2;
+      continue;
+    }
+    if (char2 === '"') {
+      const [value2, startFrom2] = parsePgArrayValue(arrayString, i + 1, true);
+      result.push(value2);
+      i = startFrom2;
+      continue;
+    }
+    if (char2 === "}") {
+      return [result, i + 1];
+    }
+    if (char2 === "{") {
+      const [value2, startFrom2] = parsePgNestedArray(arrayString, i + 1);
+      result.push(value2);
+      i = startFrom2;
+      continue;
+    }
+    const [value, newStartFrom] = parsePgArrayValue(arrayString, i, false);
+    result.push(value);
+    i = newStartFrom;
+  }
+  return [result, i];
+}
+function parsePgArray(arrayString) {
+  const [result] = parsePgNestedArray(arrayString, 1);
+  return result;
+}
+function makePgArray(array2) {
+  return `{${array2.map((item) => {
+    if (Array.isArray(item)) {
+      return makePgArray(item);
+    }
+    if (typeof item === "string") {
+      return `"${item.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+    }
+    return `${item}`;
+  }).join(",")}}`;
+}
+var init_array = __esm({
+  "node_modules/drizzle-orm/pg-core/utils/array.js"() {
+    init_modules_watch_stub();
+    __name(parsePgArrayValue, "parsePgArrayValue");
+    __name(parsePgNestedArray, "parsePgNestedArray");
+    __name(parsePgArray, "parsePgArray");
+    __name(makePgArray, "makePgArray");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/common.js
+var PgColumnBuilder, PgColumn, ExtraConfigColumn, IndexedColumn, PgArrayBuilder, PgArray;
+var init_common = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/common.js"() {
+    init_modules_watch_stub();
+    init_column_builder();
+    init_column();
+    init_entity();
+    init_foreign_keys();
+    init_tracing_utils();
+    init_unique_constraint();
+    init_array();
+    PgColumnBuilder = class extends ColumnBuilder {
+      static {
+        __name(this, "PgColumnBuilder");
+      }
+      foreignKeyConfigs = [];
+      static [entityKind] = "PgColumnBuilder";
+      array(size) {
+        return new PgArrayBuilder(this.config.name, this, size);
+      }
+      references(ref, actions = {}) {
+        this.foreignKeyConfigs.push({ ref, actions });
+        return this;
+      }
+      unique(name, config2) {
+        this.config.isUnique = true;
+        this.config.uniqueName = name;
+        this.config.uniqueType = config2?.nulls;
+        return this;
+      }
+      generatedAlwaysAs(as2) {
+        this.config.generated = {
+          as: as2,
+          type: "always",
+          mode: "stored"
+        };
+        return this;
+      }
+      /** @internal */
+      buildForeignKeys(column, table) {
+        return this.foreignKeyConfigs.map(({ ref, actions }) => {
+          return iife(
+            (ref2, actions2) => {
+              const builder = new ForeignKeyBuilder(() => {
+                const foreignColumn = ref2();
+                return { columns: [column], foreignColumns: [foreignColumn] };
+              });
+              if (actions2.onUpdate) {
+                builder.onUpdate(actions2.onUpdate);
+              }
+              if (actions2.onDelete) {
+                builder.onDelete(actions2.onDelete);
+              }
+              return builder.build(table);
+            },
+            ref,
+            actions
+          );
+        });
+      }
+      /** @internal */
+      buildExtraConfigColumn(table) {
+        return new ExtraConfigColumn(table, this.config);
+      }
+    };
+    PgColumn = class extends Column {
+      static {
+        __name(this, "PgColumn");
+      }
+      constructor(table, config2) {
+        if (!config2.uniqueName) {
+          config2.uniqueName = uniqueKeyName(table, [config2.name]);
+        }
+        super(table, config2);
+        this.table = table;
+      }
+      static [entityKind] = "PgColumn";
+    };
+    ExtraConfigColumn = class extends PgColumn {
+      static {
+        __name(this, "ExtraConfigColumn");
+      }
+      static [entityKind] = "ExtraConfigColumn";
+      getSQLType() {
+        return this.getSQLType();
+      }
+      indexConfig = {
+        order: this.config.order ?? "asc",
+        nulls: this.config.nulls ?? "last",
+        opClass: this.config.opClass
+      };
+      defaultConfig = {
+        order: "asc",
+        nulls: "last",
+        opClass: void 0
+      };
+      asc() {
+        this.indexConfig.order = "asc";
+        return this;
+      }
+      desc() {
+        this.indexConfig.order = "desc";
+        return this;
+      }
+      nullsFirst() {
+        this.indexConfig.nulls = "first";
+        return this;
+      }
+      nullsLast() {
+        this.indexConfig.nulls = "last";
+        return this;
+      }
+      /**
+       * ### PostgreSQL documentation quote
+       *
+       * > An operator class with optional parameters can be specified for each column of an index.
+       * The operator class identifies the operators to be used by the index for that column.
+       * For example, a B-tree index on four-byte integers would use the int4_ops class;
+       * this operator class includes comparison functions for four-byte integers.
+       * In practice the default operator class for the column's data type is usually sufficient.
+       * The main point of having operator classes is that for some data types, there could be more than one meaningful ordering.
+       * For example, we might want to sort a complex-number data type either by absolute value or by real part.
+       * We could do this by defining two operator classes for the data type and then selecting the proper class when creating an index.
+       * More information about operator classes check:
+       *
+       * ### Useful links
+       * https://www.postgresql.org/docs/current/sql-createindex.html
+       *
+       * https://www.postgresql.org/docs/current/indexes-opclass.html
+       *
+       * https://www.postgresql.org/docs/current/xindex.html
+       *
+       * ### Additional types
+       * If you have the `pg_vector` extension installed in your database, you can use the
+       * `vector_l2_ops`, `vector_ip_ops`, `vector_cosine_ops`, `vector_l1_ops`, `bit_hamming_ops`, `bit_jaccard_ops`, `halfvec_l2_ops`, `sparsevec_l2_ops` options, which are predefined types.
+       *
+       * **You can always specify any string you want in the operator class, in case Drizzle doesn't have it natively in its types**
+       *
+       * @param opClass
+       * @returns
+       */
+      op(opClass) {
+        this.indexConfig.opClass = opClass;
+        return this;
+      }
+    };
+    IndexedColumn = class {
+      static {
+        __name(this, "IndexedColumn");
+      }
+      static [entityKind] = "IndexedColumn";
+      constructor(name, keyAsName, type, indexConfig) {
+        this.name = name;
+        this.keyAsName = keyAsName;
+        this.type = type;
+        this.indexConfig = indexConfig;
+      }
+      name;
+      keyAsName;
+      type;
+      indexConfig;
+    };
+    PgArrayBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgArrayBuilder");
+      }
+      static [entityKind] = "PgArrayBuilder";
+      constructor(name, baseBuilder, size) {
+        super(name, "array", "PgArray");
+        this.config.baseBuilder = baseBuilder;
+        this.config.size = size;
+      }
+      /** @internal */
+      build(table) {
+        const baseColumn = this.config.baseBuilder.build(table);
+        return new PgArray(
+          table,
+          this.config,
+          baseColumn
+        );
+      }
+    };
+    PgArray = class _PgArray extends PgColumn {
+      static {
+        __name(this, "PgArray");
+      }
+      constructor(table, config2, baseColumn, range) {
+        super(table, config2);
+        this.baseColumn = baseColumn;
+        this.range = range;
+        this.size = config2.size;
+      }
+      size;
+      static [entityKind] = "PgArray";
+      getSQLType() {
+        return `${this.baseColumn.getSQLType()}[${typeof this.size === "number" ? this.size : ""}]`;
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "string") {
+          value = parsePgArray(value);
+        }
+        return value.map((v2) => this.baseColumn.mapFromDriverValue(v2));
+      }
+      mapToDriverValue(value, isNestedArray = false) {
+        const a2 = value.map(
+          (v2) => v2 === null ? null : is(this.baseColumn, _PgArray) ? this.baseColumn.mapToDriverValue(v2, true) : this.baseColumn.mapToDriverValue(v2)
+        );
+        if (isNestedArray) return a2;
+        return makePgArray(a2);
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/enum.js
+function isPgEnum(obj) {
+  return !!obj && typeof obj === "function" && isPgEnumSym in obj && obj[isPgEnumSym] === true;
+}
+function pgEnum(enumName, input2) {
+  return Array.isArray(input2) ? pgEnumWithSchema(enumName, [...input2], void 0) : pgEnumObjectWithSchema(enumName, input2, void 0);
+}
+function pgEnumWithSchema(enumName, values, schema) {
+  const enumInstance = Object.assign(
+    (name) => new PgEnumColumnBuilder(name ?? "", enumInstance),
+    {
+      enumName,
+      enumValues: values,
+      schema,
+      [isPgEnumSym]: true
+    }
+  );
+  return enumInstance;
+}
+function pgEnumObjectWithSchema(enumName, values, schema) {
+  const enumInstance = Object.assign(
+    (name) => new PgEnumObjectColumnBuilder(name ?? "", enumInstance),
+    {
+      enumName,
+      enumValues: Object.values(values),
+      schema,
+      [isPgEnumSym]: true
+    }
+  );
+  return enumInstance;
+}
+var PgEnumObjectColumnBuilder, PgEnumObjectColumn, isPgEnumSym, PgEnumColumnBuilder, PgEnumColumn;
+var init_enum = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/enum.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    PgEnumObjectColumnBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgEnumObjectColumnBuilder");
+      }
+      static [entityKind] = "PgEnumObjectColumnBuilder";
+      constructor(name, enumInstance) {
+        super(name, "string", "PgEnumObjectColumn");
+        this.config.enum = enumInstance;
+      }
+      /** @internal */
+      build(table) {
+        return new PgEnumObjectColumn(
+          table,
+          this.config
+        );
+      }
+    };
+    PgEnumObjectColumn = class extends PgColumn {
+      static {
+        __name(this, "PgEnumObjectColumn");
+      }
+      static [entityKind] = "PgEnumObjectColumn";
+      enum;
+      enumValues = this.config.enum.enumValues;
+      constructor(table, config2) {
+        super(table, config2);
+        this.enum = config2.enum;
+      }
+      getSQLType() {
+        return this.enum.enumName;
+      }
+    };
+    isPgEnumSym = /* @__PURE__ */ Symbol.for("drizzle:isPgEnum");
+    __name(isPgEnum, "isPgEnum");
+    PgEnumColumnBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgEnumColumnBuilder");
+      }
+      static [entityKind] = "PgEnumColumnBuilder";
+      constructor(name, enumInstance) {
+        super(name, "string", "PgEnumColumn");
+        this.config.enum = enumInstance;
+      }
+      /** @internal */
+      build(table) {
+        return new PgEnumColumn(
+          table,
+          this.config
+        );
+      }
+    };
+    PgEnumColumn = class extends PgColumn {
+      static {
+        __name(this, "PgEnumColumn");
+      }
+      static [entityKind] = "PgEnumColumn";
+      enum = this.config.enum;
+      enumValues = this.config.enum.enumValues;
+      constructor(table, config2) {
+        super(table, config2);
+        this.enum = config2.enum;
+      }
+      getSQLType() {
+        return this.enum.enumName;
+      }
+    };
+    __name(pgEnum, "pgEnum");
+    __name(pgEnumWithSchema, "pgEnumWithSchema");
+    __name(pgEnumObjectWithSchema, "pgEnumObjectWithSchema");
+  }
+});
+
+// node_modules/drizzle-orm/subquery.js
+var Subquery, WithSubquery;
+var init_subquery = __esm({
+  "node_modules/drizzle-orm/subquery.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    Subquery = class {
+      static {
+        __name(this, "Subquery");
+      }
+      static [entityKind] = "Subquery";
+      constructor(sql2, fields, alias2, isWith = false, usedTables = []) {
+        this._ = {
+          brand: "Subquery",
+          sql: sql2,
+          selectedFields: fields,
+          alias: alias2,
+          isWith,
+          usedTables
+        };
+      }
+      // getSQL(): SQL<unknown> {
+      // 	return new SQL([this]);
+      // }
+    };
+    WithSubquery = class extends Subquery {
+      static {
+        __name(this, "WithSubquery");
+      }
+      static [entityKind] = "WithSubquery";
+    };
+  }
+});
+
+// node_modules/drizzle-orm/version.js
+var version;
+var init_version = __esm({
+  "node_modules/drizzle-orm/version.js"() {
+    init_modules_watch_stub();
+    version = "0.45.3";
+  }
+});
+
+// node_modules/drizzle-orm/tracing.js
+var otel, rawTracer, tracer;
+var init_tracing = __esm({
+  "node_modules/drizzle-orm/tracing.js"() {
+    init_modules_watch_stub();
+    init_tracing_utils();
+    init_version();
+    tracer = {
+      startActiveSpan(name, fn) {
+        if (!otel) {
+          return fn();
+        }
+        if (!rawTracer) {
+          rawTracer = otel.trace.getTracer("drizzle-orm", version);
+        }
+        return iife(
+          (otel2, rawTracer2) => rawTracer2.startActiveSpan(
+            name,
+            (span) => {
+              try {
+                return fn(span);
+              } catch (e) {
+                span.setStatus({
+                  code: otel2.SpanStatusCode.ERROR,
+                  message: e instanceof Error ? e.message : "Unknown error"
+                  // eslint-disable-line no-instanceof/no-instanceof
+                });
+                throw e;
+              } finally {
+                span.end();
+              }
+            }
+          ),
+          otel,
+          rawTracer
+        );
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/view-common.js
+var ViewBaseConfig;
+var init_view_common = __esm({
+  "node_modules/drizzle-orm/view-common.js"() {
+    init_modules_watch_stub();
+    ViewBaseConfig = /* @__PURE__ */ Symbol.for("drizzle:ViewBaseConfig");
+  }
+});
+
+// node_modules/drizzle-orm/table.js
+function getTableName(table) {
+  return table[TableName];
+}
+function getTableUniqueName(table) {
+  return `${table[Schema] ?? "public"}.${table[TableName]}`;
+}
+var Schema, Columns, ExtraConfigColumns, OriginalName, BaseName, IsAlias, ExtraConfigBuilder, IsDrizzleTable, Table;
+var init_table = __esm({
+  "node_modules/drizzle-orm/table.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_table_utils();
+    Schema = /* @__PURE__ */ Symbol.for("drizzle:Schema");
+    Columns = /* @__PURE__ */ Symbol.for("drizzle:Columns");
+    ExtraConfigColumns = /* @__PURE__ */ Symbol.for("drizzle:ExtraConfigColumns");
+    OriginalName = /* @__PURE__ */ Symbol.for("drizzle:OriginalName");
+    BaseName = /* @__PURE__ */ Symbol.for("drizzle:BaseName");
+    IsAlias = /* @__PURE__ */ Symbol.for("drizzle:IsAlias");
+    ExtraConfigBuilder = /* @__PURE__ */ Symbol.for("drizzle:ExtraConfigBuilder");
+    IsDrizzleTable = /* @__PURE__ */ Symbol.for("drizzle:IsDrizzleTable");
+    Table = class {
+      static {
+        __name(this, "Table");
+      }
+      static [entityKind] = "Table";
+      /** @internal */
+      static Symbol = {
+        Name: TableName,
+        Schema,
+        OriginalName,
+        Columns,
+        ExtraConfigColumns,
+        BaseName,
+        IsAlias,
+        ExtraConfigBuilder
+      };
+      /**
+       * @internal
+       * Can be changed if the table is aliased.
+       */
+      [TableName];
+      /**
+       * @internal
+       * Used to store the original name of the table, before any aliasing.
+       */
+      [OriginalName];
+      /** @internal */
+      [Schema];
+      /** @internal */
+      [Columns];
+      /** @internal */
+      [ExtraConfigColumns];
+      /**
+       *  @internal
+       * Used to store the table name before the transformation via the `tableCreator` functions.
+       */
+      [BaseName];
+      /** @internal */
+      [IsAlias] = false;
+      /** @internal */
+      [IsDrizzleTable] = true;
+      /** @internal */
+      [ExtraConfigBuilder] = void 0;
+      constructor(name, schema, baseName) {
+        this[TableName] = this[OriginalName] = name;
+        this[Schema] = schema;
+        this[BaseName] = baseName;
+      }
+    };
+    __name(getTableName, "getTableName");
+    __name(getTableUniqueName, "getTableUniqueName");
+  }
+});
+
+// node_modules/drizzle-orm/sql/sql.js
+function isSQLWrapper(value) {
+  return value !== null && value !== void 0 && typeof value.getSQL === "function";
+}
+function mergeQueries(queries) {
+  const result = { sql: "", params: [] };
+  for (const query of queries) {
+    result.sql += query.sql;
+    result.params.push(...query.params);
+    if (query.typings?.length) {
+      if (!result.typings) {
+        result.typings = [];
+      }
+      result.typings.push(...query.typings);
+    }
+  }
+  return result;
+}
+function isDriverValueEncoder(value) {
+  return typeof value === "object" && value !== null && "mapToDriverValue" in value && typeof value.mapToDriverValue === "function";
+}
+function sql(strings, ...params) {
+  const queryChunks = [];
+  if (params.length > 0 || strings.length > 0 && strings[0] !== "") {
+    queryChunks.push(new StringChunk(strings[0]));
+  }
+  for (const [paramIndex, param2] of params.entries()) {
+    queryChunks.push(param2, new StringChunk(strings[paramIndex + 1]));
+  }
+  return new SQL(queryChunks);
+}
+function fillPlaceholders(params, values) {
+  return params.map((p2) => {
+    if (is(p2, Placeholder)) {
+      if (!(p2.name in values)) {
+        throw new Error(`No value for placeholder "${p2.name}" was provided`);
+      }
+      return values[p2.name];
+    }
+    if (is(p2, Param) && is(p2.value, Placeholder)) {
+      if (!(p2.value.name in values)) {
+        throw new Error(`No value for placeholder "${p2.value.name}" was provided`);
+      }
+      return p2.encoder.mapToDriverValue(values[p2.value.name]);
+    }
+    return p2;
+  });
+}
+var FakePrimitiveParam, StringChunk, SQL, Name, noopDecoder, noopEncoder, noopMapper, Param, Placeholder, IsDrizzleView, View;
+var init_sql = __esm({
+  "node_modules/drizzle-orm/sql/sql.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_enum();
+    init_subquery();
+    init_tracing();
+    init_view_common();
+    init_column();
+    init_table();
+    FakePrimitiveParam = class {
+      static {
+        __name(this, "FakePrimitiveParam");
+      }
+      static [entityKind] = "FakePrimitiveParam";
+    };
+    __name(isSQLWrapper, "isSQLWrapper");
+    __name(mergeQueries, "mergeQueries");
+    StringChunk = class {
+      static {
+        __name(this, "StringChunk");
+      }
+      static [entityKind] = "StringChunk";
+      value;
+      constructor(value) {
+        this.value = Array.isArray(value) ? value : [value];
+      }
+      getSQL() {
+        return new SQL([this]);
+      }
+    };
+    SQL = class _SQL {
+      static {
+        __name(this, "SQL");
+      }
+      constructor(queryChunks) {
+        this.queryChunks = queryChunks;
+        for (const chunk of queryChunks) {
+          if (is(chunk, Table)) {
+            const schemaName = chunk[Table.Symbol.Schema];
+            this.usedTables.push(
+              schemaName === void 0 ? chunk[Table.Symbol.Name] : schemaName + "." + chunk[Table.Symbol.Name]
+            );
+          }
+        }
+      }
+      static [entityKind] = "SQL";
+      /** @internal */
+      decoder = noopDecoder;
+      shouldInlineParams = false;
+      /** @internal */
+      usedTables = [];
+      append(query) {
+        this.queryChunks.push(...query.queryChunks);
+        return this;
+      }
+      toQuery(config2) {
+        return tracer.startActiveSpan("drizzle.buildSQL", (span) => {
+          const query = this.buildQueryFromSourceParams(this.queryChunks, config2);
+          span?.setAttributes({
+            "drizzle.query.text": query.sql,
+            "drizzle.query.params": JSON.stringify(query.params)
+          });
+          return query;
+        });
+      }
+      buildQueryFromSourceParams(chunks, _config) {
+        const config2 = Object.assign({}, _config, {
+          inlineParams: _config.inlineParams || this.shouldInlineParams,
+          paramStartIndex: _config.paramStartIndex || { value: 0 }
+        });
+        const {
+          casing,
+          escapeName,
+          escapeParam,
+          prepareTyping,
+          inlineParams,
+          paramStartIndex
+        } = config2;
+        return mergeQueries(chunks.map((chunk) => {
+          if (is(chunk, StringChunk)) {
+            return { sql: chunk.value.join(""), params: [] };
+          }
+          if (is(chunk, Name)) {
+            return { sql: escapeName(chunk.value), params: [] };
+          }
+          if (chunk === void 0) {
+            return { sql: "", params: [] };
+          }
+          if (Array.isArray(chunk)) {
+            const result = [new StringChunk("(")];
+            for (const [i, p2] of chunk.entries()) {
+              result.push(p2);
+              if (i < chunk.length - 1) {
+                result.push(new StringChunk(", "));
+              }
+            }
+            result.push(new StringChunk(")"));
+            return this.buildQueryFromSourceParams(result, config2);
+          }
+          if (is(chunk, _SQL)) {
+            return this.buildQueryFromSourceParams(chunk.queryChunks, {
+              ...config2,
+              inlineParams: inlineParams || chunk.shouldInlineParams
+            });
+          }
+          if (is(chunk, Table)) {
+            const schemaName = chunk[Table.Symbol.Schema];
+            const tableName = chunk[Table.Symbol.Name];
+            return {
+              sql: schemaName === void 0 || chunk[IsAlias] ? escapeName(tableName) : escapeName(schemaName) + "." + escapeName(tableName),
+              params: []
+            };
+          }
+          if (is(chunk, Column)) {
+            const columnName = casing.getColumnCasing(chunk);
+            if (_config.invokeSource === "indexes") {
+              return { sql: escapeName(columnName), params: [] };
+            }
+            const schemaName = chunk.table[Table.Symbol.Schema];
+            return {
+              sql: chunk.table[IsAlias] || schemaName === void 0 ? escapeName(chunk.table[Table.Symbol.Name]) + "." + escapeName(columnName) : escapeName(schemaName) + "." + escapeName(chunk.table[Table.Symbol.Name]) + "." + escapeName(columnName),
+              params: []
+            };
+          }
+          if (is(chunk, View)) {
+            const schemaName = chunk[ViewBaseConfig].schema;
+            const viewName = chunk[ViewBaseConfig].name;
+            return {
+              sql: schemaName === void 0 || chunk[ViewBaseConfig].isAlias ? escapeName(viewName) : escapeName(schemaName) + "." + escapeName(viewName),
+              params: []
+            };
+          }
+          if (is(chunk, Param)) {
+            if (is(chunk.value, Placeholder)) {
+              return { sql: escapeParam(paramStartIndex.value++, chunk), params: [chunk], typings: ["none"] };
+            }
+            const mappedValue = chunk.value === null ? null : chunk.encoder.mapToDriverValue(chunk.value);
+            if (is(mappedValue, _SQL)) {
+              return this.buildQueryFromSourceParams([mappedValue], config2);
+            }
+            if (inlineParams) {
+              return { sql: this.mapInlineParam(mappedValue, config2), params: [] };
+            }
+            let typings = ["none"];
+            if (prepareTyping) {
+              typings = [prepareTyping(chunk.encoder)];
+            }
+            return { sql: escapeParam(paramStartIndex.value++, mappedValue), params: [mappedValue], typings };
+          }
+          if (is(chunk, Placeholder)) {
+            return { sql: escapeParam(paramStartIndex.value++, chunk), params: [chunk], typings: ["none"] };
+          }
+          if (is(chunk, _SQL.Aliased) && chunk.fieldAlias !== void 0) {
+            return { sql: escapeName(chunk.fieldAlias), params: [] };
+          }
+          if (is(chunk, Subquery)) {
+            if (chunk._.isWith) {
+              return { sql: escapeName(chunk._.alias), params: [] };
+            }
+            return this.buildQueryFromSourceParams([
+              new StringChunk("("),
+              chunk._.sql,
+              new StringChunk(") "),
+              new Name(chunk._.alias)
+            ], config2);
+          }
+          if (isPgEnum(chunk)) {
+            if (chunk.schema) {
+              return { sql: escapeName(chunk.schema) + "." + escapeName(chunk.enumName), params: [] };
+            }
+            return { sql: escapeName(chunk.enumName), params: [] };
+          }
+          if (isSQLWrapper(chunk)) {
+            if (chunk.shouldOmitSQLParens?.()) {
+              return this.buildQueryFromSourceParams([chunk.getSQL()], config2);
+            }
+            return this.buildQueryFromSourceParams([
+              new StringChunk("("),
+              chunk.getSQL(),
+              new StringChunk(")")
+            ], config2);
+          }
+          if (inlineParams) {
+            return { sql: this.mapInlineParam(chunk, config2), params: [] };
+          }
+          return { sql: escapeParam(paramStartIndex.value++, chunk), params: [chunk], typings: ["none"] };
+        }));
+      }
+      mapInlineParam(chunk, { escapeString }) {
+        if (chunk === null) {
+          return "null";
+        }
+        if (typeof chunk === "number" || typeof chunk === "boolean") {
+          return chunk.toString();
+        }
+        if (typeof chunk === "string") {
+          return escapeString(chunk);
+        }
+        if (typeof chunk === "object") {
+          const mappedValueAsString = chunk.toString();
+          if (mappedValueAsString === "[object Object]") {
+            return escapeString(JSON.stringify(chunk));
+          }
+          return escapeString(mappedValueAsString);
+        }
+        throw new Error("Unexpected param value: " + chunk);
+      }
+      getSQL() {
+        return this;
+      }
+      as(alias2) {
+        if (alias2 === void 0) {
+          return this;
+        }
+        return new _SQL.Aliased(this, alias2);
+      }
+      mapWith(decoder) {
+        this.decoder = typeof decoder === "function" ? { mapFromDriverValue: decoder } : decoder;
+        return this;
+      }
+      inlineParams() {
+        this.shouldInlineParams = true;
+        return this;
+      }
+      /**
+       * This method is used to conditionally include a part of the query.
+       *
+       * @param condition - Condition to check
+       * @returns itself if the condition is `true`, otherwise `undefined`
+       */
+      if(condition) {
+        return condition ? this : void 0;
+      }
+    };
+    Name = class {
+      static {
+        __name(this, "Name");
+      }
+      constructor(value) {
+        this.value = value;
+      }
+      static [entityKind] = "Name";
+      brand;
+      getSQL() {
+        return new SQL([this]);
+      }
+    };
+    __name(isDriverValueEncoder, "isDriverValueEncoder");
+    noopDecoder = {
+      mapFromDriverValue: /* @__PURE__ */ __name((value) => value, "mapFromDriverValue")
+    };
+    noopEncoder = {
+      mapToDriverValue: /* @__PURE__ */ __name((value) => value, "mapToDriverValue")
+    };
+    noopMapper = {
+      ...noopDecoder,
+      ...noopEncoder
+    };
+    Param = class {
+      static {
+        __name(this, "Param");
+      }
+      /**
+       * @param value - Parameter value
+       * @param encoder - Encoder to convert the value to a driver parameter
+       */
+      constructor(value, encoder = noopEncoder) {
+        this.value = value;
+        this.encoder = encoder;
+      }
+      static [entityKind] = "Param";
+      brand;
+      getSQL() {
+        return new SQL([this]);
+      }
+    };
+    __name(sql, "sql");
+    ((sql2) => {
+      function empty() {
+        return new SQL([]);
+      }
+      __name(empty, "empty");
+      sql2.empty = empty;
+      function fromList(list) {
+        return new SQL(list);
+      }
+      __name(fromList, "fromList");
+      sql2.fromList = fromList;
+      function raw2(str) {
+        return new SQL([new StringChunk(str)]);
+      }
+      __name(raw2, "raw");
+      sql2.raw = raw2;
+      function join(chunks, separator) {
+        const result = [];
+        for (const [i, chunk] of chunks.entries()) {
+          if (i > 0 && separator !== void 0) {
+            result.push(separator);
+          }
+          result.push(chunk);
+        }
+        return new SQL(result);
+      }
+      __name(join, "join");
+      sql2.join = join;
+      function identifier(value) {
+        return new Name(value);
+      }
+      __name(identifier, "identifier");
+      sql2.identifier = identifier;
+      function placeholder2(name2) {
+        return new Placeholder(name2);
+      }
+      __name(placeholder2, "placeholder2");
+      sql2.placeholder = placeholder2;
+      function param2(value, encoder) {
+        return new Param(value, encoder);
+      }
+      __name(param2, "param2");
+      sql2.param = param2;
+    })(sql || (sql = {}));
+    ((SQL2) => {
+      class Aliased {
+        static {
+          __name(this, "Aliased");
+        }
+        constructor(sql2, fieldAlias) {
+          this.sql = sql2;
+          this.fieldAlias = fieldAlias;
+        }
+        static [entityKind] = "SQL.Aliased";
+        /** @internal */
+        isSelectionField = false;
+        getSQL() {
+          return this.sql;
+        }
+        /** @internal */
+        clone() {
+          return new Aliased(this.sql, this.fieldAlias);
+        }
+      }
+      SQL2.Aliased = Aliased;
+    })(SQL || (SQL = {}));
+    Placeholder = class {
+      static {
+        __name(this, "Placeholder");
+      }
+      constructor(name2) {
+        this.name = name2;
+      }
+      static [entityKind] = "Placeholder";
+      getSQL() {
+        return new SQL([this]);
+      }
+    };
+    __name(fillPlaceholders, "fillPlaceholders");
+    IsDrizzleView = /* @__PURE__ */ Symbol.for("drizzle:IsDrizzleView");
+    View = class {
+      static {
+        __name(this, "View");
+      }
+      static [entityKind] = "View";
+      /** @internal */
+      [ViewBaseConfig];
+      /** @internal */
+      [IsDrizzleView] = true;
+      constructor({ name: name2, schema, selectedFields, query }) {
+        this[ViewBaseConfig] = {
+          name: name2,
+          originalName: name2,
+          schema,
+          selectedFields,
+          query,
+          isExisting: !query,
+          isAlias: false
+        };
+      }
+      getSQL() {
+        return new SQL([this]);
+      }
+    };
+    Column.prototype.getSQL = function() {
+      return new SQL([this]);
+    };
+    Table.prototype.getSQL = function() {
+      return new SQL([this]);
+    };
+    Subquery.prototype.getSQL = function() {
+      return new SQL([this]);
+    };
+  }
+});
+
+// node_modules/drizzle-orm/alias.js
+function aliasedTable(table, tableAlias) {
+  return new Proxy(table, new TableAliasProxyHandler(tableAlias, false));
+}
+function aliasedTableColumn(column, tableAlias) {
+  return new Proxy(
+    column,
+    new ColumnAliasProxyHandler(new Proxy(column.table, new TableAliasProxyHandler(tableAlias, false)))
+  );
+}
+function mapColumnsInAliasedSQLToAlias(query, alias2) {
+  return new SQL.Aliased(mapColumnsInSQLToAlias(query.sql, alias2), query.fieldAlias);
+}
+function mapColumnsInSQLToAlias(query, alias2) {
+  return sql.join(query.queryChunks.map((c) => {
+    if (is(c, Column)) {
+      return aliasedTableColumn(c, alias2);
+    }
+    if (is(c, SQL)) {
+      return mapColumnsInSQLToAlias(c, alias2);
+    }
+    if (is(c, SQL.Aliased)) {
+      return mapColumnsInAliasedSQLToAlias(c, alias2);
+    }
+    return c;
+  }));
+}
+var ColumnAliasProxyHandler, TableAliasProxyHandler, RelationTableAliasProxyHandler;
+var init_alias = __esm({
+  "node_modules/drizzle-orm/alias.js"() {
+    init_modules_watch_stub();
+    init_column();
+    init_entity();
+    init_sql();
+    init_table();
+    init_view_common();
+    ColumnAliasProxyHandler = class {
+      static {
+        __name(this, "ColumnAliasProxyHandler");
+      }
+      constructor(table) {
+        this.table = table;
+      }
+      static [entityKind] = "ColumnAliasProxyHandler";
+      get(columnObj, prop) {
+        if (prop === "table") {
+          return this.table;
+        }
+        return columnObj[prop];
+      }
+    };
+    TableAliasProxyHandler = class {
+      static {
+        __name(this, "TableAliasProxyHandler");
+      }
+      constructor(alias2, replaceOriginalName) {
+        this.alias = alias2;
+        this.replaceOriginalName = replaceOriginalName;
+      }
+      static [entityKind] = "TableAliasProxyHandler";
+      get(target, prop) {
+        if (prop === Table.Symbol.IsAlias) {
+          return true;
+        }
+        if (prop === Table.Symbol.Name) {
+          return this.alias;
+        }
+        if (this.replaceOriginalName && prop === Table.Symbol.OriginalName) {
+          return this.alias;
+        }
+        if (prop === ViewBaseConfig) {
+          return {
+            ...target[ViewBaseConfig],
+            name: this.alias,
+            isAlias: true
+          };
+        }
+        if (prop === Table.Symbol.Columns) {
+          const columns = target[Table.Symbol.Columns];
+          if (!columns) {
+            return columns;
+          }
+          const proxiedColumns = {};
+          Object.keys(columns).map((key) => {
+            proxiedColumns[key] = new Proxy(
+              columns[key],
+              new ColumnAliasProxyHandler(new Proxy(target, this))
+            );
+          });
+          return proxiedColumns;
+        }
+        const value = target[prop];
+        if (is(value, Column)) {
+          return new Proxy(value, new ColumnAliasProxyHandler(new Proxy(target, this)));
+        }
+        return value;
+      }
+    };
+    RelationTableAliasProxyHandler = class {
+      static {
+        __name(this, "RelationTableAliasProxyHandler");
+      }
+      constructor(alias2) {
+        this.alias = alias2;
+      }
+      static [entityKind] = "RelationTableAliasProxyHandler";
+      get(target, prop) {
+        if (prop === "sourceTable") {
+          return aliasedTable(target.sourceTable, this.alias);
+        }
+        return target[prop];
+      }
+    };
+    __name(aliasedTable, "aliasedTable");
+    __name(aliasedTableColumn, "aliasedTableColumn");
+    __name(mapColumnsInAliasedSQLToAlias, "mapColumnsInAliasedSQLToAlias");
+    __name(mapColumnsInSQLToAlias, "mapColumnsInSQLToAlias");
+  }
+});
+
+// node_modules/drizzle-orm/errors.js
+var DrizzleError, DrizzleQueryError, TransactionRollbackError;
+var init_errors = __esm({
+  "node_modules/drizzle-orm/errors.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    DrizzleError = class extends Error {
+      static {
+        __name(this, "DrizzleError");
+      }
+      static [entityKind] = "DrizzleError";
+      constructor({ message, cause }) {
+        super(message);
+        this.name = "DrizzleError";
+        this.cause = cause;
+      }
+    };
+    DrizzleQueryError = class _DrizzleQueryError extends Error {
+      static {
+        __name(this, "DrizzleQueryError");
+      }
+      constructor(query, params, cause) {
+        super(`Failed query: ${query}
+params: ${params}`);
+        this.query = query;
+        this.params = params;
+        this.cause = cause;
+        Error.captureStackTrace(this, _DrizzleQueryError);
+        if (cause) this.cause = cause;
+      }
+    };
+    TransactionRollbackError = class extends DrizzleError {
+      static {
+        __name(this, "TransactionRollbackError");
+      }
+      static [entityKind] = "TransactionRollbackError";
+      constructor() {
+        super({ message: "Rollback" });
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/query-promise.js
+var QueryPromise;
+var init_query_promise = __esm({
+  "node_modules/drizzle-orm/query-promise.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    QueryPromise = class {
+      static {
+        __name(this, "QueryPromise");
+      }
+      static [entityKind] = "QueryPromise";
+      [Symbol.toStringTag] = "QueryPromise";
+      catch(onRejected) {
+        return this.then(void 0, onRejected);
+      }
+      finally(onFinally) {
+        return this.then(
+          (value) => {
+            onFinally?.();
+            return value;
+          },
+          (reason) => {
+            onFinally?.();
+            throw reason;
+          }
+        );
+      }
+      then(onFulfilled, onRejected) {
+        return this.execute().then(onFulfilled, onRejected);
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/utils.js
+function mapResultRow(columns, row, joinsNotNullableMap) {
+  const nullifyMap = {};
+  const result = columns.reduce(
+    (result2, { path, field }, columnIndex) => {
+      let decoder;
+      if (is(field, Column)) {
+        decoder = field;
+      } else if (is(field, SQL)) {
+        decoder = field.decoder;
+      } else if (is(field, Subquery)) {
+        decoder = field._.sql.decoder;
+      } else {
+        decoder = field.sql.decoder;
+      }
+      let node2 = result2;
+      for (const [pathChunkIndex, pathChunk] of path.entries()) {
+        if (pathChunkIndex < path.length - 1) {
+          if (!(pathChunk in node2)) {
+            node2[pathChunk] = {};
+          }
+          node2 = node2[pathChunk];
+        } else {
+          const rawValue = row[columnIndex];
+          const value = node2[pathChunk] = rawValue === null ? null : decoder.mapFromDriverValue(rawValue);
+          if (joinsNotNullableMap && is(field, Column) && path.length === 2) {
+            const objectName = path[0];
+            if (!(objectName in nullifyMap)) {
+              nullifyMap[objectName] = value === null ? getTableName(field.table) : false;
+            } else if (typeof nullifyMap[objectName] === "string" && nullifyMap[objectName] !== getTableName(field.table)) {
+              nullifyMap[objectName] = false;
+            }
+          }
+        }
+      }
+      return result2;
+    },
+    {}
+  );
+  if (joinsNotNullableMap && Object.keys(nullifyMap).length > 0) {
+    for (const [objectName, tableName] of Object.entries(nullifyMap)) {
+      if (typeof tableName === "string" && !joinsNotNullableMap[tableName]) {
+        result[objectName] = null;
+      }
+    }
+  }
+  return result;
+}
+function orderSelectedFields(fields, pathPrefix) {
+  return Object.entries(fields).reduce((result, [name, field]) => {
+    if (typeof name !== "string") {
+      return result;
+    }
+    const newPath = pathPrefix ? [...pathPrefix, name] : [name];
+    if (is(field, Column) || is(field, SQL) || is(field, SQL.Aliased) || is(field, Subquery)) {
+      result.push({ path: newPath, field });
+    } else if (is(field, Table)) {
+      result.push(...orderSelectedFields(field[Table.Symbol.Columns], newPath));
+    } else {
+      result.push(...orderSelectedFields(field, newPath));
+    }
+    return result;
+  }, []);
+}
+function haveSameKeys(left, right) {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  if (leftKeys.length !== rightKeys.length) {
+    return false;
+  }
+  for (const [index2, key] of leftKeys.entries()) {
+    if (key !== rightKeys[index2]) {
+      return false;
+    }
+  }
+  return true;
+}
+function mapUpdateSet(table, values) {
+  const entries = Object.entries(values).filter(([, value]) => value !== void 0).map(([key, value]) => {
+    if (is(value, SQL) || is(value, Column)) {
+      return [key, value];
+    } else {
+      return [key, new Param(value, table[Table.Symbol.Columns][key])];
+    }
+  });
+  if (entries.length === 0) {
+    throw new Error("No values to set");
+  }
+  return Object.fromEntries(entries);
+}
+function applyMixins(baseClass, extendedClasses) {
+  for (const extendedClass of extendedClasses) {
+    for (const name of Object.getOwnPropertyNames(extendedClass.prototype)) {
+      if (name === "constructor") continue;
+      Object.defineProperty(
+        baseClass.prototype,
+        name,
+        Object.getOwnPropertyDescriptor(extendedClass.prototype, name) || /* @__PURE__ */ Object.create(null)
+      );
+    }
+  }
+}
+function getTableColumns(table) {
+  return table[Table.Symbol.Columns];
+}
+function getTableLikeName(table) {
+  return is(table, Subquery) ? table._.alias : is(table, View) ? table[ViewBaseConfig].name : is(table, SQL) ? void 0 : table[Table.Symbol.IsAlias] ? table[Table.Symbol.Name] : table[Table.Symbol.BaseName];
+}
+function getColumnNameAndConfig(a2, b2) {
+  return {
+    name: typeof a2 === "string" && a2.length > 0 ? a2 : "",
+    config: typeof a2 === "object" ? a2 : b2
+  };
+}
+function isConfig(data) {
+  if (typeof data !== "object" || data === null) return false;
+  if (data.constructor.name !== "Object") return false;
+  if ("logger" in data) {
+    const type = typeof data["logger"];
+    if (type !== "boolean" && (type !== "object" || typeof data["logger"]["logQuery"] !== "function") && type !== "undefined") return false;
+    return true;
+  }
+  if ("schema" in data) {
+    const type = typeof data["schema"];
+    if (type !== "object" && type !== "undefined") return false;
+    return true;
+  }
+  if ("casing" in data) {
+    const type = typeof data["casing"];
+    if (type !== "string" && type !== "undefined") return false;
+    return true;
+  }
+  if ("mode" in data) {
+    if (data["mode"] !== "default" || data["mode"] !== "planetscale" || data["mode"] !== void 0) return false;
+    return true;
+  }
+  if ("connection" in data) {
+    const type = typeof data["connection"];
+    if (type !== "string" && type !== "object" && type !== "undefined") return false;
+    return true;
+  }
+  if ("client" in data) {
+    const type = typeof data["client"];
+    if (type !== "object" && type !== "function" && type !== "undefined") return false;
+    return true;
+  }
+  if (Object.keys(data).length === 0) return true;
+  return false;
+}
+var textDecoder;
+var init_utils = __esm({
+  "node_modules/drizzle-orm/utils.js"() {
+    init_modules_watch_stub();
+    init_column();
+    init_entity();
+    init_sql();
+    init_subquery();
+    init_table();
+    init_view_common();
+    __name(mapResultRow, "mapResultRow");
+    __name(orderSelectedFields, "orderSelectedFields");
+    __name(haveSameKeys, "haveSameKeys");
+    __name(mapUpdateSet, "mapUpdateSet");
+    __name(applyMixins, "applyMixins");
+    __name(getTableColumns, "getTableColumns");
+    __name(getTableLikeName, "getTableLikeName");
+    __name(getColumnNameAndConfig, "getColumnNameAndConfig");
+    __name(isConfig, "isConfig");
+    textDecoder = typeof TextDecoder === "undefined" ? null : new TextDecoder();
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/int.common.js
+var PgIntColumnBaseBuilder;
+var init_int_common = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/int.common.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    PgIntColumnBaseBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgIntColumnBaseBuilder");
+      }
+      static [entityKind] = "PgIntColumnBaseBuilder";
+      generatedAlwaysAsIdentity(sequence) {
+        if (sequence) {
+          const { name, ...options } = sequence;
+          this.config.generatedIdentity = {
+            type: "always",
+            sequenceName: name,
+            sequenceOptions: options
+          };
+        } else {
+          this.config.generatedIdentity = {
+            type: "always"
+          };
+        }
+        this.config.hasDefault = true;
+        this.config.notNull = true;
+        return this;
+      }
+      generatedByDefaultAsIdentity(sequence) {
+        if (sequence) {
+          const { name, ...options } = sequence;
+          this.config.generatedIdentity = {
+            type: "byDefault",
+            sequenceName: name,
+            sequenceOptions: options
+          };
+        } else {
+          this.config.generatedIdentity = {
+            type: "byDefault"
+          };
+        }
+        this.config.hasDefault = true;
+        this.config.notNull = true;
+        return this;
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/bigint.js
+function bigint(a2, b2) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  if (config2.mode === "number") {
+    return new PgBigInt53Builder(name);
+  }
+  return new PgBigInt64Builder(name);
+}
+var PgBigInt53Builder, PgBigInt53, PgBigInt64Builder, PgBigInt64;
+var init_bigint = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/bigint.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    init_int_common();
+    PgBigInt53Builder = class extends PgIntColumnBaseBuilder {
+      static {
+        __name(this, "PgBigInt53Builder");
+      }
+      static [entityKind] = "PgBigInt53Builder";
+      constructor(name) {
+        super(name, "number", "PgBigInt53");
+      }
+      /** @internal */
+      build(table) {
+        return new PgBigInt53(table, this.config);
+      }
+    };
+    PgBigInt53 = class extends PgColumn {
+      static {
+        __name(this, "PgBigInt53");
+      }
+      static [entityKind] = "PgBigInt53";
+      getSQLType() {
+        return "bigint";
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "number") {
+          return value;
+        }
+        return Number(value);
+      }
+    };
+    PgBigInt64Builder = class extends PgIntColumnBaseBuilder {
+      static {
+        __name(this, "PgBigInt64Builder");
+      }
+      static [entityKind] = "PgBigInt64Builder";
+      constructor(name) {
+        super(name, "bigint", "PgBigInt64");
+      }
+      /** @internal */
+      build(table) {
+        return new PgBigInt64(
+          table,
+          this.config
+        );
+      }
+    };
+    PgBigInt64 = class extends PgColumn {
+      static {
+        __name(this, "PgBigInt64");
+      }
+      static [entityKind] = "PgBigInt64";
+      getSQLType() {
+        return "bigint";
+      }
+      // eslint-disable-next-line unicorn/prefer-native-coercion-functions
+      mapFromDriverValue(value) {
+        return BigInt(value);
+      }
+    };
+    __name(bigint, "bigint");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/bigserial.js
+function bigserial(a2, b2) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  if (config2.mode === "number") {
+    return new PgBigSerial53Builder(name);
+  }
+  return new PgBigSerial64Builder(name);
+}
+var PgBigSerial53Builder, PgBigSerial53, PgBigSerial64Builder, PgBigSerial64;
+var init_bigserial = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/bigserial.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    PgBigSerial53Builder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgBigSerial53Builder");
+      }
+      static [entityKind] = "PgBigSerial53Builder";
+      constructor(name) {
+        super(name, "number", "PgBigSerial53");
+        this.config.hasDefault = true;
+        this.config.notNull = true;
+      }
+      /** @internal */
+      build(table) {
+        return new PgBigSerial53(
+          table,
+          this.config
+        );
+      }
+    };
+    PgBigSerial53 = class extends PgColumn {
+      static {
+        __name(this, "PgBigSerial53");
+      }
+      static [entityKind] = "PgBigSerial53";
+      getSQLType() {
+        return "bigserial";
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "number") {
+          return value;
+        }
+        return Number(value);
+      }
+    };
+    PgBigSerial64Builder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgBigSerial64Builder");
+      }
+      static [entityKind] = "PgBigSerial64Builder";
+      constructor(name) {
+        super(name, "bigint", "PgBigSerial64");
+        this.config.hasDefault = true;
+      }
+      /** @internal */
+      build(table) {
+        return new PgBigSerial64(
+          table,
+          this.config
+        );
+      }
+    };
+    PgBigSerial64 = class extends PgColumn {
+      static {
+        __name(this, "PgBigSerial64");
+      }
+      static [entityKind] = "PgBigSerial64";
+      getSQLType() {
+        return "bigserial";
+      }
+      // eslint-disable-next-line unicorn/prefer-native-coercion-functions
+      mapFromDriverValue(value) {
+        return BigInt(value);
+      }
+    };
+    __name(bigserial, "bigserial");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/boolean.js
+function boolean(name) {
+  return new PgBooleanBuilder(name ?? "");
+}
+var PgBooleanBuilder, PgBoolean;
+var init_boolean = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/boolean.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    PgBooleanBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgBooleanBuilder");
+      }
+      static [entityKind] = "PgBooleanBuilder";
+      constructor(name) {
+        super(name, "boolean", "PgBoolean");
+      }
+      /** @internal */
+      build(table) {
+        return new PgBoolean(table, this.config);
+      }
+    };
+    PgBoolean = class extends PgColumn {
+      static {
+        __name(this, "PgBoolean");
+      }
+      static [entityKind] = "PgBoolean";
+      getSQLType() {
+        return "boolean";
+      }
+    };
+    __name(boolean, "boolean");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/char.js
+function char(a2, b2 = {}) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  return new PgCharBuilder(name, config2);
+}
+var PgCharBuilder, PgChar;
+var init_char = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/char.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    PgCharBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgCharBuilder");
+      }
+      static [entityKind] = "PgCharBuilder";
+      constructor(name, config2) {
+        super(name, "string", "PgChar");
+        this.config.length = config2.length;
+        this.config.enumValues = config2.enum;
+      }
+      /** @internal */
+      build(table) {
+        return new PgChar(
+          table,
+          this.config
+        );
+      }
+    };
+    PgChar = class extends PgColumn {
+      static {
+        __name(this, "PgChar");
+      }
+      static [entityKind] = "PgChar";
+      length = this.config.length;
+      enumValues = this.config.enumValues;
+      getSQLType() {
+        return this.length === void 0 ? `char` : `char(${this.length})`;
+      }
+    };
+    __name(char, "char");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/cidr.js
+function cidr(name) {
+  return new PgCidrBuilder(name ?? "");
+}
+var PgCidrBuilder, PgCidr;
+var init_cidr = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/cidr.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    PgCidrBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgCidrBuilder");
+      }
+      static [entityKind] = "PgCidrBuilder";
+      constructor(name) {
+        super(name, "string", "PgCidr");
+      }
+      /** @internal */
+      build(table) {
+        return new PgCidr(table, this.config);
+      }
+    };
+    PgCidr = class extends PgColumn {
+      static {
+        __name(this, "PgCidr");
+      }
+      static [entityKind] = "PgCidr";
+      getSQLType() {
+        return "cidr";
+      }
+    };
+    __name(cidr, "cidr");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/custom.js
+function customType(customTypeParams) {
+  return (a2, b2) => {
+    const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+    return new PgCustomColumnBuilder(name, config2, customTypeParams);
+  };
+}
+var PgCustomColumnBuilder, PgCustomColumn;
+var init_custom = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/custom.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    PgCustomColumnBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgCustomColumnBuilder");
+      }
+      static [entityKind] = "PgCustomColumnBuilder";
+      constructor(name, fieldConfig, customTypeParams) {
+        super(name, "custom", "PgCustomColumn");
+        this.config.fieldConfig = fieldConfig;
+        this.config.customTypeParams = customTypeParams;
+      }
+      /** @internal */
+      build(table) {
+        return new PgCustomColumn(
+          table,
+          this.config
+        );
+      }
+    };
+    PgCustomColumn = class extends PgColumn {
+      static {
+        __name(this, "PgCustomColumn");
+      }
+      static [entityKind] = "PgCustomColumn";
+      sqlName;
+      mapTo;
+      mapFrom;
+      constructor(table, config2) {
+        super(table, config2);
+        this.sqlName = config2.customTypeParams.dataType(config2.fieldConfig);
+        this.mapTo = config2.customTypeParams.toDriver;
+        this.mapFrom = config2.customTypeParams.fromDriver;
+      }
+      getSQLType() {
+        return this.sqlName;
+      }
+      mapFromDriverValue(value) {
+        return typeof this.mapFrom === "function" ? this.mapFrom(value) : value;
+      }
+      mapToDriverValue(value) {
+        return typeof this.mapTo === "function" ? this.mapTo(value) : value;
+      }
+    };
+    __name(customType, "customType");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/date.common.js
+var PgDateColumnBaseBuilder;
+var init_date_common = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/date.common.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_sql();
+    init_common();
+    PgDateColumnBaseBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgDateColumnBaseBuilder");
+      }
+      static [entityKind] = "PgDateColumnBaseBuilder";
+      defaultNow() {
+        return this.default(sql`now()`);
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/date.js
+function date(a2, b2) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  if (config2?.mode === "date") {
+    return new PgDateBuilder(name);
+  }
+  return new PgDateStringBuilder(name);
+}
+var PgDateBuilder, PgDate, PgDateStringBuilder, PgDateString;
+var init_date = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/date.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    init_date_common();
+    PgDateBuilder = class extends PgDateColumnBaseBuilder {
+      static {
+        __name(this, "PgDateBuilder");
+      }
+      static [entityKind] = "PgDateBuilder";
+      constructor(name) {
+        super(name, "date", "PgDate");
+      }
+      /** @internal */
+      build(table) {
+        return new PgDate(table, this.config);
+      }
+    };
+    PgDate = class extends PgColumn {
+      static {
+        __name(this, "PgDate");
+      }
+      static [entityKind] = "PgDate";
+      getSQLType() {
+        return "date";
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "string") return new Date(value);
+        return value;
+      }
+      mapToDriverValue(value) {
+        return value.toISOString();
+      }
+    };
+    PgDateStringBuilder = class extends PgDateColumnBaseBuilder {
+      static {
+        __name(this, "PgDateStringBuilder");
+      }
+      static [entityKind] = "PgDateStringBuilder";
+      constructor(name) {
+        super(name, "string", "PgDateString");
+      }
+      /** @internal */
+      build(table) {
+        return new PgDateString(
+          table,
+          this.config
+        );
+      }
+    };
+    PgDateString = class extends PgColumn {
+      static {
+        __name(this, "PgDateString");
+      }
+      static [entityKind] = "PgDateString";
+      getSQLType() {
+        return "date";
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "string") return value;
+        return value.toISOString().slice(0, -14);
+      }
+    };
+    __name(date, "date");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/double-precision.js
+function doublePrecision(name) {
+  return new PgDoublePrecisionBuilder(name ?? "");
+}
+var PgDoublePrecisionBuilder, PgDoublePrecision;
+var init_double_precision = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/double-precision.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    PgDoublePrecisionBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgDoublePrecisionBuilder");
+      }
+      static [entityKind] = "PgDoublePrecisionBuilder";
+      constructor(name) {
+        super(name, "number", "PgDoublePrecision");
+      }
+      /** @internal */
+      build(table) {
+        return new PgDoublePrecision(
+          table,
+          this.config
+        );
+      }
+    };
+    PgDoublePrecision = class extends PgColumn {
+      static {
+        __name(this, "PgDoublePrecision");
+      }
+      static [entityKind] = "PgDoublePrecision";
+      getSQLType() {
+        return "double precision";
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "string") {
+          return Number.parseFloat(value);
+        }
+        return value;
+      }
+    };
+    __name(doublePrecision, "doublePrecision");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/inet.js
+function inet(name) {
+  return new PgInetBuilder(name ?? "");
+}
+var PgInetBuilder, PgInet;
+var init_inet = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/inet.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    PgInetBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgInetBuilder");
+      }
+      static [entityKind] = "PgInetBuilder";
+      constructor(name) {
+        super(name, "string", "PgInet");
+      }
+      /** @internal */
+      build(table) {
+        return new PgInet(table, this.config);
+      }
+    };
+    PgInet = class extends PgColumn {
+      static {
+        __name(this, "PgInet");
+      }
+      static [entityKind] = "PgInet";
+      getSQLType() {
+        return "inet";
+      }
+    };
+    __name(inet, "inet");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/integer.js
+function integer(name) {
+  return new PgIntegerBuilder(name ?? "");
+}
+var PgIntegerBuilder, PgInteger;
+var init_integer = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/integer.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    init_int_common();
+    PgIntegerBuilder = class extends PgIntColumnBaseBuilder {
+      static {
+        __name(this, "PgIntegerBuilder");
+      }
+      static [entityKind] = "PgIntegerBuilder";
+      constructor(name) {
+        super(name, "number", "PgInteger");
+      }
+      /** @internal */
+      build(table) {
+        return new PgInteger(table, this.config);
+      }
+    };
+    PgInteger = class extends PgColumn {
+      static {
+        __name(this, "PgInteger");
+      }
+      static [entityKind] = "PgInteger";
+      getSQLType() {
+        return "integer";
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "string") {
+          return Number.parseInt(value);
+        }
+        return value;
+      }
+    };
+    __name(integer, "integer");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/interval.js
+function interval(a2, b2 = {}) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  return new PgIntervalBuilder(name, config2);
+}
+var PgIntervalBuilder, PgInterval;
+var init_interval = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/interval.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    PgIntervalBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgIntervalBuilder");
+      }
+      static [entityKind] = "PgIntervalBuilder";
+      constructor(name, intervalConfig) {
+        super(name, "string", "PgInterval");
+        this.config.intervalConfig = intervalConfig;
+      }
+      /** @internal */
+      build(table) {
+        return new PgInterval(table, this.config);
+      }
+    };
+    PgInterval = class extends PgColumn {
+      static {
+        __name(this, "PgInterval");
+      }
+      static [entityKind] = "PgInterval";
+      fields = this.config.intervalConfig.fields;
+      precision = this.config.intervalConfig.precision;
+      getSQLType() {
+        const fields = this.fields ? ` ${this.fields}` : "";
+        const precision = this.precision ? `(${this.precision})` : "";
+        return `interval${fields}${precision}`;
+      }
+    };
+    __name(interval, "interval");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/json.js
+function json(name) {
+  return new PgJsonBuilder(name ?? "");
+}
+var PgJsonBuilder, PgJson;
+var init_json = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/json.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    PgJsonBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgJsonBuilder");
+      }
+      static [entityKind] = "PgJsonBuilder";
+      constructor(name) {
+        super(name, "json", "PgJson");
+      }
+      /** @internal */
+      build(table) {
+        return new PgJson(table, this.config);
+      }
+    };
+    PgJson = class extends PgColumn {
+      static {
+        __name(this, "PgJson");
+      }
+      static [entityKind] = "PgJson";
+      constructor(table, config2) {
+        super(table, config2);
+      }
+      getSQLType() {
+        return "json";
+      }
+      mapToDriverValue(value) {
+        return JSON.stringify(value);
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "string") {
+          try {
+            return JSON.parse(value);
+          } catch {
+            return value;
+          }
+        }
+        return value;
+      }
+    };
+    __name(json, "json");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/jsonb.js
+function jsonb(name) {
+  return new PgJsonbBuilder(name ?? "");
+}
+var PgJsonbBuilder, PgJsonb;
+var init_jsonb = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/jsonb.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    PgJsonbBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgJsonbBuilder");
+      }
+      static [entityKind] = "PgJsonbBuilder";
+      constructor(name) {
+        super(name, "json", "PgJsonb");
+      }
+      /** @internal */
+      build(table) {
+        return new PgJsonb(table, this.config);
+      }
+    };
+    PgJsonb = class extends PgColumn {
+      static {
+        __name(this, "PgJsonb");
+      }
+      static [entityKind] = "PgJsonb";
+      constructor(table, config2) {
+        super(table, config2);
+      }
+      getSQLType() {
+        return "jsonb";
+      }
+      mapToDriverValue(value) {
+        return JSON.stringify(value);
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "string") {
+          try {
+            return JSON.parse(value);
+          } catch {
+            return value;
+          }
+        }
+        return value;
+      }
+    };
+    __name(jsonb, "jsonb");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/line.js
+function line(a2, b2) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  if (!config2?.mode || config2.mode === "tuple") {
+    return new PgLineBuilder(name);
+  }
+  return new PgLineABCBuilder(name);
+}
+var PgLineBuilder, PgLineTuple, PgLineABCBuilder, PgLineABC;
+var init_line = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/line.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    PgLineBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgLineBuilder");
+      }
+      static [entityKind] = "PgLineBuilder";
+      constructor(name) {
+        super(name, "array", "PgLine");
+      }
+      /** @internal */
+      build(table) {
+        return new PgLineTuple(
+          table,
+          this.config
+        );
+      }
+    };
+    PgLineTuple = class extends PgColumn {
+      static {
+        __name(this, "PgLineTuple");
+      }
+      static [entityKind] = "PgLine";
+      getSQLType() {
+        return "line";
+      }
+      mapFromDriverValue(value) {
+        const [a2, b2, c] = value.slice(1, -1).split(",");
+        return [Number.parseFloat(a2), Number.parseFloat(b2), Number.parseFloat(c)];
+      }
+      mapToDriverValue(value) {
+        return `{${value[0]},${value[1]},${value[2]}}`;
+      }
+    };
+    PgLineABCBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgLineABCBuilder");
+      }
+      static [entityKind] = "PgLineABCBuilder";
+      constructor(name) {
+        super(name, "json", "PgLineABC");
+      }
+      /** @internal */
+      build(table) {
+        return new PgLineABC(
+          table,
+          this.config
+        );
+      }
+    };
+    PgLineABC = class extends PgColumn {
+      static {
+        __name(this, "PgLineABC");
+      }
+      static [entityKind] = "PgLineABC";
+      getSQLType() {
+        return "line";
+      }
+      mapFromDriverValue(value) {
+        const [a2, b2, c] = value.slice(1, -1).split(",");
+        return { a: Number.parseFloat(a2), b: Number.parseFloat(b2), c: Number.parseFloat(c) };
+      }
+      mapToDriverValue(value) {
+        return `{${value.a},${value.b},${value.c}}`;
+      }
+    };
+    __name(line, "line");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/macaddr.js
+function macaddr(name) {
+  return new PgMacaddrBuilder(name ?? "");
+}
+var PgMacaddrBuilder, PgMacaddr;
+var init_macaddr = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/macaddr.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    PgMacaddrBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgMacaddrBuilder");
+      }
+      static [entityKind] = "PgMacaddrBuilder";
+      constructor(name) {
+        super(name, "string", "PgMacaddr");
+      }
+      /** @internal */
+      build(table) {
+        return new PgMacaddr(table, this.config);
+      }
+    };
+    PgMacaddr = class extends PgColumn {
+      static {
+        __name(this, "PgMacaddr");
+      }
+      static [entityKind] = "PgMacaddr";
+      getSQLType() {
+        return "macaddr";
+      }
+    };
+    __name(macaddr, "macaddr");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/macaddr8.js
+function macaddr8(name) {
+  return new PgMacaddr8Builder(name ?? "");
+}
+var PgMacaddr8Builder, PgMacaddr8;
+var init_macaddr8 = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/macaddr8.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    PgMacaddr8Builder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgMacaddr8Builder");
+      }
+      static [entityKind] = "PgMacaddr8Builder";
+      constructor(name) {
+        super(name, "string", "PgMacaddr8");
+      }
+      /** @internal */
+      build(table) {
+        return new PgMacaddr8(table, this.config);
+      }
+    };
+    PgMacaddr8 = class extends PgColumn {
+      static {
+        __name(this, "PgMacaddr8");
+      }
+      static [entityKind] = "PgMacaddr8";
+      getSQLType() {
+        return "macaddr8";
+      }
+    };
+    __name(macaddr8, "macaddr8");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/numeric.js
+function numeric(a2, b2) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  const mode = config2?.mode;
+  return mode === "number" ? new PgNumericNumberBuilder(name, config2?.precision, config2?.scale) : mode === "bigint" ? new PgNumericBigIntBuilder(name, config2?.precision, config2?.scale) : new PgNumericBuilder(name, config2?.precision, config2?.scale);
+}
+var PgNumericBuilder, PgNumeric, PgNumericNumberBuilder, PgNumericNumber, PgNumericBigIntBuilder, PgNumericBigInt, decimal;
+var init_numeric = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/numeric.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    PgNumericBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgNumericBuilder");
+      }
+      static [entityKind] = "PgNumericBuilder";
+      constructor(name, precision, scale) {
+        super(name, "string", "PgNumeric");
+        this.config.precision = precision;
+        this.config.scale = scale;
+      }
+      /** @internal */
+      build(table) {
+        return new PgNumeric(table, this.config);
+      }
+    };
+    PgNumeric = class extends PgColumn {
+      static {
+        __name(this, "PgNumeric");
+      }
+      static [entityKind] = "PgNumeric";
+      precision;
+      scale;
+      constructor(table, config2) {
+        super(table, config2);
+        this.precision = config2.precision;
+        this.scale = config2.scale;
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "string") return value;
+        return String(value);
+      }
+      getSQLType() {
+        if (this.precision !== void 0 && this.scale !== void 0) {
+          return `numeric(${this.precision}, ${this.scale})`;
+        } else if (this.precision === void 0) {
+          return "numeric";
+        } else {
+          return `numeric(${this.precision})`;
+        }
+      }
+    };
+    PgNumericNumberBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgNumericNumberBuilder");
+      }
+      static [entityKind] = "PgNumericNumberBuilder";
+      constructor(name, precision, scale) {
+        super(name, "number", "PgNumericNumber");
+        this.config.precision = precision;
+        this.config.scale = scale;
+      }
+      /** @internal */
+      build(table) {
+        return new PgNumericNumber(
+          table,
+          this.config
+        );
+      }
+    };
+    PgNumericNumber = class extends PgColumn {
+      static {
+        __name(this, "PgNumericNumber");
+      }
+      static [entityKind] = "PgNumericNumber";
+      precision;
+      scale;
+      constructor(table, config2) {
+        super(table, config2);
+        this.precision = config2.precision;
+        this.scale = config2.scale;
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "number") return value;
+        return Number(value);
+      }
+      mapToDriverValue = String;
+      getSQLType() {
+        if (this.precision !== void 0 && this.scale !== void 0) {
+          return `numeric(${this.precision}, ${this.scale})`;
+        } else if (this.precision === void 0) {
+          return "numeric";
+        } else {
+          return `numeric(${this.precision})`;
+        }
+      }
+    };
+    PgNumericBigIntBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgNumericBigIntBuilder");
+      }
+      static [entityKind] = "PgNumericBigIntBuilder";
+      constructor(name, precision, scale) {
+        super(name, "bigint", "PgNumericBigInt");
+        this.config.precision = precision;
+        this.config.scale = scale;
+      }
+      /** @internal */
+      build(table) {
+        return new PgNumericBigInt(
+          table,
+          this.config
+        );
+      }
+    };
+    PgNumericBigInt = class extends PgColumn {
+      static {
+        __name(this, "PgNumericBigInt");
+      }
+      static [entityKind] = "PgNumericBigInt";
+      precision;
+      scale;
+      constructor(table, config2) {
+        super(table, config2);
+        this.precision = config2.precision;
+        this.scale = config2.scale;
+      }
+      mapFromDriverValue = BigInt;
+      mapToDriverValue = String;
+      getSQLType() {
+        if (this.precision !== void 0 && this.scale !== void 0) {
+          return `numeric(${this.precision}, ${this.scale})`;
+        } else if (this.precision === void 0) {
+          return "numeric";
+        } else {
+          return `numeric(${this.precision})`;
+        }
+      }
+    };
+    __name(numeric, "numeric");
+    decimal = numeric;
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/point.js
+function point(a2, b2) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  if (!config2?.mode || config2.mode === "tuple") {
+    return new PgPointTupleBuilder(name);
+  }
+  return new PgPointObjectBuilder(name);
+}
+var PgPointTupleBuilder, PgPointTuple, PgPointObjectBuilder, PgPointObject;
+var init_point = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/point.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    PgPointTupleBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgPointTupleBuilder");
+      }
+      static [entityKind] = "PgPointTupleBuilder";
+      constructor(name) {
+        super(name, "array", "PgPointTuple");
+      }
+      /** @internal */
+      build(table) {
+        return new PgPointTuple(
+          table,
+          this.config
+        );
+      }
+    };
+    PgPointTuple = class extends PgColumn {
+      static {
+        __name(this, "PgPointTuple");
+      }
+      static [entityKind] = "PgPointTuple";
+      getSQLType() {
+        return "point";
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "string") {
+          const [x2, y] = value.slice(1, -1).split(",");
+          return [Number.parseFloat(x2), Number.parseFloat(y)];
+        }
+        return [value.x, value.y];
+      }
+      mapToDriverValue(value) {
+        return `(${value[0]},${value[1]})`;
+      }
+    };
+    PgPointObjectBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgPointObjectBuilder");
+      }
+      static [entityKind] = "PgPointObjectBuilder";
+      constructor(name) {
+        super(name, "json", "PgPointObject");
+      }
+      /** @internal */
+      build(table) {
+        return new PgPointObject(
+          table,
+          this.config
+        );
+      }
+    };
+    PgPointObject = class extends PgColumn {
+      static {
+        __name(this, "PgPointObject");
+      }
+      static [entityKind] = "PgPointObject";
+      getSQLType() {
+        return "point";
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "string") {
+          const [x2, y] = value.slice(1, -1).split(",");
+          return { x: Number.parseFloat(x2), y: Number.parseFloat(y) };
+        }
+        return value;
+      }
+      mapToDriverValue(value) {
+        return `(${value.x},${value.y})`;
+      }
+    };
+    __name(point, "point");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/postgis_extension/utils.js
+function hexToBytes(hex3) {
+  const bytes = [];
+  for (let c = 0; c < hex3.length; c += 2) {
+    bytes.push(Number.parseInt(hex3.slice(c, c + 2), 16));
+  }
+  return new Uint8Array(bytes);
+}
+function bytesToFloat64(bytes, offset) {
+  const buffer = new ArrayBuffer(8);
+  const view = new DataView(buffer);
+  for (let i = 0; i < 8; i++) {
+    view.setUint8(i, bytes[offset + i]);
+  }
+  return view.getFloat64(0, true);
+}
+function parseEWKB(hex3) {
+  const bytes = hexToBytes(hex3);
+  let offset = 0;
+  const byteOrder = bytes[offset];
+  offset += 1;
+  const view = new DataView(bytes.buffer);
+  const geomType = view.getUint32(offset, byteOrder === 1);
+  offset += 4;
+  let _srid;
+  if (geomType & 536870912) {
+    _srid = view.getUint32(offset, byteOrder === 1);
+    offset += 4;
+  }
+  if ((geomType & 65535) === 1) {
+    const x2 = bytesToFloat64(bytes, offset);
+    offset += 8;
+    const y = bytesToFloat64(bytes, offset);
+    offset += 8;
+    return [x2, y];
+  }
+  throw new Error("Unsupported geometry type");
+}
+var init_utils2 = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/postgis_extension/utils.js"() {
+    init_modules_watch_stub();
+    __name(hexToBytes, "hexToBytes");
+    __name(bytesToFloat64, "bytesToFloat64");
+    __name(parseEWKB, "parseEWKB");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/postgis_extension/geometry.js
+function geometry(a2, b2) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  if (!config2?.mode || config2.mode === "tuple") {
+    return new PgGeometryBuilder(name);
+  }
+  return new PgGeometryObjectBuilder(name);
+}
+var PgGeometryBuilder, PgGeometry, PgGeometryObjectBuilder, PgGeometryObject;
+var init_geometry = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/postgis_extension/geometry.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    init_utils2();
+    PgGeometryBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgGeometryBuilder");
+      }
+      static [entityKind] = "PgGeometryBuilder";
+      constructor(name) {
+        super(name, "array", "PgGeometry");
+      }
+      /** @internal */
+      build(table) {
+        return new PgGeometry(
+          table,
+          this.config
+        );
+      }
+    };
+    PgGeometry = class extends PgColumn {
+      static {
+        __name(this, "PgGeometry");
+      }
+      static [entityKind] = "PgGeometry";
+      getSQLType() {
+        return "geometry(point)";
+      }
+      mapFromDriverValue(value) {
+        return parseEWKB(value);
+      }
+      mapToDriverValue(value) {
+        return `point(${value[0]} ${value[1]})`;
+      }
+    };
+    PgGeometryObjectBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgGeometryObjectBuilder");
+      }
+      static [entityKind] = "PgGeometryObjectBuilder";
+      constructor(name) {
+        super(name, "json", "PgGeometryObject");
+      }
+      /** @internal */
+      build(table) {
+        return new PgGeometryObject(
+          table,
+          this.config
+        );
+      }
+    };
+    PgGeometryObject = class extends PgColumn {
+      static {
+        __name(this, "PgGeometryObject");
+      }
+      static [entityKind] = "PgGeometryObject";
+      getSQLType() {
+        return "geometry(point)";
+      }
+      mapFromDriverValue(value) {
+        const parsed = parseEWKB(value);
+        return { x: parsed[0], y: parsed[1] };
+      }
+      mapToDriverValue(value) {
+        return `point(${value.x} ${value.y})`;
+      }
+    };
+    __name(geometry, "geometry");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/real.js
+function real(name) {
+  return new PgRealBuilder(name ?? "");
+}
+var PgRealBuilder, PgReal;
+var init_real = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/real.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    PgRealBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgRealBuilder");
+      }
+      static [entityKind] = "PgRealBuilder";
+      constructor(name, length) {
+        super(name, "number", "PgReal");
+        this.config.length = length;
+      }
+      /** @internal */
+      build(table) {
+        return new PgReal(table, this.config);
+      }
+    };
+    PgReal = class extends PgColumn {
+      static {
+        __name(this, "PgReal");
+      }
+      static [entityKind] = "PgReal";
+      constructor(table, config2) {
+        super(table, config2);
+      }
+      getSQLType() {
+        return "real";
+      }
+      mapFromDriverValue = /* @__PURE__ */ __name((value) => {
+        if (typeof value === "string") {
+          return Number.parseFloat(value);
+        }
+        return value;
+      }, "mapFromDriverValue");
+    };
+    __name(real, "real");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/serial.js
+function serial(name) {
+  return new PgSerialBuilder(name ?? "");
+}
+var PgSerialBuilder, PgSerial;
+var init_serial = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/serial.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    PgSerialBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgSerialBuilder");
+      }
+      static [entityKind] = "PgSerialBuilder";
+      constructor(name) {
+        super(name, "number", "PgSerial");
+        this.config.hasDefault = true;
+        this.config.notNull = true;
+      }
+      /** @internal */
+      build(table) {
+        return new PgSerial(table, this.config);
+      }
+    };
+    PgSerial = class extends PgColumn {
+      static {
+        __name(this, "PgSerial");
+      }
+      static [entityKind] = "PgSerial";
+      getSQLType() {
+        return "serial";
+      }
+    };
+    __name(serial, "serial");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/smallint.js
+function smallint(name) {
+  return new PgSmallIntBuilder(name ?? "");
+}
+var PgSmallIntBuilder, PgSmallInt;
+var init_smallint = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/smallint.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    init_int_common();
+    PgSmallIntBuilder = class extends PgIntColumnBaseBuilder {
+      static {
+        __name(this, "PgSmallIntBuilder");
+      }
+      static [entityKind] = "PgSmallIntBuilder";
+      constructor(name) {
+        super(name, "number", "PgSmallInt");
+      }
+      /** @internal */
+      build(table) {
+        return new PgSmallInt(table, this.config);
+      }
+    };
+    PgSmallInt = class extends PgColumn {
+      static {
+        __name(this, "PgSmallInt");
+      }
+      static [entityKind] = "PgSmallInt";
+      getSQLType() {
+        return "smallint";
+      }
+      mapFromDriverValue = /* @__PURE__ */ __name((value) => {
+        if (typeof value === "string") {
+          return Number(value);
+        }
+        return value;
+      }, "mapFromDriverValue");
+    };
+    __name(smallint, "smallint");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/smallserial.js
+function smallserial(name) {
+  return new PgSmallSerialBuilder(name ?? "");
+}
+var PgSmallSerialBuilder, PgSmallSerial;
+var init_smallserial = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/smallserial.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_common();
+    PgSmallSerialBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgSmallSerialBuilder");
+      }
+      static [entityKind] = "PgSmallSerialBuilder";
+      constructor(name) {
+        super(name, "number", "PgSmallSerial");
+        this.config.hasDefault = true;
+        this.config.notNull = true;
+      }
+      /** @internal */
+      build(table) {
+        return new PgSmallSerial(
+          table,
+          this.config
+        );
+      }
+    };
+    PgSmallSerial = class extends PgColumn {
+      static {
+        __name(this, "PgSmallSerial");
+      }
+      static [entityKind] = "PgSmallSerial";
+      getSQLType() {
+        return "smallserial";
+      }
+    };
+    __name(smallserial, "smallserial");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/text.js
+function text(a2, b2 = {}) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  return new PgTextBuilder(name, config2);
+}
+var PgTextBuilder, PgText;
+var init_text = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/text.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    PgTextBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgTextBuilder");
+      }
+      static [entityKind] = "PgTextBuilder";
+      constructor(name, config2) {
+        super(name, "string", "PgText");
+        this.config.enumValues = config2.enum;
+      }
+      /** @internal */
+      build(table) {
+        return new PgText(table, this.config);
+      }
+    };
+    PgText = class extends PgColumn {
+      static {
+        __name(this, "PgText");
+      }
+      static [entityKind] = "PgText";
+      enumValues = this.config.enumValues;
+      getSQLType() {
+        return "text";
+      }
+    };
+    __name(text, "text");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/time.js
+function time2(a2, b2 = {}) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  return new PgTimeBuilder(name, config2.withTimezone ?? false, config2.precision);
+}
+var PgTimeBuilder, PgTime;
+var init_time = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/time.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    init_date_common();
+    PgTimeBuilder = class extends PgDateColumnBaseBuilder {
+      static {
+        __name(this, "PgTimeBuilder");
+      }
+      constructor(name, withTimezone, precision) {
+        super(name, "string", "PgTime");
+        this.withTimezone = withTimezone;
+        this.precision = precision;
+        this.config.withTimezone = withTimezone;
+        this.config.precision = precision;
+      }
+      static [entityKind] = "PgTimeBuilder";
+      /** @internal */
+      build(table) {
+        return new PgTime(table, this.config);
+      }
+    };
+    PgTime = class extends PgColumn {
+      static {
+        __name(this, "PgTime");
+      }
+      static [entityKind] = "PgTime";
+      withTimezone;
+      precision;
+      constructor(table, config2) {
+        super(table, config2);
+        this.withTimezone = config2.withTimezone;
+        this.precision = config2.precision;
+      }
+      getSQLType() {
+        const precision = this.precision === void 0 ? "" : `(${this.precision})`;
+        return `time${precision}${this.withTimezone ? " with time zone" : ""}`;
+      }
+    };
+    __name(time2, "time");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/timestamp.js
+function timestamp(a2, b2 = {}) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  if (config2?.mode === "string") {
+    return new PgTimestampStringBuilder(name, config2.withTimezone ?? false, config2.precision);
+  }
+  return new PgTimestampBuilder(name, config2?.withTimezone ?? false, config2?.precision);
+}
+var PgTimestampBuilder, PgTimestamp, PgTimestampStringBuilder, PgTimestampString;
+var init_timestamp = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/timestamp.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    init_date_common();
+    PgTimestampBuilder = class extends PgDateColumnBaseBuilder {
+      static {
+        __name(this, "PgTimestampBuilder");
+      }
+      static [entityKind] = "PgTimestampBuilder";
+      constructor(name, withTimezone, precision) {
+        super(name, "date", "PgTimestamp");
+        this.config.withTimezone = withTimezone;
+        this.config.precision = precision;
+      }
+      /** @internal */
+      build(table) {
+        return new PgTimestamp(table, this.config);
+      }
+    };
+    PgTimestamp = class extends PgColumn {
+      static {
+        __name(this, "PgTimestamp");
+      }
+      static [entityKind] = "PgTimestamp";
+      withTimezone;
+      precision;
+      constructor(table, config2) {
+        super(table, config2);
+        this.withTimezone = config2.withTimezone;
+        this.precision = config2.precision;
+      }
+      getSQLType() {
+        const precision = this.precision === void 0 ? "" : ` (${this.precision})`;
+        return `timestamp${precision}${this.withTimezone ? " with time zone" : ""}`;
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "string") return new Date(this.withTimezone ? value : value + "+0000");
+        return value;
+      }
+      mapToDriverValue = /* @__PURE__ */ __name((value) => {
+        return value.toISOString();
+      }, "mapToDriverValue");
+    };
+    PgTimestampStringBuilder = class extends PgDateColumnBaseBuilder {
+      static {
+        __name(this, "PgTimestampStringBuilder");
+      }
+      static [entityKind] = "PgTimestampStringBuilder";
+      constructor(name, withTimezone, precision) {
+        super(name, "string", "PgTimestampString");
+        this.config.withTimezone = withTimezone;
+        this.config.precision = precision;
+      }
+      /** @internal */
+      build(table) {
+        return new PgTimestampString(
+          table,
+          this.config
+        );
+      }
+    };
+    PgTimestampString = class extends PgColumn {
+      static {
+        __name(this, "PgTimestampString");
+      }
+      static [entityKind] = "PgTimestampString";
+      withTimezone;
+      precision;
+      constructor(table, config2) {
+        super(table, config2);
+        this.withTimezone = config2.withTimezone;
+        this.precision = config2.precision;
+      }
+      getSQLType() {
+        const precision = this.precision === void 0 ? "" : `(${this.precision})`;
+        return `timestamp${precision}${this.withTimezone ? " with time zone" : ""}`;
+      }
+      mapFromDriverValue(value) {
+        if (typeof value === "string") return value;
+        const shortened = value.toISOString().slice(0, -1).replace("T", " ");
+        if (this.withTimezone) {
+          const offset = value.getTimezoneOffset();
+          const sign = offset <= 0 ? "+" : "-";
+          return `${shortened}${sign}${Math.floor(Math.abs(offset) / 60).toString().padStart(2, "0")}`;
+        }
+        return shortened;
+      }
+    };
+    __name(timestamp, "timestamp");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/uuid.js
+function uuid(name) {
+  return new PgUUIDBuilder(name ?? "");
+}
+var PgUUIDBuilder, PgUUID;
+var init_uuid = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/uuid.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_sql();
+    init_common();
+    PgUUIDBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgUUIDBuilder");
+      }
+      static [entityKind] = "PgUUIDBuilder";
+      constructor(name) {
+        super(name, "string", "PgUUID");
+      }
+      /**
+       * Adds `default gen_random_uuid()` to the column definition.
+       */
+      defaultRandom() {
+        return this.default(sql`gen_random_uuid()`);
+      }
+      /** @internal */
+      build(table) {
+        return new PgUUID(table, this.config);
+      }
+    };
+    PgUUID = class extends PgColumn {
+      static {
+        __name(this, "PgUUID");
+      }
+      static [entityKind] = "PgUUID";
+      getSQLType() {
+        return "uuid";
+      }
+    };
+    __name(uuid, "uuid");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/varchar.js
+function varchar(a2, b2 = {}) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  return new PgVarcharBuilder(name, config2);
+}
+var PgVarcharBuilder, PgVarchar;
+var init_varchar = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/varchar.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    PgVarcharBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgVarcharBuilder");
+      }
+      static [entityKind] = "PgVarcharBuilder";
+      constructor(name, config2) {
+        super(name, "string", "PgVarchar");
+        this.config.length = config2.length;
+        this.config.enumValues = config2.enum;
+      }
+      /** @internal */
+      build(table) {
+        return new PgVarchar(
+          table,
+          this.config
+        );
+      }
+    };
+    PgVarchar = class extends PgColumn {
+      static {
+        __name(this, "PgVarchar");
+      }
+      static [entityKind] = "PgVarchar";
+      length = this.config.length;
+      enumValues = this.config.enumValues;
+      getSQLType() {
+        return this.length === void 0 ? `varchar` : `varchar(${this.length})`;
+      }
+    };
+    __name(varchar, "varchar");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/vector_extension/bit.js
+function bit(a2, b2) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  return new PgBinaryVectorBuilder(name, config2);
+}
+var PgBinaryVectorBuilder, PgBinaryVector;
+var init_bit = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/vector_extension/bit.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    PgBinaryVectorBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgBinaryVectorBuilder");
+      }
+      static [entityKind] = "PgBinaryVectorBuilder";
+      constructor(name, config2) {
+        super(name, "string", "PgBinaryVector");
+        this.config.dimensions = config2.dimensions;
+      }
+      /** @internal */
+      build(table) {
+        return new PgBinaryVector(
+          table,
+          this.config
+        );
+      }
+    };
+    PgBinaryVector = class extends PgColumn {
+      static {
+        __name(this, "PgBinaryVector");
+      }
+      static [entityKind] = "PgBinaryVector";
+      dimensions = this.config.dimensions;
+      getSQLType() {
+        return `bit(${this.dimensions})`;
+      }
+    };
+    __name(bit, "bit");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/vector_extension/halfvec.js
+function halfvec(a2, b2) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  return new PgHalfVectorBuilder(name, config2);
+}
+var PgHalfVectorBuilder, PgHalfVector;
+var init_halfvec = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/vector_extension/halfvec.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    PgHalfVectorBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgHalfVectorBuilder");
+      }
+      static [entityKind] = "PgHalfVectorBuilder";
+      constructor(name, config2) {
+        super(name, "array", "PgHalfVector");
+        this.config.dimensions = config2.dimensions;
+      }
+      /** @internal */
+      build(table) {
+        return new PgHalfVector(
+          table,
+          this.config
+        );
+      }
+    };
+    PgHalfVector = class extends PgColumn {
+      static {
+        __name(this, "PgHalfVector");
+      }
+      static [entityKind] = "PgHalfVector";
+      dimensions = this.config.dimensions;
+      getSQLType() {
+        return `halfvec(${this.dimensions})`;
+      }
+      mapToDriverValue(value) {
+        return JSON.stringify(value);
+      }
+      mapFromDriverValue(value) {
+        return value.slice(1, -1).split(",").map((v2) => Number.parseFloat(v2));
+      }
+    };
+    __name(halfvec, "halfvec");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/vector_extension/sparsevec.js
+function sparsevec(a2, b2) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  return new PgSparseVectorBuilder(name, config2);
+}
+var PgSparseVectorBuilder, PgSparseVector;
+var init_sparsevec = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/vector_extension/sparsevec.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    PgSparseVectorBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgSparseVectorBuilder");
+      }
+      static [entityKind] = "PgSparseVectorBuilder";
+      constructor(name, config2) {
+        super(name, "string", "PgSparseVector");
+        this.config.dimensions = config2.dimensions;
+      }
+      /** @internal */
+      build(table) {
+        return new PgSparseVector(
+          table,
+          this.config
+        );
+      }
+    };
+    PgSparseVector = class extends PgColumn {
+      static {
+        __name(this, "PgSparseVector");
+      }
+      static [entityKind] = "PgSparseVector";
+      dimensions = this.config.dimensions;
+      getSQLType() {
+        return `sparsevec(${this.dimensions})`;
+      }
+    };
+    __name(sparsevec, "sparsevec");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/vector_extension/vector.js
+function vector(a2, b2) {
+  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
+  return new PgVectorBuilder(name, config2);
+}
+var PgVectorBuilder, PgVector;
+var init_vector = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/vector_extension/vector.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_utils();
+    init_common();
+    PgVectorBuilder = class extends PgColumnBuilder {
+      static {
+        __name(this, "PgVectorBuilder");
+      }
+      static [entityKind] = "PgVectorBuilder";
+      constructor(name, config2) {
+        super(name, "array", "PgVector");
+        this.config.dimensions = config2.dimensions;
+      }
+      /** @internal */
+      build(table) {
+        return new PgVector(
+          table,
+          this.config
+        );
+      }
+    };
+    PgVector = class extends PgColumn {
+      static {
+        __name(this, "PgVector");
+      }
+      static [entityKind] = "PgVector";
+      dimensions = this.config.dimensions;
+      getSQLType() {
+        return `vector(${this.dimensions})`;
+      }
+      mapToDriverValue(value) {
+        return JSON.stringify(value);
+      }
+      mapFromDriverValue(value) {
+        return value.slice(1, -1).split(",").map((v2) => Number.parseFloat(v2));
+      }
+    };
+    __name(vector, "vector");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/all.js
+function getPgColumnBuilders() {
+  return {
+    bigint,
+    bigserial,
+    boolean,
+    char,
+    cidr,
+    customType,
+    date,
+    doublePrecision,
+    inet,
+    integer,
+    interval,
+    json,
+    jsonb,
+    line,
+    macaddr,
+    macaddr8,
+    numeric,
+    point,
+    geometry,
+    real,
+    serial,
+    smallint,
+    smallserial,
+    text,
+    time: time2,
+    timestamp,
+    uuid,
+    varchar,
+    bit,
+    halfvec,
+    sparsevec,
+    vector
+  };
+}
+var init_all = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/all.js"() {
+    init_modules_watch_stub();
+    init_bigint();
+    init_bigserial();
+    init_boolean();
+    init_char();
+    init_cidr();
+    init_custom();
+    init_date();
+    init_double_precision();
+    init_inet();
+    init_integer();
+    init_interval();
+    init_json();
+    init_jsonb();
+    init_line();
+    init_macaddr();
+    init_macaddr8();
+    init_numeric();
+    init_point();
+    init_geometry();
+    init_real();
+    init_serial();
+    init_smallint();
+    init_smallserial();
+    init_text();
+    init_time();
+    init_timestamp();
+    init_uuid();
+    init_varchar();
+    init_bit();
+    init_halfvec();
+    init_sparsevec();
+    init_vector();
+    __name(getPgColumnBuilders, "getPgColumnBuilders");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/table.js
+function pgTableWithSchema(name, columns, extraConfig, schema, baseName = name) {
+  const rawTable = new PgTable(name, schema, baseName);
+  const parsedColumns = typeof columns === "function" ? columns(getPgColumnBuilders()) : columns;
+  const builtColumns = Object.fromEntries(
+    Object.entries(parsedColumns).map(([name2, colBuilderBase]) => {
+      const colBuilder = colBuilderBase;
+      colBuilder.setName(name2);
+      const column = colBuilder.build(rawTable);
+      rawTable[InlineForeignKeys].push(...colBuilder.buildForeignKeys(column, rawTable));
+      return [name2, column];
+    })
+  );
+  const builtColumnsForExtraConfig = Object.fromEntries(
+    Object.entries(parsedColumns).map(([name2, colBuilderBase]) => {
+      const colBuilder = colBuilderBase;
+      colBuilder.setName(name2);
+      const column = colBuilder.buildExtraConfigColumn(rawTable);
+      return [name2, column];
+    })
+  );
+  const table = Object.assign(rawTable, builtColumns);
+  table[Table.Symbol.Columns] = builtColumns;
+  table[Table.Symbol.ExtraConfigColumns] = builtColumnsForExtraConfig;
+  if (extraConfig) {
+    table[PgTable.Symbol.ExtraConfigBuilder] = extraConfig;
+  }
+  return Object.assign(table, {
+    enableRLS: /* @__PURE__ */ __name(() => {
+      table[PgTable.Symbol.EnableRLS] = true;
+      return table;
+    }, "enableRLS")
+  });
+}
+function pgTableCreator(customizeTableName) {
+  return (name, columns, extraConfig) => {
+    return pgTableWithSchema(customizeTableName(name), columns, extraConfig, void 0, name);
+  };
+}
+var InlineForeignKeys, EnableRLS, PgTable, pgTable;
+var init_table2 = __esm({
+  "node_modules/drizzle-orm/pg-core/table.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_table();
+    init_all();
+    InlineForeignKeys = /* @__PURE__ */ Symbol.for("drizzle:PgInlineForeignKeys");
+    EnableRLS = /* @__PURE__ */ Symbol.for("drizzle:EnableRLS");
+    PgTable = class extends Table {
+      static {
+        __name(this, "PgTable");
+      }
+      static [entityKind] = "PgTable";
+      /** @internal */
+      static Symbol = Object.assign({}, Table.Symbol, {
+        InlineForeignKeys,
+        EnableRLS
+      });
+      /**@internal */
+      [InlineForeignKeys] = [];
+      /** @internal */
+      [EnableRLS] = false;
+      /** @internal */
+      [Table.Symbol.ExtraConfigBuilder] = void 0;
+      /** @internal */
+      [Table.Symbol.ExtraConfigColumns] = {};
+    };
+    __name(pgTableWithSchema, "pgTableWithSchema");
+    pgTable = /* @__PURE__ */ __name((name, columns, extraConfig) => {
+      return pgTableWithSchema(name, columns, extraConfig, void 0);
+    }, "pgTable");
+    __name(pgTableCreator, "pgTableCreator");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/primary-keys.js
+function primaryKey(...config2) {
+  if (config2[0].columns) {
+    return new PrimaryKeyBuilder(config2[0].columns, config2[0].name);
+  }
+  return new PrimaryKeyBuilder(config2);
+}
+var PrimaryKeyBuilder, PrimaryKey;
+var init_primary_keys = __esm({
+  "node_modules/drizzle-orm/pg-core/primary-keys.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_table2();
+    __name(primaryKey, "primaryKey");
+    PrimaryKeyBuilder = class {
+      static {
+        __name(this, "PrimaryKeyBuilder");
+      }
+      static [entityKind] = "PgPrimaryKeyBuilder";
+      /** @internal */
+      columns;
+      /** @internal */
+      name;
+      constructor(columns, name) {
+        this.columns = columns;
+        this.name = name;
+      }
+      /** @internal */
+      build(table) {
+        return new PrimaryKey(table, this.columns, this.name);
+      }
+    };
+    PrimaryKey = class {
+      static {
+        __name(this, "PrimaryKey");
+      }
+      constructor(table, columns, name) {
+        this.table = table;
+        this.columns = columns;
+        this.name = name;
+      }
+      static [entityKind] = "PgPrimaryKey";
+      columns;
+      name;
+      getName() {
+        return this.name ?? `${this.table[PgTable.Symbol.Name]}_${this.columns.map((column) => column.name).join("_")}_pk`;
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/sql/expressions/conditions.js
+function bindIfParam(value, column) {
+  if (isDriverValueEncoder(column) && !isSQLWrapper(value) && !is(value, Param) && !is(value, Placeholder) && !is(value, Column) && !is(value, Table) && !is(value, View)) {
+    return new Param(value, column);
+  }
+  return value;
+}
+function and(...unfilteredConditions) {
+  const conditions = unfilteredConditions.filter(
+    (c) => c !== void 0
+  );
+  if (conditions.length === 0) {
+    return void 0;
+  }
+  if (conditions.length === 1) {
+    return new SQL(conditions);
+  }
+  return new SQL([
+    new StringChunk("("),
+    sql.join(conditions, new StringChunk(" and ")),
+    new StringChunk(")")
+  ]);
+}
+function or(...unfilteredConditions) {
+  const conditions = unfilteredConditions.filter(
+    (c) => c !== void 0
+  );
+  if (conditions.length === 0) {
+    return void 0;
+  }
+  if (conditions.length === 1) {
+    return new SQL(conditions);
+  }
+  return new SQL([
+    new StringChunk("("),
+    sql.join(conditions, new StringChunk(" or ")),
+    new StringChunk(")")
+  ]);
+}
+function not(condition) {
+  return sql`not ${condition}`;
+}
+function inArray(column, values) {
+  if (Array.isArray(values)) {
+    if (values.length === 0) {
+      return sql`false`;
+    }
+    return sql`${column} in ${values.map((v2) => bindIfParam(v2, column))}`;
+  }
+  return sql`${column} in ${bindIfParam(values, column)}`;
+}
+function notInArray(column, values) {
+  if (Array.isArray(values)) {
+    if (values.length === 0) {
+      return sql`true`;
+    }
+    return sql`${column} not in ${values.map((v2) => bindIfParam(v2, column))}`;
+  }
+  return sql`${column} not in ${bindIfParam(values, column)}`;
+}
+function isNull(value) {
+  return sql`${value} is null`;
+}
+function isNotNull(value) {
+  return sql`${value} is not null`;
+}
+function exists(subquery) {
+  return sql`exists ${subquery}`;
+}
+function notExists(subquery) {
+  return sql`not exists ${subquery}`;
+}
+function between(column, min, max) {
+  return sql`${column} between ${bindIfParam(min, column)} and ${bindIfParam(
+    max,
+    column
+  )}`;
+}
+function notBetween(column, min, max) {
+  return sql`${column} not between ${bindIfParam(
+    min,
+    column
+  )} and ${bindIfParam(max, column)}`;
+}
+function like(column, value) {
+  return sql`${column} like ${value}`;
+}
+function notLike(column, value) {
+  return sql`${column} not like ${value}`;
+}
+function ilike(column, value) {
+  return sql`${column} ilike ${value}`;
+}
+function notIlike(column, value) {
+  return sql`${column} not ilike ${value}`;
+}
+var eq, ne, gt, gte, lt, lte;
+var init_conditions = __esm({
+  "node_modules/drizzle-orm/sql/expressions/conditions.js"() {
+    init_modules_watch_stub();
+    init_column();
+    init_entity();
+    init_table();
+    init_sql();
+    __name(bindIfParam, "bindIfParam");
+    eq = /* @__PURE__ */ __name((left, right) => {
+      return sql`${left} = ${bindIfParam(right, left)}`;
+    }, "eq");
+    ne = /* @__PURE__ */ __name((left, right) => {
+      return sql`${left} <> ${bindIfParam(right, left)}`;
+    }, "ne");
+    __name(and, "and");
+    __name(or, "or");
+    __name(not, "not");
+    gt = /* @__PURE__ */ __name((left, right) => {
+      return sql`${left} > ${bindIfParam(right, left)}`;
+    }, "gt");
+    gte = /* @__PURE__ */ __name((left, right) => {
+      return sql`${left} >= ${bindIfParam(right, left)}`;
+    }, "gte");
+    lt = /* @__PURE__ */ __name((left, right) => {
+      return sql`${left} < ${bindIfParam(right, left)}`;
+    }, "lt");
+    lte = /* @__PURE__ */ __name((left, right) => {
+      return sql`${left} <= ${bindIfParam(right, left)}`;
+    }, "lte");
+    __name(inArray, "inArray");
+    __name(notInArray, "notInArray");
+    __name(isNull, "isNull");
+    __name(isNotNull, "isNotNull");
+    __name(exists, "exists");
+    __name(notExists, "notExists");
+    __name(between, "between");
+    __name(notBetween, "notBetween");
+    __name(like, "like");
+    __name(notLike, "notLike");
+    __name(ilike, "ilike");
+    __name(notIlike, "notIlike");
+  }
+});
+
+// node_modules/drizzle-orm/sql/expressions/select.js
+function asc(column) {
+  return sql`${column} asc`;
+}
+function desc(column) {
+  return sql`${column} desc`;
+}
+var init_select = __esm({
+  "node_modules/drizzle-orm/sql/expressions/select.js"() {
+    init_modules_watch_stub();
+    init_sql();
+    __name(asc, "asc");
+    __name(desc, "desc");
+  }
+});
+
+// node_modules/drizzle-orm/sql/expressions/index.js
+var init_expressions = __esm({
+  "node_modules/drizzle-orm/sql/expressions/index.js"() {
+    init_modules_watch_stub();
+    init_conditions();
+    init_select();
+  }
+});
+
+// node_modules/drizzle-orm/relations.js
+function getOperators() {
+  return {
+    and,
+    between,
+    eq,
+    exists,
+    gt,
+    gte,
+    ilike,
+    inArray,
+    isNull,
+    isNotNull,
+    like,
+    lt,
+    lte,
+    ne,
+    not,
+    notBetween,
+    notExists,
+    notLike,
+    notIlike,
+    notInArray,
+    or,
+    sql
+  };
+}
+function getOrderByOperators() {
+  return {
+    sql,
+    asc,
+    desc
+  };
+}
+function extractTablesRelationalConfig(schema, configHelpers) {
+  if (Object.keys(schema).length === 1 && "default" in schema && !is(schema["default"], Table)) {
+    schema = schema["default"];
+  }
+  const tableNamesMap = {};
+  const relationsBuffer = {};
+  const tablesConfig = {};
+  for (const [key, value] of Object.entries(schema)) {
+    if (is(value, Table)) {
+      const dbName = getTableUniqueName(value);
+      const bufferedRelations = relationsBuffer[dbName];
+      tableNamesMap[dbName] = key;
+      tablesConfig[key] = {
+        tsName: key,
+        dbName: value[Table.Symbol.Name],
+        schema: value[Table.Symbol.Schema],
+        columns: value[Table.Symbol.Columns],
+        relations: bufferedRelations?.relations ?? {},
+        primaryKey: bufferedRelations?.primaryKey ?? []
+      };
+      for (const column of Object.values(
+        value[Table.Symbol.Columns]
+      )) {
+        if (column.primary) {
+          tablesConfig[key].primaryKey.push(column);
+        }
+      }
+      const extraConfig = value[Table.Symbol.ExtraConfigBuilder]?.(value[Table.Symbol.ExtraConfigColumns]);
+      if (extraConfig) {
+        for (const configEntry of Object.values(extraConfig)) {
+          if (is(configEntry, PrimaryKeyBuilder)) {
+            tablesConfig[key].primaryKey.push(...configEntry.columns);
+          }
+        }
+      }
+    } else if (is(value, Relations)) {
+      const dbName = getTableUniqueName(value.table);
+      const tableName = tableNamesMap[dbName];
+      const relations2 = value.config(
+        configHelpers(value.table)
+      );
+      let primaryKey2;
+      for (const [relationName, relation] of Object.entries(relations2)) {
+        if (tableName) {
+          const tableConfig = tablesConfig[tableName];
+          tableConfig.relations[relationName] = relation;
+          if (primaryKey2) {
+            tableConfig.primaryKey.push(...primaryKey2);
+          }
+        } else {
+          if (!(dbName in relationsBuffer)) {
+            relationsBuffer[dbName] = {
+              relations: {},
+              primaryKey: primaryKey2
+            };
+          }
+          relationsBuffer[dbName].relations[relationName] = relation;
+        }
+      }
+    }
+  }
+  return { tables: tablesConfig, tableNamesMap };
+}
+function createOne(sourceTable) {
+  return /* @__PURE__ */ __name(function one(table, config2) {
+    return new One(
+      sourceTable,
+      table,
+      config2,
+      config2?.fields.reduce((res, f) => res && f.notNull, true) ?? false
+    );
+  }, "one");
+}
+function createMany(sourceTable) {
+  return /* @__PURE__ */ __name(function many(referencedTable, config2) {
+    return new Many(sourceTable, referencedTable, config2);
+  }, "many");
+}
+function normalizeRelation(schema, tableNamesMap, relation) {
+  if (is(relation, One) && relation.config) {
+    return {
+      fields: relation.config.fields,
+      references: relation.config.references
+    };
+  }
+  const referencedTableTsName = tableNamesMap[getTableUniqueName(relation.referencedTable)];
+  if (!referencedTableTsName) {
+    throw new Error(
+      `Table "${relation.referencedTable[Table.Symbol.Name]}" not found in schema`
+    );
+  }
+  const referencedTableConfig = schema[referencedTableTsName];
+  if (!referencedTableConfig) {
+    throw new Error(`Table "${referencedTableTsName}" not found in schema`);
+  }
+  const sourceTable = relation.sourceTable;
+  const sourceTableTsName = tableNamesMap[getTableUniqueName(sourceTable)];
+  if (!sourceTableTsName) {
+    throw new Error(
+      `Table "${sourceTable[Table.Symbol.Name]}" not found in schema`
+    );
+  }
+  const reverseRelations = [];
+  for (const referencedTableRelation of Object.values(
+    referencedTableConfig.relations
+  )) {
+    if (relation.relationName && relation !== referencedTableRelation && referencedTableRelation.relationName === relation.relationName || !relation.relationName && referencedTableRelation.referencedTable === relation.sourceTable) {
+      reverseRelations.push(referencedTableRelation);
+    }
+  }
+  if (reverseRelations.length > 1) {
+    throw relation.relationName ? new Error(
+      `There are multiple relations with name "${relation.relationName}" in table "${referencedTableTsName}"`
+    ) : new Error(
+      `There are multiple relations between "${referencedTableTsName}" and "${relation.sourceTable[Table.Symbol.Name]}". Please specify relation name`
+    );
+  }
+  if (reverseRelations[0] && is(reverseRelations[0], One) && reverseRelations[0].config) {
+    return {
+      fields: reverseRelations[0].config.references,
+      references: reverseRelations[0].config.fields
+    };
+  }
+  throw new Error(
+    `There is not enough information to infer relation "${sourceTableTsName}.${relation.fieldName}"`
+  );
+}
+function createTableRelationsHelpers(sourceTable) {
+  return {
+    one: createOne(sourceTable),
+    many: createMany(sourceTable)
+  };
+}
+function mapRelationalRow(tablesConfig, tableConfig, row, buildQueryResultSelection, mapColumnValue = (value) => value) {
+  const result = {};
+  for (const [
+    selectionItemIndex,
+    selectionItem
+  ] of buildQueryResultSelection.entries()) {
+    if (selectionItem.isJson) {
+      const relation = tableConfig.relations[selectionItem.tsKey];
+      const rawSubRows = row[selectionItemIndex];
+      const subRows = typeof rawSubRows === "string" ? JSON.parse(rawSubRows) : rawSubRows;
+      result[selectionItem.tsKey] = is(relation, One) ? subRows && mapRelationalRow(
+        tablesConfig,
+        tablesConfig[selectionItem.relationTableTsKey],
+        subRows,
+        selectionItem.selection,
+        mapColumnValue
+      ) : subRows.map(
+        (subRow) => mapRelationalRow(
+          tablesConfig,
+          tablesConfig[selectionItem.relationTableTsKey],
+          subRow,
+          selectionItem.selection,
+          mapColumnValue
+        )
+      );
+    } else {
+      const value = mapColumnValue(row[selectionItemIndex]);
+      const field = selectionItem.field;
+      let decoder;
+      if (is(field, Column)) {
+        decoder = field;
+      } else if (is(field, SQL)) {
+        decoder = field.decoder;
+      } else {
+        decoder = field.sql.decoder;
+      }
+      result[selectionItem.tsKey] = value === null ? null : decoder.mapFromDriverValue(value);
+    }
+  }
+  return result;
+}
+var Relation, Relations, One, Many;
+var init_relations = __esm({
+  "node_modules/drizzle-orm/relations.js"() {
+    init_modules_watch_stub();
+    init_table();
+    init_column();
+    init_entity();
+    init_primary_keys();
+    init_expressions();
+    init_sql();
+    Relation = class {
+      static {
+        __name(this, "Relation");
+      }
+      constructor(sourceTable, referencedTable, relationName) {
+        this.sourceTable = sourceTable;
+        this.referencedTable = referencedTable;
+        this.relationName = relationName;
+        this.referencedTableName = referencedTable[Table.Symbol.Name];
+      }
+      static [entityKind] = "Relation";
+      referencedTableName;
+      fieldName;
+    };
+    Relations = class {
+      static {
+        __name(this, "Relations");
+      }
+      constructor(table, config2) {
+        this.table = table;
+        this.config = config2;
+      }
+      static [entityKind] = "Relations";
+    };
+    One = class _One extends Relation {
+      static {
+        __name(this, "One");
+      }
+      constructor(sourceTable, referencedTable, config2, isNullable) {
+        super(sourceTable, referencedTable, config2?.relationName);
+        this.config = config2;
+        this.isNullable = isNullable;
+      }
+      static [entityKind] = "One";
+      withFieldName(fieldName) {
+        const relation = new _One(
+          this.sourceTable,
+          this.referencedTable,
+          this.config,
+          this.isNullable
+        );
+        relation.fieldName = fieldName;
+        return relation;
+      }
+    };
+    Many = class _Many extends Relation {
+      static {
+        __name(this, "Many");
+      }
+      constructor(sourceTable, referencedTable, config2) {
+        super(sourceTable, referencedTable, config2?.relationName);
+        this.config = config2;
+      }
+      static [entityKind] = "Many";
+      withFieldName(fieldName) {
+        const relation = new _Many(
+          this.sourceTable,
+          this.referencedTable,
+          this.config
+        );
+        relation.fieldName = fieldName;
+        return relation;
+      }
+    };
+    __name(getOperators, "getOperators");
+    __name(getOrderByOperators, "getOrderByOperators");
+    __name(extractTablesRelationalConfig, "extractTablesRelationalConfig");
+    __name(createOne, "createOne");
+    __name(createMany, "createMany");
+    __name(normalizeRelation, "normalizeRelation");
+    __name(createTableRelationsHelpers, "createTableRelationsHelpers");
+    __name(mapRelationalRow, "mapRelationalRow");
+  }
+});
+
+// node_modules/drizzle-orm/sql/functions/aggregate.js
+function count(expression) {
+  return sql`count(${expression || sql.raw("*")})`.mapWith(Number);
+}
+var init_aggregate = __esm({
+  "node_modules/drizzle-orm/sql/functions/aggregate.js"() {
+    init_modules_watch_stub();
+    init_sql();
+    __name(count, "count");
+  }
+});
+
+// node_modules/drizzle-orm/sql/functions/vector.js
+var init_vector2 = __esm({
+  "node_modules/drizzle-orm/sql/functions/vector.js"() {
+    init_modules_watch_stub();
+  }
+});
+
+// node_modules/drizzle-orm/sql/functions/index.js
+var init_functions = __esm({
+  "node_modules/drizzle-orm/sql/functions/index.js"() {
+    init_modules_watch_stub();
+    init_aggregate();
+    init_vector2();
+  }
+});
+
+// node_modules/drizzle-orm/sql/index.js
+var init_sql2 = __esm({
+  "node_modules/drizzle-orm/sql/index.js"() {
+    init_modules_watch_stub();
+    init_expressions();
+    init_functions();
+    init_sql();
+  }
+});
+
+// node_modules/drizzle-orm/selection-proxy.js
+var SelectionProxyHandler;
+var init_selection_proxy = __esm({
+  "node_modules/drizzle-orm/selection-proxy.js"() {
+    init_modules_watch_stub();
+    init_alias();
+    init_column();
+    init_entity();
+    init_sql();
+    init_subquery();
+    init_view_common();
+    SelectionProxyHandler = class _SelectionProxyHandler {
+      static {
+        __name(this, "SelectionProxyHandler");
+      }
+      static [entityKind] = "SelectionProxyHandler";
+      config;
+      constructor(config2) {
+        this.config = { ...config2 };
+      }
+      get(subquery, prop) {
+        if (prop === "_") {
+          return {
+            ...subquery["_"],
+            selectedFields: new Proxy(
+              subquery._.selectedFields,
+              this
+            )
+          };
+        }
+        if (prop === ViewBaseConfig) {
+          return {
+            ...subquery[ViewBaseConfig],
+            selectedFields: new Proxy(
+              subquery[ViewBaseConfig].selectedFields,
+              this
+            )
+          };
+        }
+        if (typeof prop === "symbol") {
+          return subquery[prop];
+        }
+        const columns = is(subquery, Subquery) ? subquery._.selectedFields : is(subquery, View) ? subquery[ViewBaseConfig].selectedFields : subquery;
+        const value = columns[prop];
+        if (is(value, SQL.Aliased)) {
+          if (this.config.sqlAliasedBehavior === "sql" && !value.isSelectionField) {
+            return value.sql;
+          }
+          const newValue = value.clone();
+          newValue.isSelectionField = true;
+          return newValue;
+        }
+        if (is(value, SQL)) {
+          if (this.config.sqlBehavior === "sql") {
+            return value;
+          }
+          throw new Error(
+            `You tried to reference "${prop}" field from a subquery, which is a raw SQL field, but it doesn't have an alias declared. Please add an alias to the field using ".as('alias')" method.`
+          );
+        }
+        if (is(value, Column)) {
+          if (this.config.alias) {
+            return new Proxy(
+              value,
+              new ColumnAliasProxyHandler(
+                new Proxy(
+                  value.table,
+                  new TableAliasProxyHandler(this.config.alias, this.config.replaceOriginalName ?? false)
+                )
+              )
+            );
+          }
+          return value;
+        }
+        if (typeof value !== "object" || value === null) {
+          return value;
+        }
+        return new Proxy(value, new _SelectionProxyHandler(this.config));
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/checks.js
+function check(name, value) {
+  return new CheckBuilder(name, value);
+}
+var CheckBuilder, Check;
+var init_checks = __esm({
+  "node_modules/drizzle-orm/pg-core/checks.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    CheckBuilder = class {
+      static {
+        __name(this, "CheckBuilder");
+      }
+      constructor(name, value) {
+        this.name = name;
+        this.value = value;
+      }
+      static [entityKind] = "PgCheckBuilder";
+      brand;
+      /** @internal */
+      build(table) {
+        return new Check(table, this);
+      }
+    };
+    Check = class {
+      static {
+        __name(this, "Check");
+      }
+      constructor(table, builder) {
+        this.table = table;
+        this.name = builder.name;
+        this.value = builder.value;
+      }
+      static [entityKind] = "PgCheck";
+      name;
+      value;
+    };
+    __name(check, "check");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/columns/index.js
+var init_columns = __esm({
+  "node_modules/drizzle-orm/pg-core/columns/index.js"() {
+    init_modules_watch_stub();
+    init_bigint();
+    init_bigserial();
+    init_boolean();
+    init_char();
+    init_cidr();
+    init_common();
+    init_custom();
+    init_date();
+    init_double_precision();
+    init_enum();
+    init_inet();
+    init_int_common();
+    init_integer();
+    init_interval();
+    init_json();
+    init_jsonb();
+    init_line();
+    init_macaddr();
+    init_macaddr8();
+    init_numeric();
+    init_point();
+    init_geometry();
+    init_real();
+    init_serial();
+    init_smallint();
+    init_smallserial();
+    init_text();
+    init_time();
+    init_timestamp();
+    init_uuid();
+    init_varchar();
+    init_bit();
+    init_halfvec();
+    init_sparsevec();
+    init_vector();
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/indexes.js
+function index(name) {
+  return new IndexBuilderOn(false, name);
+}
+function uniqueIndex(name) {
+  return new IndexBuilderOn(true, name);
+}
+var IndexBuilderOn, IndexBuilder, Index;
+var init_indexes = __esm({
+  "node_modules/drizzle-orm/pg-core/indexes.js"() {
+    init_modules_watch_stub();
+    init_sql();
+    init_entity();
+    init_columns();
+    IndexBuilderOn = class {
+      static {
+        __name(this, "IndexBuilderOn");
+      }
+      constructor(unique2, name) {
+        this.unique = unique2;
+        this.name = name;
+      }
+      static [entityKind] = "PgIndexBuilderOn";
+      on(...columns) {
+        return new IndexBuilder(
+          columns.map((it2) => {
+            if (is(it2, SQL)) {
+              return it2;
+            }
+            it2 = it2;
+            const clonedIndexedColumn = new IndexedColumn(it2.name, !!it2.keyAsName, it2.columnType, it2.indexConfig);
+            it2.indexConfig = JSON.parse(JSON.stringify(it2.defaultConfig));
+            return clonedIndexedColumn;
+          }),
+          this.unique,
+          false,
+          this.name
+        );
+      }
+      onOnly(...columns) {
+        return new IndexBuilder(
+          columns.map((it2) => {
+            if (is(it2, SQL)) {
+              return it2;
+            }
+            it2 = it2;
+            const clonedIndexedColumn = new IndexedColumn(it2.name, !!it2.keyAsName, it2.columnType, it2.indexConfig);
+            it2.indexConfig = it2.defaultConfig;
+            return clonedIndexedColumn;
+          }),
+          this.unique,
+          true,
+          this.name
+        );
+      }
+      /**
+       * Specify what index method to use. Choices are `btree`, `hash`, `gist`, `spgist`, `gin`, `brin`, or user-installed access methods like `bloom`. The default method is `btree.
+       *
+       * If you have the `pg_vector` extension installed in your database, you can use the `hnsw` and `ivfflat` options, which are predefined types.
+       *
+       * **You can always specify any string you want in the method, in case Drizzle doesn't have it natively in its types**
+       *
+       * @param method The name of the index method to be used
+       * @param columns
+       * @returns
+       */
+      using(method, ...columns) {
+        return new IndexBuilder(
+          columns.map((it2) => {
+            if (is(it2, SQL)) {
+              return it2;
+            }
+            it2 = it2;
+            const clonedIndexedColumn = new IndexedColumn(it2.name, !!it2.keyAsName, it2.columnType, it2.indexConfig);
+            it2.indexConfig = JSON.parse(JSON.stringify(it2.defaultConfig));
+            return clonedIndexedColumn;
+          }),
+          this.unique,
+          true,
+          this.name,
+          method
+        );
+      }
+    };
+    IndexBuilder = class {
+      static {
+        __name(this, "IndexBuilder");
+      }
+      static [entityKind] = "PgIndexBuilder";
+      /** @internal */
+      config;
+      constructor(columns, unique2, only, name, method = "btree") {
+        this.config = {
+          name,
+          columns,
+          unique: unique2,
+          only,
+          method
+        };
+      }
+      concurrently() {
+        this.config.concurrently = true;
+        return this;
+      }
+      with(obj) {
+        this.config.with = obj;
+        return this;
+      }
+      where(condition) {
+        this.config.where = condition;
+        return this;
+      }
+      /** @internal */
+      build(table) {
+        return new Index(this.config, table);
+      }
+    };
+    Index = class {
+      static {
+        __name(this, "Index");
+      }
+      static [entityKind] = "PgIndex";
+      config;
+      constructor(config2, table) {
+        this.config = { ...config2, table };
+      }
+    };
+    __name(index, "index");
+    __name(uniqueIndex, "uniqueIndex");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/policies.js
+function pgPolicy(name, config2) {
+  return new PgPolicy(name, config2);
+}
+var PgPolicy;
+var init_policies = __esm({
+  "node_modules/drizzle-orm/pg-core/policies.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    PgPolicy = class {
+      static {
+        __name(this, "PgPolicy");
+      }
+      constructor(name, config2) {
+        this.name = name;
+        if (config2) {
+          this.as = config2.as;
+          this.for = config2.for;
+          this.to = config2.to;
+          this.using = config2.using;
+          this.withCheck = config2.withCheck;
+        }
+      }
+      static [entityKind] = "PgPolicy";
+      as;
+      for;
+      to;
+      using;
+      withCheck;
+      /** @internal */
+      _linkedTable;
+      link(table) {
+        this._linkedTable = table;
+        return this;
+      }
+    };
+    __name(pgPolicy, "pgPolicy");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/view-common.js
+var PgViewConfig;
+var init_view_common2 = __esm({
+  "node_modules/drizzle-orm/pg-core/view-common.js"() {
+    init_modules_watch_stub();
+    PgViewConfig = /* @__PURE__ */ Symbol.for("drizzle:PgViewConfig");
+  }
+});
+
+// node_modules/drizzle-orm/casing.js
+function toSnakeCase(input2) {
+  const words = input2.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
+  return words.map((word) => word.toLowerCase()).join("_");
+}
+function toCamelCase(input2) {
+  const words = input2.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
+  return words.reduce((acc, word, i) => {
+    const formattedWord = i === 0 ? word.toLowerCase() : `${word[0].toUpperCase()}${word.slice(1)}`;
+    return acc + formattedWord;
+  }, "");
+}
+function noopCase(input2) {
+  return input2;
+}
+var CasingCache;
+var init_casing = __esm({
+  "node_modules/drizzle-orm/casing.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_table();
+    __name(toSnakeCase, "toSnakeCase");
+    __name(toCamelCase, "toCamelCase");
+    __name(noopCase, "noopCase");
+    CasingCache = class {
+      static {
+        __name(this, "CasingCache");
+      }
+      static [entityKind] = "CasingCache";
+      /** @internal */
+      cache = {};
+      cachedTables = {};
+      convert;
+      constructor(casing) {
+        this.convert = casing === "snake_case" ? toSnakeCase : casing === "camelCase" ? toCamelCase : noopCase;
+      }
+      getColumnCasing(column) {
+        if (!column.keyAsName) return column.name;
+        const schema = column.table[Table.Symbol.Schema] ?? "public";
+        const tableName = column.table[Table.Symbol.OriginalName];
+        const key = `${schema}.${tableName}.${column.name}`;
+        if (!this.cache[key]) {
+          this.cacheTable(column.table);
+        }
+        return this.cache[key];
+      }
+      cacheTable(table) {
+        const schema = table[Table.Symbol.Schema] ?? "public";
+        const tableName = table[Table.Symbol.OriginalName];
+        const tableKey = `${schema}.${tableName}`;
+        if (!this.cachedTables[tableKey]) {
+          for (const column of Object.values(table[Table.Symbol.Columns])) {
+            const columnKey = `${tableKey}.${column.name}`;
+            this.cache[columnKey] = this.convert(column.name);
+          }
+          this.cachedTables[tableKey] = true;
+        }
+      }
+      clearCache() {
+        this.cache = {};
+        this.cachedTables = {};
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/view-base.js
+var PgViewBase;
+var init_view_base = __esm({
+  "node_modules/drizzle-orm/pg-core/view-base.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_sql();
+    PgViewBase = class extends View {
+      static {
+        __name(this, "PgViewBase");
+      }
+      static [entityKind] = "PgViewBase";
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/dialect.js
+var PgDialect;
+var init_dialect = __esm({
+  "node_modules/drizzle-orm/pg-core/dialect.js"() {
+    init_modules_watch_stub();
+    init_alias();
+    init_casing();
+    init_column();
+    init_entity();
+    init_errors();
+    init_columns();
+    init_table2();
+    init_relations();
+    init_sql2();
+    init_sql();
+    init_subquery();
+    init_table();
+    init_utils();
+    init_view_common();
+    init_view_base();
+    PgDialect = class {
+      static {
+        __name(this, "PgDialect");
+      }
+      static [entityKind] = "PgDialect";
+      /** @internal */
+      casing;
+      constructor(config2) {
+        this.casing = new CasingCache(config2?.casing);
+      }
+      async migrate(migrations, session, config2) {
+        const migrationsTable = typeof config2 === "string" ? "__drizzle_migrations" : config2.migrationsTable ?? "__drizzle_migrations";
+        const migrationsSchema = typeof config2 === "string" ? "drizzle" : config2.migrationsSchema ?? "drizzle";
+        const migrationTableCreate = sql`
+			CREATE TABLE IF NOT EXISTS ${sql.identifier(migrationsSchema)}.${sql.identifier(migrationsTable)} (
+				id SERIAL PRIMARY KEY,
+				hash text NOT NULL,
+				created_at bigint
+			)
+		`;
+        await session.execute(sql`CREATE SCHEMA IF NOT EXISTS ${sql.identifier(migrationsSchema)}`);
+        await session.execute(migrationTableCreate);
+        const dbMigrations = await session.all(
+          sql`select id, hash, created_at from ${sql.identifier(migrationsSchema)}.${sql.identifier(migrationsTable)} order by created_at desc limit 1`
+        );
+        const lastDbMigration = dbMigrations[0];
+        await session.transaction(async (tx) => {
+          for await (const migration of migrations) {
+            if (!lastDbMigration || Number(lastDbMigration.created_at) < migration.folderMillis) {
+              for (const stmt of migration.sql) {
+                await tx.execute(sql.raw(stmt));
+              }
+              await tx.execute(
+                sql`insert into ${sql.identifier(migrationsSchema)}.${sql.identifier(migrationsTable)} ("hash", "created_at") values(${migration.hash}, ${migration.folderMillis})`
+              );
+            }
+          }
+        });
+      }
+      escapeName(name) {
+        return `"${name.replace(/"/g, '""')}"`;
+      }
+      escapeParam(num) {
+        return `$${num + 1}`;
+      }
+      escapeString(str) {
+        return `'${str.replace(/'/g, "''")}'`;
+      }
+      buildWithCTE(queries) {
+        if (!queries?.length) return void 0;
+        const withSqlChunks = [sql`with `];
+        for (const [i, w] of queries.entries()) {
+          withSqlChunks.push(sql`${sql.identifier(w._.alias)} as (${w._.sql})`);
+          if (i < queries.length - 1) {
+            withSqlChunks.push(sql`, `);
+          }
+        }
+        withSqlChunks.push(sql` `);
+        return sql.join(withSqlChunks);
+      }
+      buildDeleteQuery({ table, where, returning, withList }) {
+        const withSql = this.buildWithCTE(withList);
+        const returningSql = returning ? sql` returning ${this.buildSelection(returning, { isSingleTable: true })}` : void 0;
+        const whereSql = where ? sql` where ${where}` : void 0;
+        return sql`${withSql}delete from ${table}${whereSql}${returningSql}`;
+      }
+      buildUpdateSet(table, set2) {
+        const tableColumns = table[Table.Symbol.Columns];
+        const columnNames = Object.keys(tableColumns).filter(
+          (colName) => set2[colName] !== void 0 || tableColumns[colName]?.onUpdateFn !== void 0
+        );
+        const setSize = columnNames.length;
+        return sql.join(columnNames.flatMap((colName, i) => {
+          const col = tableColumns[colName];
+          const onUpdateFnResult = col.onUpdateFn?.();
+          const value = set2[colName] ?? (is(onUpdateFnResult, SQL) ? onUpdateFnResult : sql.param(onUpdateFnResult, col));
+          const res = sql`${sql.identifier(this.casing.getColumnCasing(col))} = ${value}`;
+          if (i < setSize - 1) {
+            return [res, sql.raw(", ")];
+          }
+          return [res];
+        }));
+      }
+      buildUpdateQuery({ table, set: set2, where, returning, withList, from, joins }) {
+        const withSql = this.buildWithCTE(withList);
+        const tableName = table[PgTable.Symbol.Name];
+        const tableSchema = table[PgTable.Symbol.Schema];
+        const origTableName = table[PgTable.Symbol.OriginalName];
+        const alias2 = tableName === origTableName ? void 0 : tableName;
+        const tableSql = sql`${tableSchema ? sql`${sql.identifier(tableSchema)}.` : void 0}${sql.identifier(origTableName)}${alias2 && sql` ${sql.identifier(alias2)}`}`;
+        const setSql = this.buildUpdateSet(table, set2);
+        const fromSql = from && sql.join([sql.raw(" from "), this.buildFromTable(from)]);
+        const joinsSql = this.buildJoins(joins);
+        const returningSql = returning ? sql` returning ${this.buildSelection(returning, { isSingleTable: !from })}` : void 0;
+        const whereSql = where ? sql` where ${where}` : void 0;
+        return sql`${withSql}update ${tableSql} set ${setSql}${fromSql}${joinsSql}${whereSql}${returningSql}`;
+      }
+      /**
+       * Builds selection SQL with provided fields/expressions
+       *
+       * Examples:
+       *
+       * `select <selection> from`
+       *
+       * `insert ... returning <selection>`
+       *
+       * If `isSingleTable` is true, then columns won't be prefixed with table name
+       */
+      buildSelection(fields, { isSingleTable = false } = {}) {
+        const columnsLen = fields.length;
+        const chunks = fields.flatMap(({ field }, i) => {
+          const chunk = [];
+          if (is(field, SQL.Aliased) && field.isSelectionField) {
+            chunk.push(sql.identifier(field.fieldAlias));
+          } else if (is(field, SQL.Aliased) || is(field, SQL)) {
+            const query = is(field, SQL.Aliased) ? field.sql : field;
+            if (isSingleTable) {
+              chunk.push(
+                new SQL(
+                  query.queryChunks.map((c) => {
+                    if (is(c, PgColumn)) {
+                      return sql.identifier(this.casing.getColumnCasing(c));
+                    }
+                    return c;
+                  })
+                )
+              );
+            } else {
+              chunk.push(query);
+            }
+            if (is(field, SQL.Aliased)) {
+              chunk.push(sql` as ${sql.identifier(field.fieldAlias)}`);
+            }
+          } else if (is(field, Column)) {
+            if (isSingleTable) {
+              chunk.push(sql.identifier(this.casing.getColumnCasing(field)));
+            } else {
+              chunk.push(field);
+            }
+          } else if (is(field, Subquery)) {
+            const entries = Object.entries(field._.selectedFields);
+            if (entries.length === 1) {
+              const entry = entries[0][1];
+              const fieldDecoder = is(entry, SQL) ? entry.decoder : is(entry, Column) ? { mapFromDriverValue: /* @__PURE__ */ __name((v2) => entry.mapFromDriverValue(v2), "mapFromDriverValue") } : entry.sql.decoder;
+              if (fieldDecoder) {
+                field._.sql.decoder = fieldDecoder;
+              }
+            }
+            chunk.push(field);
+          }
+          if (i < columnsLen - 1) {
+            chunk.push(sql`, `);
+          }
+          return chunk;
+        });
+        return sql.join(chunks);
+      }
+      buildJoins(joins) {
+        if (!joins || joins.length === 0) {
+          return void 0;
+        }
+        const joinsArray = [];
+        for (const [index2, joinMeta] of joins.entries()) {
+          if (index2 === 0) {
+            joinsArray.push(sql` `);
+          }
+          const table = joinMeta.table;
+          const lateralSql = joinMeta.lateral ? sql` lateral` : void 0;
+          const onSql = joinMeta.on ? sql` on ${joinMeta.on}` : void 0;
+          if (is(table, PgTable)) {
+            const tableName = table[PgTable.Symbol.Name];
+            const tableSchema = table[PgTable.Symbol.Schema];
+            const origTableName = table[PgTable.Symbol.OriginalName];
+            const alias2 = tableName === origTableName ? void 0 : joinMeta.alias;
+            joinsArray.push(
+              sql`${sql.raw(joinMeta.joinType)} join${lateralSql} ${tableSchema ? sql`${sql.identifier(tableSchema)}.` : void 0}${sql.identifier(origTableName)}${alias2 && sql` ${sql.identifier(alias2)}`}${onSql}`
+            );
+          } else if (is(table, View)) {
+            const viewName = table[ViewBaseConfig].name;
+            const viewSchema = table[ViewBaseConfig].schema;
+            const origViewName = table[ViewBaseConfig].originalName;
+            const alias2 = viewName === origViewName ? void 0 : joinMeta.alias;
+            joinsArray.push(
+              sql`${sql.raw(joinMeta.joinType)} join${lateralSql} ${viewSchema ? sql`${sql.identifier(viewSchema)}.` : void 0}${sql.identifier(origViewName)}${alias2 && sql` ${sql.identifier(alias2)}`}${onSql}`
+            );
+          } else {
+            joinsArray.push(
+              sql`${sql.raw(joinMeta.joinType)} join${lateralSql} ${table}${onSql}`
+            );
+          }
+          if (index2 < joins.length - 1) {
+            joinsArray.push(sql` `);
+          }
+        }
+        return sql.join(joinsArray);
+      }
+      buildFromTable(table) {
+        if (is(table, Table) && table[Table.Symbol.IsAlias]) {
+          let fullName = sql`${sql.identifier(table[Table.Symbol.OriginalName])}`;
+          if (table[Table.Symbol.Schema]) {
+            fullName = sql`${sql.identifier(table[Table.Symbol.Schema])}.${fullName}`;
+          }
+          return sql`${fullName} ${sql.identifier(table[Table.Symbol.Name])}`;
+        }
+        return table;
+      }
+      buildSelectQuery({
+        withList,
+        fields,
+        fieldsFlat,
+        where,
+        having,
+        table,
+        joins,
+        orderBy,
+        groupBy,
+        limit,
+        offset,
+        lockingClause,
+        distinct,
+        setOperators
+      }) {
+        const fieldsList = fieldsFlat ?? orderSelectedFields(fields);
+        for (const f of fieldsList) {
+          if (is(f.field, Column) && getTableName(f.field.table) !== (is(table, Subquery) ? table._.alias : is(table, PgViewBase) ? table[ViewBaseConfig].name : is(table, SQL) ? void 0 : getTableName(table)) && !((table2) => joins?.some(
+            ({ alias: alias2 }) => alias2 === (table2[Table.Symbol.IsAlias] ? getTableName(table2) : table2[Table.Symbol.BaseName])
+          ))(f.field.table)) {
+            const tableName = getTableName(f.field.table);
+            throw new Error(
+              `Your "${f.path.join("->")}" field references a column "${tableName}"."${f.field.name}", but the table "${tableName}" is not part of the query! Did you forget to join it?`
+            );
+          }
+        }
+        const isSingleTable = !joins || joins.length === 0;
+        const withSql = this.buildWithCTE(withList);
+        let distinctSql;
+        if (distinct) {
+          distinctSql = distinct === true ? sql` distinct` : sql` distinct on (${sql.join(distinct.on, sql`, `)})`;
+        }
+        const selection = this.buildSelection(fieldsList, { isSingleTable });
+        const tableSql = this.buildFromTable(table);
+        const joinsSql = this.buildJoins(joins);
+        const whereSql = where ? sql` where ${where}` : void 0;
+        const havingSql = having ? sql` having ${having}` : void 0;
+        let orderBySql;
+        if (orderBy && orderBy.length > 0) {
+          orderBySql = sql` order by ${sql.join(orderBy, sql`, `)}`;
+        }
+        let groupBySql;
+        if (groupBy && groupBy.length > 0) {
+          groupBySql = sql` group by ${sql.join(groupBy, sql`, `)}`;
+        }
+        const limitSql = typeof limit === "object" || typeof limit === "number" && limit >= 0 ? sql` limit ${limit}` : void 0;
+        const offsetSql = offset ? sql` offset ${offset}` : void 0;
+        const lockingClauseSql = sql.empty();
+        if (lockingClause) {
+          const clauseSql = sql` for ${sql.raw(lockingClause.strength)}`;
+          if (lockingClause.config.of) {
+            clauseSql.append(
+              sql` of ${sql.join(
+                Array.isArray(lockingClause.config.of) ? lockingClause.config.of : [lockingClause.config.of],
+                sql`, `
+              )}`
+            );
+          }
+          if (lockingClause.config.noWait) {
+            clauseSql.append(sql` nowait`);
+          } else if (lockingClause.config.skipLocked) {
+            clauseSql.append(sql` skip locked`);
+          }
+          lockingClauseSql.append(clauseSql);
+        }
+        const finalQuery = sql`${withSql}select${distinctSql} ${selection} from ${tableSql}${joinsSql}${whereSql}${groupBySql}${havingSql}${orderBySql}${limitSql}${offsetSql}${lockingClauseSql}`;
+        if (setOperators.length > 0) {
+          return this.buildSetOperations(finalQuery, setOperators);
+        }
+        return finalQuery;
+      }
+      buildSetOperations(leftSelect, setOperators) {
+        const [setOperator, ...rest] = setOperators;
+        if (!setOperator) {
+          throw new Error("Cannot pass undefined values to any set operator");
+        }
+        if (rest.length === 0) {
+          return this.buildSetOperationQuery({ leftSelect, setOperator });
+        }
+        return this.buildSetOperations(
+          this.buildSetOperationQuery({ leftSelect, setOperator }),
+          rest
+        );
+      }
+      buildSetOperationQuery({
+        leftSelect,
+        setOperator: { type, isAll, rightSelect, limit, orderBy, offset }
+      }) {
+        const leftChunk = sql`(${leftSelect.getSQL()}) `;
+        const rightChunk = sql`(${rightSelect.getSQL()})`;
+        let orderBySql;
+        if (orderBy && orderBy.length > 0) {
+          const orderByValues = [];
+          for (const singleOrderBy of orderBy) {
+            if (is(singleOrderBy, PgColumn)) {
+              orderByValues.push(sql.identifier(singleOrderBy.name));
+            } else if (is(singleOrderBy, SQL)) {
+              for (let i = 0; i < singleOrderBy.queryChunks.length; i++) {
+                const chunk = singleOrderBy.queryChunks[i];
+                if (is(chunk, PgColumn)) {
+                  singleOrderBy.queryChunks[i] = sql.identifier(chunk.name);
+                }
+              }
+              orderByValues.push(sql`${singleOrderBy}`);
+            } else {
+              orderByValues.push(sql`${singleOrderBy}`);
+            }
+          }
+          orderBySql = sql` order by ${sql.join(orderByValues, sql`, `)} `;
+        }
+        const limitSql = typeof limit === "object" || typeof limit === "number" && limit >= 0 ? sql` limit ${limit}` : void 0;
+        const operatorChunk = sql.raw(`${type} ${isAll ? "all " : ""}`);
+        const offsetSql = offset ? sql` offset ${offset}` : void 0;
+        return sql`${leftChunk}${operatorChunk}${rightChunk}${orderBySql}${limitSql}${offsetSql}`;
+      }
+      buildInsertQuery({ table, values: valuesOrSelect, onConflict, returning, withList, select, overridingSystemValue_ }) {
+        const valuesSqlList = [];
+        const columns = table[Table.Symbol.Columns];
+        const colEntries = Object.entries(columns).filter(([_, col]) => !col.shouldDisableInsert());
+        const insertOrder = colEntries.map(
+          ([, column]) => sql.identifier(this.casing.getColumnCasing(column))
+        );
+        if (select) {
+          const select2 = valuesOrSelect;
+          if (is(select2, SQL)) {
+            valuesSqlList.push(select2);
+          } else {
+            valuesSqlList.push(select2.getSQL());
+          }
+        } else {
+          const values = valuesOrSelect;
+          valuesSqlList.push(sql.raw("values "));
+          for (const [valueIndex, value] of values.entries()) {
+            const valueList = [];
+            for (const [fieldName, col] of colEntries) {
+              const colValue = value[fieldName];
+              if (colValue === void 0 || is(colValue, Param) && colValue.value === void 0) {
+                if (col.defaultFn !== void 0) {
+                  const defaultFnResult = col.defaultFn();
+                  const defaultValue = is(defaultFnResult, SQL) ? defaultFnResult : sql.param(defaultFnResult, col);
+                  valueList.push(defaultValue);
+                } else if (!col.default && col.onUpdateFn !== void 0) {
+                  const onUpdateFnResult = col.onUpdateFn();
+                  const newValue = is(onUpdateFnResult, SQL) ? onUpdateFnResult : sql.param(onUpdateFnResult, col);
+                  valueList.push(newValue);
+                } else {
+                  valueList.push(sql`default`);
+                }
+              } else {
+                valueList.push(colValue);
+              }
+            }
+            valuesSqlList.push(valueList);
+            if (valueIndex < values.length - 1) {
+              valuesSqlList.push(sql`, `);
+            }
+          }
+        }
+        const withSql = this.buildWithCTE(withList);
+        const valuesSql = sql.join(valuesSqlList);
+        const returningSql = returning ? sql` returning ${this.buildSelection(returning, { isSingleTable: true })}` : void 0;
+        const onConflictSql = onConflict ? sql` on conflict ${onConflict}` : void 0;
+        const overridingSql = overridingSystemValue_ === true ? sql`overriding system value ` : void 0;
+        return sql`${withSql}insert into ${table} ${insertOrder} ${overridingSql}${valuesSql}${onConflictSql}${returningSql}`;
+      }
+      buildRefreshMaterializedViewQuery({ view, concurrently, withNoData }) {
+        const concurrentlySql = concurrently ? sql` concurrently` : void 0;
+        const withNoDataSql = withNoData ? sql` with no data` : void 0;
+        return sql`refresh materialized view${concurrentlySql} ${view}${withNoDataSql}`;
+      }
+      prepareTyping(encoder) {
+        if (is(encoder, PgJsonb) || is(encoder, PgJson)) {
+          return "json";
+        } else if (is(encoder, PgNumeric)) {
+          return "decimal";
+        } else if (is(encoder, PgTime)) {
+          return "time";
+        } else if (is(encoder, PgTimestamp) || is(encoder, PgTimestampString)) {
+          return "timestamp";
+        } else if (is(encoder, PgDate) || is(encoder, PgDateString)) {
+          return "date";
+        } else if (is(encoder, PgUUID)) {
+          return "uuid";
+        } else {
+          return "none";
+        }
+      }
+      sqlToQuery(sql2, invokeSource) {
+        return sql2.toQuery({
+          casing: this.casing,
+          escapeName: this.escapeName,
+          escapeParam: this.escapeParam,
+          escapeString: this.escapeString,
+          prepareTyping: this.prepareTyping,
+          invokeSource
+        });
+      }
+      // buildRelationalQueryWithPK({
+      // 	fullSchema,
+      // 	schema,
+      // 	tableNamesMap,
+      // 	table,
+      // 	tableConfig,
+      // 	queryConfig: config,
+      // 	tableAlias,
+      // 	isRoot = false,
+      // 	joinOn,
+      // }: {
+      // 	fullSchema: Record<string, unknown>;
+      // 	schema: TablesRelationalConfig;
+      // 	tableNamesMap: Record<string, string>;
+      // 	table: PgTable;
+      // 	tableConfig: TableRelationalConfig;
+      // 	queryConfig: true | DBQueryConfig<'many', true>;
+      // 	tableAlias: string;
+      // 	isRoot?: boolean;
+      // 	joinOn?: SQL;
+      // }): BuildRelationalQueryResult<PgTable, PgColumn> {
+      // 	// For { "<relation>": true }, return a table with selection of all columns
+      // 	if (config === true) {
+      // 		const selectionEntries = Object.entries(tableConfig.columns);
+      // 		const selection: BuildRelationalQueryResult<PgTable, PgColumn>['selection'] = selectionEntries.map((
+      // 			[key, value],
+      // 		) => ({
+      // 			dbKey: value.name,
+      // 			tsKey: key,
+      // 			field: value as PgColumn,
+      // 			relationTableTsKey: undefined,
+      // 			isJson: false,
+      // 			selection: [],
+      // 		}));
+      // 		return {
+      // 			tableTsKey: tableConfig.tsName,
+      // 			sql: table,
+      // 			selection,
+      // 		};
+      // 	}
+      // 	// let selection: BuildRelationalQueryResult<PgTable, PgColumn>['selection'] = [];
+      // 	// let selectionForBuild = selection;
+      // 	const aliasedColumns = Object.fromEntries(
+      // 		Object.entries(tableConfig.columns).map(([key, value]) => [key, aliasedTableColumn(value, tableAlias)]),
+      // 	);
+      // 	const aliasedRelations = Object.fromEntries(
+      // 		Object.entries(tableConfig.relations).map(([key, value]) => [key, aliasedRelation(value, tableAlias)]),
+      // 	);
+      // 	const aliasedFields = Object.assign({}, aliasedColumns, aliasedRelations);
+      // 	let where, hasUserDefinedWhere;
+      // 	if (config.where) {
+      // 		const whereSql = typeof config.where === 'function' ? config.where(aliasedFields, operators) : config.where;
+      // 		where = whereSql && mapColumnsInSQLToAlias(whereSql, tableAlias);
+      // 		hasUserDefinedWhere = !!where;
+      // 	}
+      // 	where = and(joinOn, where);
+      // 	// const fieldsSelection: { tsKey: string; value: PgColumn | SQL.Aliased; isExtra?: boolean }[] = [];
+      // 	let joins: Join[] = [];
+      // 	let selectedColumns: string[] = [];
+      // 	// Figure out which columns to select
+      // 	if (config.columns) {
+      // 		let isIncludeMode = false;
+      // 		for (const [field, value] of Object.entries(config.columns)) {
+      // 			if (value === undefined) {
+      // 				continue;
+      // 			}
+      // 			if (field in tableConfig.columns) {
+      // 				if (!isIncludeMode && value === true) {
+      // 					isIncludeMode = true;
+      // 				}
+      // 				selectedColumns.push(field);
+      // 			}
+      // 		}
+      // 		if (selectedColumns.length > 0) {
+      // 			selectedColumns = isIncludeMode
+      // 				? selectedColumns.filter((c) => config.columns?.[c] === true)
+      // 				: Object.keys(tableConfig.columns).filter((key) => !selectedColumns.includes(key));
+      // 		}
+      // 	} else {
+      // 		// Select all columns if selection is not specified
+      // 		selectedColumns = Object.keys(tableConfig.columns);
+      // 	}
+      // 	// for (const field of selectedColumns) {
+      // 	// 	const column = tableConfig.columns[field]! as PgColumn;
+      // 	// 	fieldsSelection.push({ tsKey: field, value: column });
+      // 	// }
+      // 	let initiallySelectedRelations: {
+      // 		tsKey: string;
+      // 		queryConfig: true | DBQueryConfig<'many', false>;
+      // 		relation: Relation;
+      // 	}[] = [];
+      // 	// let selectedRelations: BuildRelationalQueryResult<PgTable, PgColumn>['selection'] = [];
+      // 	// Figure out which relations to select
+      // 	if (config.with) {
+      // 		initiallySelectedRelations = Object.entries(config.with)
+      // 			.filter((entry): entry is [typeof entry[0], NonNullable<typeof entry[1]>] => !!entry[1])
+      // 			.map(([tsKey, queryConfig]) => ({ tsKey, queryConfig, relation: tableConfig.relations[tsKey]! }));
+      // 	}
+      // 	const manyRelations = initiallySelectedRelations.filter((r) =>
+      // 		is(r.relation, Many)
+      // 		&& (schema[tableNamesMap[r.relation.referencedTable[Table.Symbol.Name]]!]?.primaryKey.length ?? 0) > 0
+      // 	);
+      // 	// If this is the last Many relation (or there are no Many relations), we are on the innermost subquery level
+      // 	const isInnermostQuery = manyRelations.length < 2;
+      // 	const selectedExtras: {
+      // 		tsKey: string;
+      // 		value: SQL.Aliased;
+      // 	}[] = [];
+      // 	// Figure out which extras to select
+      // 	if (isInnermostQuery && config.extras) {
+      // 		const extras = typeof config.extras === 'function'
+      // 			? config.extras(aliasedFields, { sql })
+      // 			: config.extras;
+      // 		for (const [tsKey, value] of Object.entries(extras)) {
+      // 			selectedExtras.push({
+      // 				tsKey,
+      // 				value: mapColumnsInAliasedSQLToAlias(value, tableAlias),
+      // 			});
+      // 		}
+      // 	}
+      // 	// Transform `fieldsSelection` into `selection`
+      // 	// `fieldsSelection` shouldn't be used after this point
+      // 	// for (const { tsKey, value, isExtra } of fieldsSelection) {
+      // 	// 	selection.push({
+      // 	// 		dbKey: is(value, SQL.Aliased) ? value.fieldAlias : tableConfig.columns[tsKey]!.name,
+      // 	// 		tsKey,
+      // 	// 		field: is(value, Column) ? aliasedTableColumn(value, tableAlias) : value,
+      // 	// 		relationTableTsKey: undefined,
+      // 	// 		isJson: false,
+      // 	// 		isExtra,
+      // 	// 		selection: [],
+      // 	// 	});
+      // 	// }
+      // 	let orderByOrig = typeof config.orderBy === 'function'
+      // 		? config.orderBy(aliasedFields, orderByOperators)
+      // 		: config.orderBy ?? [];
+      // 	if (!Array.isArray(orderByOrig)) {
+      // 		orderByOrig = [orderByOrig];
+      // 	}
+      // 	const orderBy = orderByOrig.map((orderByValue) => {
+      // 		if (is(orderByValue, Column)) {
+      // 			return aliasedTableColumn(orderByValue, tableAlias) as PgColumn;
+      // 		}
+      // 		return mapColumnsInSQLToAlias(orderByValue, tableAlias);
+      // 	});
+      // 	const limit = isInnermostQuery ? config.limit : undefined;
+      // 	const offset = isInnermostQuery ? config.offset : undefined;
+      // 	// For non-root queries without additional config except columns, return a table with selection
+      // 	if (
+      // 		!isRoot
+      // 		&& initiallySelectedRelations.length === 0
+      // 		&& selectedExtras.length === 0
+      // 		&& !where
+      // 		&& orderBy.length === 0
+      // 		&& limit === undefined
+      // 		&& offset === undefined
+      // 	) {
+      // 		return {
+      // 			tableTsKey: tableConfig.tsName,
+      // 			sql: table,
+      // 			selection: selectedColumns.map((key) => ({
+      // 				dbKey: tableConfig.columns[key]!.name,
+      // 				tsKey: key,
+      // 				field: tableConfig.columns[key] as PgColumn,
+      // 				relationTableTsKey: undefined,
+      // 				isJson: false,
+      // 				selection: [],
+      // 			})),
+      // 		};
+      // 	}
+      // 	const selectedRelationsWithoutPK:
+      // 	// Process all relations without primary keys, because they need to be joined differently and will all be on the same query level
+      // 	for (
+      // 		const {
+      // 			tsKey: selectedRelationTsKey,
+      // 			queryConfig: selectedRelationConfigValue,
+      // 			relation,
+      // 		} of initiallySelectedRelations
+      // 	) {
+      // 		const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
+      // 		const relationTableName = relation.referencedTable[Table.Symbol.Name];
+      // 		const relationTableTsName = tableNamesMap[relationTableName]!;
+      // 		const relationTable = schema[relationTableTsName]!;
+      // 		if (relationTable.primaryKey.length > 0) {
+      // 			continue;
+      // 		}
+      // 		const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
+      // 		const joinOn = and(
+      // 			...normalizedRelation.fields.map((field, i) =>
+      // 				eq(
+      // 					aliasedTableColumn(normalizedRelation.references[i]!, relationTableAlias),
+      // 					aliasedTableColumn(field, tableAlias),
+      // 				)
+      // 			),
+      // 		);
+      // 		const builtRelation = this.buildRelationalQueryWithoutPK({
+      // 			fullSchema,
+      // 			schema,
+      // 			tableNamesMap,
+      // 			table: fullSchema[relationTableTsName] as PgTable,
+      // 			tableConfig: schema[relationTableTsName]!,
+      // 			queryConfig: selectedRelationConfigValue,
+      // 			tableAlias: relationTableAlias,
+      // 			joinOn,
+      // 			nestedQueryRelation: relation,
+      // 		});
+      // 		const field = sql`${sql.identifier(relationTableAlias)}.${sql.identifier('data')}`.as(selectedRelationTsKey);
+      // 		joins.push({
+      // 			on: sql`true`,
+      // 			table: new Subquery(builtRelation.sql as SQL, {}, relationTableAlias),
+      // 			alias: relationTableAlias,
+      // 			joinType: 'left',
+      // 			lateral: true,
+      // 		});
+      // 		selectedRelations.push({
+      // 			dbKey: selectedRelationTsKey,
+      // 			tsKey: selectedRelationTsKey,
+      // 			field,
+      // 			relationTableTsKey: relationTableTsName,
+      // 			isJson: true,
+      // 			selection: builtRelation.selection,
+      // 		});
+      // 	}
+      // 	const oneRelations = initiallySelectedRelations.filter((r): r is typeof r & { relation: One } =>
+      // 		is(r.relation, One)
+      // 	);
+      // 	// Process all One relations with PKs, because they can all be joined on the same level
+      // 	for (
+      // 		const {
+      // 			tsKey: selectedRelationTsKey,
+      // 			queryConfig: selectedRelationConfigValue,
+      // 			relation,
+      // 		} of oneRelations
+      // 	) {
+      // 		const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
+      // 		const relationTableName = relation.referencedTable[Table.Symbol.Name];
+      // 		const relationTableTsName = tableNamesMap[relationTableName]!;
+      // 		const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
+      // 		const relationTable = schema[relationTableTsName]!;
+      // 		if (relationTable.primaryKey.length === 0) {
+      // 			continue;
+      // 		}
+      // 		const joinOn = and(
+      // 			...normalizedRelation.fields.map((field, i) =>
+      // 				eq(
+      // 					aliasedTableColumn(normalizedRelation.references[i]!, relationTableAlias),
+      // 					aliasedTableColumn(field, tableAlias),
+      // 				)
+      // 			),
+      // 		);
+      // 		const builtRelation = this.buildRelationalQueryWithPK({
+      // 			fullSchema,
+      // 			schema,
+      // 			tableNamesMap,
+      // 			table: fullSchema[relationTableTsName] as PgTable,
+      // 			tableConfig: schema[relationTableTsName]!,
+      // 			queryConfig: selectedRelationConfigValue,
+      // 			tableAlias: relationTableAlias,
+      // 			joinOn,
+      // 		});
+      // 		const field = sql`case when ${sql.identifier(relationTableAlias)} is null then null else json_build_array(${
+      // 			sql.join(
+      // 				builtRelation.selection.map(({ field }) =>
+      // 					is(field, SQL.Aliased)
+      // 						? sql`${sql.identifier(relationTableAlias)}.${sql.identifier(field.fieldAlias)}`
+      // 						: is(field, Column)
+      // 						? aliasedTableColumn(field, relationTableAlias)
+      // 						: field
+      // 				),
+      // 				sql`, `,
+      // 			)
+      // 		}) end`.as(selectedRelationTsKey);
+      // 		const isLateralJoin = is(builtRelation.sql, SQL);
+      // 		joins.push({
+      // 			on: isLateralJoin ? sql`true` : joinOn,
+      // 			table: is(builtRelation.sql, SQL)
+      // 				? new Subquery(builtRelation.sql, {}, relationTableAlias)
+      // 				: aliasedTable(builtRelation.sql, relationTableAlias),
+      // 			alias: relationTableAlias,
+      // 			joinType: 'left',
+      // 			lateral: is(builtRelation.sql, SQL),
+      // 		});
+      // 		selectedRelations.push({
+      // 			dbKey: selectedRelationTsKey,
+      // 			tsKey: selectedRelationTsKey,
+      // 			field,
+      // 			relationTableTsKey: relationTableTsName,
+      // 			isJson: true,
+      // 			selection: builtRelation.selection,
+      // 		});
+      // 	}
+      // 	let distinct: PgSelectConfig['distinct'];
+      // 	let tableFrom: PgTable | Subquery = table;
+      // 	// Process first Many relation - each one requires a nested subquery
+      // 	const manyRelation = manyRelations[0];
+      // 	if (manyRelation) {
+      // 		const {
+      // 			tsKey: selectedRelationTsKey,
+      // 			queryConfig: selectedRelationQueryConfig,
+      // 			relation,
+      // 		} = manyRelation;
+      // 		distinct = {
+      // 			on: tableConfig.primaryKey.map((c) => aliasedTableColumn(c as PgColumn, tableAlias)),
+      // 		};
+      // 		const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
+      // 		const relationTableName = relation.referencedTable[Table.Symbol.Name];
+      // 		const relationTableTsName = tableNamesMap[relationTableName]!;
+      // 		const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
+      // 		const joinOn = and(
+      // 			...normalizedRelation.fields.map((field, i) =>
+      // 				eq(
+      // 					aliasedTableColumn(normalizedRelation.references[i]!, relationTableAlias),
+      // 					aliasedTableColumn(field, tableAlias),
+      // 				)
+      // 			),
+      // 		);
+      // 		const builtRelationJoin = this.buildRelationalQueryWithPK({
+      // 			fullSchema,
+      // 			schema,
+      // 			tableNamesMap,
+      // 			table: fullSchema[relationTableTsName] as PgTable,
+      // 			tableConfig: schema[relationTableTsName]!,
+      // 			queryConfig: selectedRelationQueryConfig,
+      // 			tableAlias: relationTableAlias,
+      // 			joinOn,
+      // 		});
+      // 		const builtRelationSelectionField = sql`case when ${
+      // 			sql.identifier(relationTableAlias)
+      // 		} is null then '[]' else json_agg(json_build_array(${
+      // 			sql.join(
+      // 				builtRelationJoin.selection.map(({ field }) =>
+      // 					is(field, SQL.Aliased)
+      // 						? sql`${sql.identifier(relationTableAlias)}.${sql.identifier(field.fieldAlias)}`
+      // 						: is(field, Column)
+      // 						? aliasedTableColumn(field, relationTableAlias)
+      // 						: field
+      // 				),
+      // 				sql`, `,
+      // 			)
+      // 		})) over (partition by ${sql.join(distinct.on, sql`, `)}) end`.as(selectedRelationTsKey);
+      // 		const isLateralJoin = is(builtRelationJoin.sql, SQL);
+      // 		joins.push({
+      // 			on: isLateralJoin ? sql`true` : joinOn,
+      // 			table: isLateralJoin
+      // 				? new Subquery(builtRelationJoin.sql as SQL, {}, relationTableAlias)
+      // 				: aliasedTable(builtRelationJoin.sql as PgTable, relationTableAlias),
+      // 			alias: relationTableAlias,
+      // 			joinType: 'left',
+      // 			lateral: isLateralJoin,
+      // 		});
+      // 		// Build the "from" subquery with the remaining Many relations
+      // 		const builtTableFrom = this.buildRelationalQueryWithPK({
+      // 			fullSchema,
+      // 			schema,
+      // 			tableNamesMap,
+      // 			table,
+      // 			tableConfig,
+      // 			queryConfig: {
+      // 				...config,
+      // 				where: undefined,
+      // 				orderBy: undefined,
+      // 				limit: undefined,
+      // 				offset: undefined,
+      // 				with: manyRelations.slice(1).reduce<NonNullable<typeof config['with']>>(
+      // 					(result, { tsKey, queryConfig: configValue }) => {
+      // 						result[tsKey] = configValue;
+      // 						return result;
+      // 					},
+      // 					{},
+      // 				),
+      // 			},
+      // 			tableAlias,
+      // 		});
+      // 		selectedRelations.push({
+      // 			dbKey: selectedRelationTsKey,
+      // 			tsKey: selectedRelationTsKey,
+      // 			field: builtRelationSelectionField,
+      // 			relationTableTsKey: relationTableTsName,
+      // 			isJson: true,
+      // 			selection: builtRelationJoin.selection,
+      // 		});
+      // 		// selection = builtTableFrom.selection.map((item) =>
+      // 		// 	is(item.field, SQL.Aliased)
+      // 		// 		? { ...item, field: sql`${sql.identifier(tableAlias)}.${sql.identifier(item.field.fieldAlias)}` }
+      // 		// 		: item
+      // 		// );
+      // 		// selectionForBuild = [{
+      // 		// 	dbKey: '*',
+      // 		// 	tsKey: '*',
+      // 		// 	field: sql`${sql.identifier(tableAlias)}.*`,
+      // 		// 	selection: [],
+      // 		// 	isJson: false,
+      // 		// 	relationTableTsKey: undefined,
+      // 		// }];
+      // 		// const newSelectionItem: (typeof selection)[number] = {
+      // 		// 	dbKey: selectedRelationTsKey,
+      // 		// 	tsKey: selectedRelationTsKey,
+      // 		// 	field,
+      // 		// 	relationTableTsKey: relationTableTsName,
+      // 		// 	isJson: true,
+      // 		// 	selection: builtRelationJoin.selection,
+      // 		// };
+      // 		// selection.push(newSelectionItem);
+      // 		// selectionForBuild.push(newSelectionItem);
+      // 		tableFrom = is(builtTableFrom.sql, PgTable)
+      // 			? builtTableFrom.sql
+      // 			: new Subquery(builtTableFrom.sql, {}, tableAlias);
+      // 	}
+      // 	if (selectedColumns.length === 0 && selectedRelations.length === 0 && selectedExtras.length === 0) {
+      // 		throw new DrizzleError(`No fields selected for table "${tableConfig.tsName}" ("${tableAlias}")`);
+      // 	}
+      // 	let selection: BuildRelationalQueryResult<PgTable, PgColumn>['selection'];
+      // 	function prepareSelectedColumns() {
+      // 		return selectedColumns.map((key) => ({
+      // 			dbKey: tableConfig.columns[key]!.name,
+      // 			tsKey: key,
+      // 			field: tableConfig.columns[key] as PgColumn,
+      // 			relationTableTsKey: undefined,
+      // 			isJson: false,
+      // 			selection: [],
+      // 		}));
+      // 	}
+      // 	function prepareSelectedExtras() {
+      // 		return selectedExtras.map((item) => ({
+      // 			dbKey: item.value.fieldAlias,
+      // 			tsKey: item.tsKey,
+      // 			field: item.value,
+      // 			relationTableTsKey: undefined,
+      // 			isJson: false,
+      // 			selection: [],
+      // 		}));
+      // 	}
+      // 	if (isRoot) {
+      // 		selection = [
+      // 			...prepareSelectedColumns(),
+      // 			...prepareSelectedExtras(),
+      // 		];
+      // 	}
+      // 	if (hasUserDefinedWhere || orderBy.length > 0) {
+      // 		tableFrom = new Subquery(
+      // 			this.buildSelectQuery({
+      // 				table: is(tableFrom, PgTable) ? aliasedTable(tableFrom, tableAlias) : tableFrom,
+      // 				fields: {},
+      // 				fieldsFlat: selectionForBuild.map(({ field }) => ({
+      // 					path: [],
+      // 					field: is(field, Column) ? aliasedTableColumn(field, tableAlias) : field,
+      // 				})),
+      // 				joins,
+      // 				distinct,
+      // 			}),
+      // 			{},
+      // 			tableAlias,
+      // 		);
+      // 		selectionForBuild = selection.map((item) =>
+      // 			is(item.field, SQL.Aliased)
+      // 				? { ...item, field: sql`${sql.identifier(tableAlias)}.${sql.identifier(item.field.fieldAlias)}` }
+      // 				: item
+      // 		);
+      // 		joins = [];
+      // 		distinct = undefined;
+      // 	}
+      // 	const result = this.buildSelectQuery({
+      // 		table: is(tableFrom, PgTable) ? aliasedTable(tableFrom, tableAlias) : tableFrom,
+      // 		fields: {},
+      // 		fieldsFlat: selectionForBuild.map(({ field }) => ({
+      // 			path: [],
+      // 			field: is(field, Column) ? aliasedTableColumn(field, tableAlias) : field,
+      // 		})),
+      // 		where,
+      // 		limit,
+      // 		offset,
+      // 		joins,
+      // 		orderBy,
+      // 		distinct,
+      // 	});
+      // 	return {
+      // 		tableTsKey: tableConfig.tsName,
+      // 		sql: result,
+      // 		selection,
+      // 	};
+      // }
+      buildRelationalQueryWithoutPK({
+        fullSchema,
+        schema,
+        tableNamesMap,
+        table,
+        tableConfig,
+        queryConfig: config2,
+        tableAlias,
+        nestedQueryRelation,
+        joinOn
+      }) {
+        let selection = [];
+        let limit, offset, orderBy = [], where;
+        const joins = [];
+        if (config2 === true) {
+          const selectionEntries = Object.entries(tableConfig.columns);
+          selection = selectionEntries.map(([key, value]) => ({
+            dbKey: value.name,
+            tsKey: key,
+            field: aliasedTableColumn(value, tableAlias),
+            relationTableTsKey: void 0,
+            isJson: false,
+            selection: []
+          }));
+        } else {
+          const aliasedColumns = Object.fromEntries(
+            Object.entries(tableConfig.columns).map(([key, value]) => [key, aliasedTableColumn(value, tableAlias)])
+          );
+          if (config2.where) {
+            const whereSql = typeof config2.where === "function" ? config2.where(aliasedColumns, getOperators()) : config2.where;
+            where = whereSql && mapColumnsInSQLToAlias(whereSql, tableAlias);
+          }
+          const fieldsSelection = [];
+          let selectedColumns = [];
+          if (config2.columns) {
+            let isIncludeMode = false;
+            for (const [field, value] of Object.entries(config2.columns)) {
+              if (value === void 0) {
+                continue;
+              }
+              if (field in tableConfig.columns) {
+                if (!isIncludeMode && value === true) {
+                  isIncludeMode = true;
+                }
+                selectedColumns.push(field);
+              }
+            }
+            if (selectedColumns.length > 0) {
+              selectedColumns = isIncludeMode ? selectedColumns.filter((c) => config2.columns?.[c] === true) : Object.keys(tableConfig.columns).filter((key) => !selectedColumns.includes(key));
+            }
+          } else {
+            selectedColumns = Object.keys(tableConfig.columns);
+          }
+          for (const field of selectedColumns) {
+            const column = tableConfig.columns[field];
+            fieldsSelection.push({ tsKey: field, value: column });
+          }
+          let selectedRelations = [];
+          if (config2.with) {
+            selectedRelations = Object.entries(config2.with).filter((entry) => !!entry[1]).map(([tsKey, queryConfig2]) => ({ tsKey, queryConfig: queryConfig2, relation: tableConfig.relations[tsKey] }));
+          }
+          let extras;
+          if (config2.extras) {
+            extras = typeof config2.extras === "function" ? config2.extras(aliasedColumns, { sql }) : config2.extras;
+            for (const [tsKey, value] of Object.entries(extras)) {
+              fieldsSelection.push({
+                tsKey,
+                value: mapColumnsInAliasedSQLToAlias(value, tableAlias)
+              });
+            }
+          }
+          for (const { tsKey, value } of fieldsSelection) {
+            selection.push({
+              dbKey: is(value, SQL.Aliased) ? value.fieldAlias : tableConfig.columns[tsKey].name,
+              tsKey,
+              field: is(value, Column) ? aliasedTableColumn(value, tableAlias) : value,
+              relationTableTsKey: void 0,
+              isJson: false,
+              selection: []
+            });
+          }
+          let orderByOrig = typeof config2.orderBy === "function" ? config2.orderBy(aliasedColumns, getOrderByOperators()) : config2.orderBy ?? [];
+          if (!Array.isArray(orderByOrig)) {
+            orderByOrig = [orderByOrig];
+          }
+          orderBy = orderByOrig.map((orderByValue) => {
+            if (is(orderByValue, Column)) {
+              return aliasedTableColumn(orderByValue, tableAlias);
+            }
+            return mapColumnsInSQLToAlias(orderByValue, tableAlias);
+          });
+          limit = config2.limit;
+          offset = config2.offset;
+          for (const {
+            tsKey: selectedRelationTsKey,
+            queryConfig: selectedRelationConfigValue,
+            relation
+          } of selectedRelations) {
+            const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
+            const relationTableName = getTableUniqueName(relation.referencedTable);
+            const relationTableTsName = tableNamesMap[relationTableName];
+            const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
+            const joinOn2 = and(
+              ...normalizedRelation.fields.map(
+                (field2, i) => eq(
+                  aliasedTableColumn(normalizedRelation.references[i], relationTableAlias),
+                  aliasedTableColumn(field2, tableAlias)
+                )
+              )
+            );
+            const builtRelation = this.buildRelationalQueryWithoutPK({
+              fullSchema,
+              schema,
+              tableNamesMap,
+              table: fullSchema[relationTableTsName],
+              tableConfig: schema[relationTableTsName],
+              queryConfig: is(relation, One) ? selectedRelationConfigValue === true ? { limit: 1 } : { ...selectedRelationConfigValue, limit: 1 } : selectedRelationConfigValue,
+              tableAlias: relationTableAlias,
+              joinOn: joinOn2,
+              nestedQueryRelation: relation
+            });
+            const field = sql`${sql.identifier(relationTableAlias)}.${sql.identifier("data")}`.as(selectedRelationTsKey);
+            joins.push({
+              on: sql`true`,
+              table: new Subquery(builtRelation.sql, {}, relationTableAlias),
+              alias: relationTableAlias,
+              joinType: "left",
+              lateral: true
+            });
+            selection.push({
+              dbKey: selectedRelationTsKey,
+              tsKey: selectedRelationTsKey,
+              field,
+              relationTableTsKey: relationTableTsName,
+              isJson: true,
+              selection: builtRelation.selection
+            });
+          }
+        }
+        if (selection.length === 0) {
+          throw new DrizzleError({ message: `No fields selected for table "${tableConfig.tsName}" ("${tableAlias}")` });
+        }
+        let result;
+        where = and(joinOn, where);
+        if (nestedQueryRelation) {
+          let field = sql`json_build_array(${sql.join(
+            selection.map(
+              ({ field: field2, tsKey, isJson }) => isJson ? sql`${sql.identifier(`${tableAlias}_${tsKey}`)}.${sql.identifier("data")}` : is(field2, SQL.Aliased) ? field2.sql : field2
+            ),
+            sql`, `
+          )})`;
+          if (is(nestedQueryRelation, Many)) {
+            field = sql`coalesce(json_agg(${field}${orderBy.length > 0 ? sql` order by ${sql.join(orderBy, sql`, `)}` : void 0}), '[]'::json)`;
+          }
+          const nestedSelection = [{
+            dbKey: "data",
+            tsKey: "data",
+            field: field.as("data"),
+            isJson: true,
+            relationTableTsKey: tableConfig.tsName,
+            selection
+          }];
+          const needsSubquery = limit !== void 0 || offset !== void 0 || orderBy.length > 0;
+          if (needsSubquery) {
+            result = this.buildSelectQuery({
+              table: aliasedTable(table, tableAlias),
+              fields: {},
+              fieldsFlat: [{
+                path: [],
+                field: sql.raw("*")
+              }],
+              where,
+              limit,
+              offset,
+              orderBy,
+              setOperators: []
+            });
+            where = void 0;
+            limit = void 0;
+            offset = void 0;
+            orderBy = [];
+          } else {
+            result = aliasedTable(table, tableAlias);
+          }
+          result = this.buildSelectQuery({
+            table: is(result, PgTable) ? result : new Subquery(result, {}, tableAlias),
+            fields: {},
+            fieldsFlat: nestedSelection.map(({ field: field2 }) => ({
+              path: [],
+              field: is(field2, Column) ? aliasedTableColumn(field2, tableAlias) : field2
+            })),
+            joins,
+            where,
+            limit,
+            offset,
+            orderBy,
+            setOperators: []
+          });
+        } else {
+          result = this.buildSelectQuery({
+            table: aliasedTable(table, tableAlias),
+            fields: {},
+            fieldsFlat: selection.map(({ field }) => ({
+              path: [],
+              field: is(field, Column) ? aliasedTableColumn(field, tableAlias) : field
+            })),
+            joins,
+            where,
+            limit,
+            offset,
+            orderBy,
+            setOperators: []
+          });
+        }
+        return {
+          tableTsKey: tableConfig.tsName,
+          sql: result,
+          selection
+        };
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/query-builders/query-builder.js
+var TypedQueryBuilder;
+var init_query_builder = __esm({
+  "node_modules/drizzle-orm/query-builders/query-builder.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    TypedQueryBuilder = class {
+      static {
+        __name(this, "TypedQueryBuilder");
+      }
+      static [entityKind] = "TypedQueryBuilder";
+      /** @internal */
+      getSelectedFields() {
+        return this._.selectedFields;
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/query-builders/select.js
+function createSetOperator(type, isAll) {
+  return (leftSelect, rightSelect, ...restSelects) => {
+    const setOperators = [rightSelect, ...restSelects].map((select) => ({
+      type,
+      isAll,
+      rightSelect: select
+    }));
+    for (const setOperator of setOperators) {
+      if (!haveSameKeys(leftSelect.getSelectedFields(), setOperator.rightSelect.getSelectedFields())) {
+        throw new Error(
+          "Set operator error (union / intersect / except): selected fields are not the same or are in a different order"
+        );
+      }
+    }
+    return leftSelect.addSetOperators(setOperators);
+  };
+}
+var PgSelectBuilder, PgSelectQueryBuilderBase, PgSelectBase, getPgSetOperators, union, unionAll, intersect, intersectAll, except, exceptAll;
+var init_select2 = __esm({
+  "node_modules/drizzle-orm/pg-core/query-builders/select.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_view_base();
+    init_query_builder();
+    init_query_promise();
+    init_selection_proxy();
+    init_sql();
+    init_subquery();
+    init_table();
+    init_tracing();
+    init_utils();
+    init_utils();
+    init_view_common();
+    init_utils3();
+    PgSelectBuilder = class {
+      static {
+        __name(this, "PgSelectBuilder");
+      }
+      static [entityKind] = "PgSelectBuilder";
+      fields;
+      session;
+      dialect;
+      withList = [];
+      distinct;
+      constructor(config2) {
+        this.fields = config2.fields;
+        this.session = config2.session;
+        this.dialect = config2.dialect;
+        if (config2.withList) {
+          this.withList = config2.withList;
+        }
+        this.distinct = config2.distinct;
+      }
+      authToken;
+      /** @internal */
+      setToken(token) {
+        this.authToken = token;
+        return this;
+      }
+      /**
+       * Specify the table, subquery, or other target that you're
+       * building a select query against.
+       *
+       * {@link https://www.postgresql.org/docs/current/sql-select.html#SQL-FROM | Postgres from documentation}
+       */
+      from(source) {
+        const isPartialSelect = !!this.fields;
+        const src = source;
+        let fields;
+        if (this.fields) {
+          fields = this.fields;
+        } else if (is(src, Subquery)) {
+          fields = Object.fromEntries(
+            Object.keys(src._.selectedFields).map((key) => [key, src[key]])
+          );
+        } else if (is(src, PgViewBase)) {
+          fields = src[ViewBaseConfig].selectedFields;
+        } else if (is(src, SQL)) {
+          fields = {};
+        } else {
+          fields = getTableColumns(src);
+        }
+        return new PgSelectBase({
+          table: src,
+          fields,
+          isPartialSelect,
+          session: this.session,
+          dialect: this.dialect,
+          withList: this.withList,
+          distinct: this.distinct
+        }).setToken(this.authToken);
+      }
+    };
+    PgSelectQueryBuilderBase = class extends TypedQueryBuilder {
+      static {
+        __name(this, "PgSelectQueryBuilderBase");
+      }
+      static [entityKind] = "PgSelectQueryBuilder";
+      _;
+      config;
+      joinsNotNullableMap;
+      tableName;
+      isPartialSelect;
+      session;
+      dialect;
+      cacheConfig = void 0;
+      usedTables = /* @__PURE__ */ new Set();
+      constructor({ table, fields, isPartialSelect, session, dialect, withList, distinct }) {
+        super();
+        this.config = {
+          withList,
+          table,
+          fields: { ...fields },
+          distinct,
+          setOperators: []
+        };
+        this.isPartialSelect = isPartialSelect;
+        this.session = session;
+        this.dialect = dialect;
+        this._ = {
+          selectedFields: fields,
+          config: this.config
+        };
+        this.tableName = getTableLikeName(table);
+        this.joinsNotNullableMap = typeof this.tableName === "string" ? { [this.tableName]: true } : {};
+        for (const item of extractUsedTable(table)) this.usedTables.add(item);
+      }
+      /** @internal */
+      getUsedTables() {
+        return [...this.usedTables];
+      }
+      createJoin(joinType, lateral) {
+        return (table, on) => {
+          const baseTableName = this.tableName;
+          const tableName = getTableLikeName(table);
+          for (const item of extractUsedTable(table)) this.usedTables.add(item);
+          if (typeof tableName === "string" && this.config.joins?.some((join) => join.alias === tableName)) {
+            throw new Error(`Alias "${tableName}" is already used in this query`);
+          }
+          if (!this.isPartialSelect) {
+            if (Object.keys(this.joinsNotNullableMap).length === 1 && typeof baseTableName === "string") {
+              this.config.fields = {
+                [baseTableName]: this.config.fields
+              };
+            }
+            if (typeof tableName === "string" && !is(table, SQL)) {
+              const selection = is(table, Subquery) ? table._.selectedFields : is(table, View) ? table[ViewBaseConfig].selectedFields : table[Table.Symbol.Columns];
+              this.config.fields[tableName] = selection;
+            }
+          }
+          if (typeof on === "function") {
+            on = on(
+              new Proxy(
+                this.config.fields,
+                new SelectionProxyHandler({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
+              )
+            );
+          }
+          if (!this.config.joins) {
+            this.config.joins = [];
+          }
+          this.config.joins.push({ on, table, joinType, alias: tableName, lateral });
+          if (typeof tableName === "string") {
+            switch (joinType) {
+              case "left": {
+                this.joinsNotNullableMap[tableName] = false;
+                break;
+              }
+              case "right": {
+                this.joinsNotNullableMap = Object.fromEntries(
+                  Object.entries(this.joinsNotNullableMap).map(([key]) => [key, false])
+                );
+                this.joinsNotNullableMap[tableName] = true;
+                break;
+              }
+              case "cross":
+              case "inner": {
+                this.joinsNotNullableMap[tableName] = true;
+                break;
+              }
+              case "full": {
+                this.joinsNotNullableMap = Object.fromEntries(
+                  Object.entries(this.joinsNotNullableMap).map(([key]) => [key, false])
+                );
+                this.joinsNotNullableMap[tableName] = false;
+                break;
+              }
+            }
+          }
+          return this;
+        };
+      }
+      /**
+       * Executes a `left join` operation by adding another table to the current query.
+       *
+       * Calling this method associates each row of the table with the corresponding row from the joined table, if a match is found. If no matching row exists, it sets all columns of the joined table to null.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/joins#left-join}
+       *
+       * @param table the table to join.
+       * @param on the `on` clause.
+       *
+       * @example
+       *
+       * ```ts
+       * // Select all users and their pets
+       * const usersWithPets: { user: User; pets: Pet | null; }[] = await db.select()
+       *   .from(users)
+       *   .leftJoin(pets, eq(users.id, pets.ownerId))
+       *
+       * // Select userId and petId
+       * const usersIdsAndPetIds: { userId: number; petId: number | null; }[] = await db.select({
+       *   userId: users.id,
+       *   petId: pets.id,
+       * })
+       *   .from(users)
+       *   .leftJoin(pets, eq(users.id, pets.ownerId))
+       * ```
+       */
+      leftJoin = this.createJoin("left", false);
+      /**
+       * Executes a `left join lateral` operation by adding subquery to the current query.
+       *
+       * A `lateral` join allows the right-hand expression to refer to columns from the left-hand side.
+       *
+       * Calling this method associates each row of the table with the corresponding row from the joined table, if a match is found. If no matching row exists, it sets all columns of the joined table to null.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/joins#left-join-lateral}
+       *
+       * @param table the subquery to join.
+       * @param on the `on` clause.
+       */
+      leftJoinLateral = this.createJoin("left", true);
+      /**
+       * Executes a `right join` operation by adding another table to the current query.
+       *
+       * Calling this method associates each row of the joined table with the corresponding row from the main table, if a match is found. If no matching row exists, it sets all columns of the main table to null.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/joins#right-join}
+       *
+       * @param table the table to join.
+       * @param on the `on` clause.
+       *
+       * @example
+       *
+       * ```ts
+       * // Select all users and their pets
+       * const usersWithPets: { user: User | null; pets: Pet; }[] = await db.select()
+       *   .from(users)
+       *   .rightJoin(pets, eq(users.id, pets.ownerId))
+       *
+       * // Select userId and petId
+       * const usersIdsAndPetIds: { userId: number | null; petId: number; }[] = await db.select({
+       *   userId: users.id,
+       *   petId: pets.id,
+       * })
+       *   .from(users)
+       *   .rightJoin(pets, eq(users.id, pets.ownerId))
+       * ```
+       */
+      rightJoin = this.createJoin("right", false);
+      /**
+       * Executes an `inner join` operation, creating a new table by combining rows from two tables that have matching values.
+       *
+       * Calling this method retrieves rows that have corresponding entries in both joined tables. Rows without matching entries in either table are excluded, resulting in a table that includes only matching pairs.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/joins#inner-join}
+       *
+       * @param table the table to join.
+       * @param on the `on` clause.
+       *
+       * @example
+       *
+       * ```ts
+       * // Select all users and their pets
+       * const usersWithPets: { user: User; pets: Pet; }[] = await db.select()
+       *   .from(users)
+       *   .innerJoin(pets, eq(users.id, pets.ownerId))
+       *
+       * // Select userId and petId
+       * const usersIdsAndPetIds: { userId: number; petId: number; }[] = await db.select({
+       *   userId: users.id,
+       *   petId: pets.id,
+       * })
+       *   .from(users)
+       *   .innerJoin(pets, eq(users.id, pets.ownerId))
+       * ```
+       */
+      innerJoin = this.createJoin("inner", false);
+      /**
+       * Executes an `inner join lateral` operation, creating a new table by combining rows from two queries that have matching values.
+       *
+       * A `lateral` join allows the right-hand expression to refer to columns from the left-hand side.
+       *
+       * Calling this method retrieves rows that have corresponding entries in both joined tables. Rows without matching entries in either table are excluded, resulting in a table that includes only matching pairs.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/joins#inner-join-lateral}
+       *
+       * @param table the subquery to join.
+       * @param on the `on` clause.
+       */
+      innerJoinLateral = this.createJoin("inner", true);
+      /**
+       * Executes a `full join` operation by combining rows from two tables into a new table.
+       *
+       * Calling this method retrieves all rows from both main and joined tables, merging rows with matching values and filling in `null` for non-matching columns.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/joins#full-join}
+       *
+       * @param table the table to join.
+       * @param on the `on` clause.
+       *
+       * @example
+       *
+       * ```ts
+       * // Select all users and their pets
+       * const usersWithPets: { user: User | null; pets: Pet | null; }[] = await db.select()
+       *   .from(users)
+       *   .fullJoin(pets, eq(users.id, pets.ownerId))
+       *
+       * // Select userId and petId
+       * const usersIdsAndPetIds: { userId: number | null; petId: number | null; }[] = await db.select({
+       *   userId: users.id,
+       *   petId: pets.id,
+       * })
+       *   .from(users)
+       *   .fullJoin(pets, eq(users.id, pets.ownerId))
+       * ```
+       */
+      fullJoin = this.createJoin("full", false);
+      /**
+       * Executes a `cross join` operation by combining rows from two tables into a new table.
+       *
+       * Calling this method retrieves all rows from both main and joined tables, merging all rows from each table.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/joins#cross-join}
+       *
+       * @param table the table to join.
+       *
+       * @example
+       *
+       * ```ts
+       * // Select all users, each user with every pet
+       * const usersWithPets: { user: User; pets: Pet; }[] = await db.select()
+       *   .from(users)
+       *   .crossJoin(pets)
+       *
+       * // Select userId and petId
+       * const usersIdsAndPetIds: { userId: number; petId: number; }[] = await db.select({
+       *   userId: users.id,
+       *   petId: pets.id,
+       * })
+       *   .from(users)
+       *   .crossJoin(pets)
+       * ```
+       */
+      crossJoin = this.createJoin("cross", false);
+      /**
+       * Executes a `cross join lateral` operation by combining rows from two queries into a new table.
+       *
+       * A `lateral` join allows the right-hand expression to refer to columns from the left-hand side.
+       *
+       * Calling this method retrieves all rows from both main and joined queries, merging all rows from each query.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/joins#cross-join-lateral}
+       *
+       * @param table the query to join.
+       */
+      crossJoinLateral = this.createJoin("cross", true);
+      createSetOperator(type, isAll) {
+        return (rightSelection) => {
+          const rightSelect = typeof rightSelection === "function" ? rightSelection(getPgSetOperators()) : rightSelection;
+          if (!haveSameKeys(this.getSelectedFields(), rightSelect.getSelectedFields())) {
+            throw new Error(
+              "Set operator error (union / intersect / except): selected fields are not the same or are in a different order"
+            );
+          }
+          this.config.setOperators.push({ type, isAll, rightSelect });
+          return this;
+        };
+      }
+      /**
+       * Adds `union` set operator to the query.
+       *
+       * Calling this method will combine the result sets of the `select` statements and remove any duplicate rows that appear across them.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/set-operations#union}
+       *
+       * @example
+       *
+       * ```ts
+       * // Select all unique names from customers and users tables
+       * await db.select({ name: users.name })
+       *   .from(users)
+       *   .union(
+       *     db.select({ name: customers.name }).from(customers)
+       *   );
+       * // or
+       * import { union } from 'drizzle-orm/pg-core'
+       *
+       * await union(
+       *   db.select({ name: users.name }).from(users),
+       *   db.select({ name: customers.name }).from(customers)
+       * );
+       * ```
+       */
+      union = this.createSetOperator("union", false);
+      /**
+       * Adds `union all` set operator to the query.
+       *
+       * Calling this method will combine the result-set of the `select` statements and keep all duplicate rows that appear across them.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/set-operations#union-all}
+       *
+       * @example
+       *
+       * ```ts
+       * // Select all transaction ids from both online and in-store sales
+       * await db.select({ transaction: onlineSales.transactionId })
+       *   .from(onlineSales)
+       *   .unionAll(
+       *     db.select({ transaction: inStoreSales.transactionId }).from(inStoreSales)
+       *   );
+       * // or
+       * import { unionAll } from 'drizzle-orm/pg-core'
+       *
+       * await unionAll(
+       *   db.select({ transaction: onlineSales.transactionId }).from(onlineSales),
+       *   db.select({ transaction: inStoreSales.transactionId }).from(inStoreSales)
+       * );
+       * ```
+       */
+      unionAll = this.createSetOperator("union", true);
+      /**
+       * Adds `intersect` set operator to the query.
+       *
+       * Calling this method will retain only the rows that are present in both result sets and eliminate duplicates.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/set-operations#intersect}
+       *
+       * @example
+       *
+       * ```ts
+       * // Select course names that are offered in both departments A and B
+       * await db.select({ courseName: depA.courseName })
+       *   .from(depA)
+       *   .intersect(
+       *     db.select({ courseName: depB.courseName }).from(depB)
+       *   );
+       * // or
+       * import { intersect } from 'drizzle-orm/pg-core'
+       *
+       * await intersect(
+       *   db.select({ courseName: depA.courseName }).from(depA),
+       *   db.select({ courseName: depB.courseName }).from(depB)
+       * );
+       * ```
+       */
+      intersect = this.createSetOperator("intersect", false);
+      /**
+       * Adds `intersect all` set operator to the query.
+       *
+       * Calling this method will retain only the rows that are present in both result sets including all duplicates.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/set-operations#intersect-all}
+       *
+       * @example
+       *
+       * ```ts
+       * // Select all products and quantities that are ordered by both regular and VIP customers
+       * await db.select({
+       *   productId: regularCustomerOrders.productId,
+       *   quantityOrdered: regularCustomerOrders.quantityOrdered
+       * })
+       * .from(regularCustomerOrders)
+       * .intersectAll(
+       *   db.select({
+       *     productId: vipCustomerOrders.productId,
+       *     quantityOrdered: vipCustomerOrders.quantityOrdered
+       *   })
+       *   .from(vipCustomerOrders)
+       * );
+       * // or
+       * import { intersectAll } from 'drizzle-orm/pg-core'
+       *
+       * await intersectAll(
+       *   db.select({
+       *     productId: regularCustomerOrders.productId,
+       *     quantityOrdered: regularCustomerOrders.quantityOrdered
+       *   })
+       *   .from(regularCustomerOrders),
+       *   db.select({
+       *     productId: vipCustomerOrders.productId,
+       *     quantityOrdered: vipCustomerOrders.quantityOrdered
+       *   })
+       *   .from(vipCustomerOrders)
+       * );
+       * ```
+       */
+      intersectAll = this.createSetOperator("intersect", true);
+      /**
+       * Adds `except` set operator to the query.
+       *
+       * Calling this method will retrieve all unique rows from the left query, except for the rows that are present in the result set of the right query.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/set-operations#except}
+       *
+       * @example
+       *
+       * ```ts
+       * // Select all courses offered in department A but not in department B
+       * await db.select({ courseName: depA.courseName })
+       *   .from(depA)
+       *   .except(
+       *     db.select({ courseName: depB.courseName }).from(depB)
+       *   );
+       * // or
+       * import { except } from 'drizzle-orm/pg-core'
+       *
+       * await except(
+       *   db.select({ courseName: depA.courseName }).from(depA),
+       *   db.select({ courseName: depB.courseName }).from(depB)
+       * );
+       * ```
+       */
+      except = this.createSetOperator("except", false);
+      /**
+       * Adds `except all` set operator to the query.
+       *
+       * Calling this method will retrieve all rows from the left query, except for the rows that are present in the result set of the right query.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/set-operations#except-all}
+       *
+       * @example
+       *
+       * ```ts
+       * // Select all products that are ordered by regular customers but not by VIP customers
+       * await db.select({
+       *   productId: regularCustomerOrders.productId,
+       *   quantityOrdered: regularCustomerOrders.quantityOrdered,
+       * })
+       * .from(regularCustomerOrders)
+       * .exceptAll(
+       *   db.select({
+       *     productId: vipCustomerOrders.productId,
+       *     quantityOrdered: vipCustomerOrders.quantityOrdered,
+       *   })
+       *   .from(vipCustomerOrders)
+       * );
+       * // or
+       * import { exceptAll } from 'drizzle-orm/pg-core'
+       *
+       * await exceptAll(
+       *   db.select({
+       *     productId: regularCustomerOrders.productId,
+       *     quantityOrdered: regularCustomerOrders.quantityOrdered
+       *   })
+       *   .from(regularCustomerOrders),
+       *   db.select({
+       *     productId: vipCustomerOrders.productId,
+       *     quantityOrdered: vipCustomerOrders.quantityOrdered
+       *   })
+       *   .from(vipCustomerOrders)
+       * );
+       * ```
+       */
+      exceptAll = this.createSetOperator("except", true);
+      /** @internal */
+      addSetOperators(setOperators) {
+        this.config.setOperators.push(...setOperators);
+        return this;
+      }
+      /**
+       * Adds a `where` clause to the query.
+       *
+       * Calling this method will select only those rows that fulfill a specified condition.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/select#filtering}
+       *
+       * @param where the `where` clause.
+       *
+       * @example
+       * You can use conditional operators and `sql function` to filter the rows to be selected.
+       *
+       * ```ts
+       * // Select all cars with green color
+       * await db.select().from(cars).where(eq(cars.color, 'green'));
+       * // or
+       * await db.select().from(cars).where(sql`${cars.color} = 'green'`)
+       * ```
+       *
+       * You can logically combine conditional operators with `and()` and `or()` operators:
+       *
+       * ```ts
+       * // Select all BMW cars with a green color
+       * await db.select().from(cars).where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
+       *
+       * // Select all cars with the green or blue color
+       * await db.select().from(cars).where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
+       * ```
+       */
+      where(where) {
+        if (typeof where === "function") {
+          where = where(
+            new Proxy(
+              this.config.fields,
+              new SelectionProxyHandler({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
+            )
+          );
+        }
+        this.config.where = where;
+        return this;
+      }
+      /**
+       * Adds a `having` clause to the query.
+       *
+       * Calling this method will select only those rows that fulfill a specified condition. It is typically used with aggregate functions to filter the aggregated data based on a specified condition.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/select#aggregations}
+       *
+       * @param having the `having` clause.
+       *
+       * @example
+       *
+       * ```ts
+       * // Select all brands with more than one car
+       * await db.select({
+       * 	brand: cars.brand,
+       * 	count: sql<number>`cast(count(${cars.id}) as int)`,
+       * })
+       *   .from(cars)
+       *   .groupBy(cars.brand)
+       *   .having(({ count }) => gt(count, 1));
+       * ```
+       */
+      having(having) {
+        if (typeof having === "function") {
+          having = having(
+            new Proxy(
+              this.config.fields,
+              new SelectionProxyHandler({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
+            )
+          );
+        }
+        this.config.having = having;
+        return this;
+      }
+      groupBy(...columns) {
+        if (typeof columns[0] === "function") {
+          const groupBy = columns[0](
+            new Proxy(
+              this.config.fields,
+              new SelectionProxyHandler({ sqlAliasedBehavior: "alias", sqlBehavior: "sql" })
+            )
+          );
+          this.config.groupBy = Array.isArray(groupBy) ? groupBy : [groupBy];
+        } else {
+          this.config.groupBy = columns;
+        }
+        return this;
+      }
+      orderBy(...columns) {
+        if (typeof columns[0] === "function") {
+          const orderBy = columns[0](
+            new Proxy(
+              this.config.fields,
+              new SelectionProxyHandler({ sqlAliasedBehavior: "alias", sqlBehavior: "sql" })
+            )
+          );
+          const orderByArray = Array.isArray(orderBy) ? orderBy : [orderBy];
+          if (this.config.setOperators.length > 0) {
+            this.config.setOperators.at(-1).orderBy = orderByArray;
+          } else {
+            this.config.orderBy = orderByArray;
+          }
+        } else {
+          const orderByArray = columns;
+          if (this.config.setOperators.length > 0) {
+            this.config.setOperators.at(-1).orderBy = orderByArray;
+          } else {
+            this.config.orderBy = orderByArray;
+          }
+        }
+        return this;
+      }
+      /**
+       * Adds a `limit` clause to the query.
+       *
+       * Calling this method will set the maximum number of rows that will be returned by this query.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/select#limit--offset}
+       *
+       * @param limit the `limit` clause.
+       *
+       * @example
+       *
+       * ```ts
+       * // Get the first 10 people from this query.
+       * await db.select().from(people).limit(10);
+       * ```
+       */
+      limit(limit) {
+        if (this.config.setOperators.length > 0) {
+          this.config.setOperators.at(-1).limit = limit;
+        } else {
+          this.config.limit = limit;
+        }
+        return this;
+      }
+      /**
+       * Adds an `offset` clause to the query.
+       *
+       * Calling this method will skip a number of rows when returning results from this query.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/select#limit--offset}
+       *
+       * @param offset the `offset` clause.
+       *
+       * @example
+       *
+       * ```ts
+       * // Get the 10th-20th people from this query.
+       * await db.select().from(people).offset(10).limit(10);
+       * ```
+       */
+      offset(offset) {
+        if (this.config.setOperators.length > 0) {
+          this.config.setOperators.at(-1).offset = offset;
+        } else {
+          this.config.offset = offset;
+        }
+        return this;
+      }
+      /**
+       * Adds a `for` clause to the query.
+       *
+       * Calling this method will specify a lock strength for this query that controls how strictly it acquires exclusive access to the rows being queried.
+       *
+       * See docs: {@link https://www.postgresql.org/docs/current/sql-select.html#SQL-FOR-UPDATE-SHARE}
+       *
+       * @param strength the lock strength.
+       * @param config the lock configuration.
+       */
+      for(strength, config2 = {}) {
+        this.config.lockingClause = { strength, config: config2 };
+        return this;
+      }
+      /** @internal */
+      getSQL() {
+        return this.dialect.buildSelectQuery(this.config);
+      }
+      toSQL() {
+        const { typings: _typings, ...rest } = this.dialect.sqlToQuery(this.getSQL());
+        return rest;
+      }
+      as(alias2) {
+        const usedTables = [];
+        usedTables.push(...extractUsedTable(this.config.table));
+        if (this.config.joins) {
+          for (const it2 of this.config.joins) usedTables.push(...extractUsedTable(it2.table));
+        }
+        return new Proxy(
+          new Subquery(this.getSQL(), this.config.fields, alias2, false, [...new Set(usedTables)]),
+          new SelectionProxyHandler({ alias: alias2, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
+        );
+      }
+      /** @internal */
+      getSelectedFields() {
+        return new Proxy(
+          this.config.fields,
+          new SelectionProxyHandler({ alias: this.tableName, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
+        );
+      }
+      $dynamic() {
+        return this;
+      }
+      $withCache(config2) {
+        this.cacheConfig = config2 === void 0 ? { config: {}, enable: true, autoInvalidate: true } : config2 === false ? { enable: false } : { enable: true, autoInvalidate: true, ...config2 };
+        return this;
+      }
+    };
+    PgSelectBase = class extends PgSelectQueryBuilderBase {
+      static {
+        __name(this, "PgSelectBase");
+      }
+      static [entityKind] = "PgSelect";
+      /** @internal */
+      _prepare(name) {
+        const { session, config: config2, dialect, joinsNotNullableMap, authToken, cacheConfig, usedTables } = this;
+        if (!session) {
+          throw new Error("Cannot execute a query on a query builder. Please use a database instance instead.");
+        }
+        const { fields } = config2;
+        return tracer.startActiveSpan("drizzle.prepareQuery", () => {
+          const fieldsList = orderSelectedFields(fields);
+          const query = session.prepareQuery(dialect.sqlToQuery(this.getSQL()), fieldsList, name, true, void 0, {
+            type: "select",
+            tables: [...usedTables]
+          }, cacheConfig);
+          query.joinsNotNullableMap = joinsNotNullableMap;
+          return query.setToken(authToken);
+        });
+      }
+      /**
+       * Create a prepared statement for this query. This allows
+       * the database to remember this query for the given session
+       * and call it by name, rather than specifying the full query.
+       *
+       * {@link https://www.postgresql.org/docs/current/sql-prepare.html | Postgres prepare documentation}
+       */
+      prepare(name) {
+        return this._prepare(name);
+      }
+      authToken;
+      /** @internal */
+      setToken(token) {
+        this.authToken = token;
+        return this;
+      }
+      execute = /* @__PURE__ */ __name((placeholderValues) => {
+        return tracer.startActiveSpan("drizzle.operation", () => {
+          return this._prepare().execute(placeholderValues, this.authToken);
+        });
+      }, "execute");
+    };
+    applyMixins(PgSelectBase, [QueryPromise]);
+    __name(createSetOperator, "createSetOperator");
+    getPgSetOperators = /* @__PURE__ */ __name(() => ({
+      union,
+      unionAll,
+      intersect,
+      intersectAll,
+      except,
+      exceptAll
+    }), "getPgSetOperators");
+    union = createSetOperator("union", false);
+    unionAll = createSetOperator("union", true);
+    intersect = createSetOperator("intersect", false);
+    intersectAll = createSetOperator("intersect", true);
+    except = createSetOperator("except", false);
+    exceptAll = createSetOperator("except", true);
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/query-builders/query-builder.js
+var QueryBuilder;
+var init_query_builder2 = __esm({
+  "node_modules/drizzle-orm/pg-core/query-builders/query-builder.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_dialect();
+    init_selection_proxy();
+    init_subquery();
+    init_select2();
+    QueryBuilder = class {
+      static {
+        __name(this, "QueryBuilder");
+      }
+      static [entityKind] = "PgQueryBuilder";
+      dialect;
+      dialectConfig;
+      constructor(dialect) {
+        this.dialect = is(dialect, PgDialect) ? dialect : void 0;
+        this.dialectConfig = is(dialect, PgDialect) ? void 0 : dialect;
+      }
+      $with = /* @__PURE__ */ __name((alias2, selection) => {
+        const queryBuilder = this;
+        const as2 = /* @__PURE__ */ __name((qb) => {
+          if (typeof qb === "function") {
+            qb = qb(queryBuilder);
+          }
+          return new Proxy(
+            new WithSubquery(
+              qb.getSQL(),
+              selection ?? ("getSelectedFields" in qb ? qb.getSelectedFields() ?? {} : {}),
+              alias2,
+              true
+            ),
+            new SelectionProxyHandler({ alias: alias2, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
+          );
+        }, "as");
+        return { as: as2 };
+      }, "$with");
+      with(...queries) {
+        const self = this;
+        function select(fields) {
+          return new PgSelectBuilder({
+            fields: fields ?? void 0,
+            session: void 0,
+            dialect: self.getDialect(),
+            withList: queries
+          });
+        }
+        __name(select, "select");
+        function selectDistinct(fields) {
+          return new PgSelectBuilder({
+            fields: fields ?? void 0,
+            session: void 0,
+            dialect: self.getDialect(),
+            distinct: true
+          });
+        }
+        __name(selectDistinct, "selectDistinct");
+        function selectDistinctOn(on, fields) {
+          return new PgSelectBuilder({
+            fields: fields ?? void 0,
+            session: void 0,
+            dialect: self.getDialect(),
+            distinct: { on }
+          });
+        }
+        __name(selectDistinctOn, "selectDistinctOn");
+        return { select, selectDistinct, selectDistinctOn };
+      }
+      select(fields) {
+        return new PgSelectBuilder({
+          fields: fields ?? void 0,
+          session: void 0,
+          dialect: this.getDialect()
+        });
+      }
+      selectDistinct(fields) {
+        return new PgSelectBuilder({
+          fields: fields ?? void 0,
+          session: void 0,
+          dialect: this.getDialect(),
+          distinct: true
+        });
+      }
+      selectDistinctOn(on, fields) {
+        return new PgSelectBuilder({
+          fields: fields ?? void 0,
+          session: void 0,
+          dialect: this.getDialect(),
+          distinct: { on }
+        });
+      }
+      // Lazy load dialect to avoid circular dependency
+      getDialect() {
+        if (!this.dialect) {
+          this.dialect = new PgDialect(this.dialectConfig);
+        }
+        return this.dialect;
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/view.js
+function pgViewWithSchema(name, selection, schema) {
+  if (selection) {
+    return new ManualViewBuilder(name, selection, schema);
+  }
+  return new ViewBuilder(name, schema);
+}
+function pgMaterializedViewWithSchema(name, selection, schema) {
+  if (selection) {
+    return new ManualMaterializedViewBuilder(name, selection, schema);
+  }
+  return new MaterializedViewBuilder(name, schema);
+}
+function pgView(name, columns) {
+  return pgViewWithSchema(name, columns, void 0);
+}
+function pgMaterializedView(name, columns) {
+  return pgMaterializedViewWithSchema(name, columns, void 0);
+}
+function isPgView(obj) {
+  return is(obj, PgView);
+}
+function isPgMaterializedView(obj) {
+  return is(obj, PgMaterializedView);
+}
+var DefaultViewBuilderCore, ViewBuilder, ManualViewBuilder, MaterializedViewBuilderCore, MaterializedViewBuilder, ManualMaterializedViewBuilder, PgView, PgMaterializedViewConfig, PgMaterializedView;
+var init_view = __esm({
+  "node_modules/drizzle-orm/pg-core/view.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_selection_proxy();
+    init_utils();
+    init_query_builder2();
+    init_table2();
+    init_view_base();
+    init_view_common2();
+    DefaultViewBuilderCore = class {
+      static {
+        __name(this, "DefaultViewBuilderCore");
+      }
+      constructor(name, schema) {
+        this.name = name;
+        this.schema = schema;
+      }
+      static [entityKind] = "PgDefaultViewBuilderCore";
+      config = {};
+      with(config2) {
+        this.config.with = config2;
+        return this;
+      }
+    };
+    ViewBuilder = class extends DefaultViewBuilderCore {
+      static {
+        __name(this, "ViewBuilder");
+      }
+      static [entityKind] = "PgViewBuilder";
+      as(qb) {
+        if (typeof qb === "function") {
+          qb = qb(new QueryBuilder());
+        }
+        const selectionProxy = new SelectionProxyHandler({
+          alias: this.name,
+          sqlBehavior: "error",
+          sqlAliasedBehavior: "alias",
+          replaceOriginalName: true
+        });
+        const aliasedSelection = new Proxy(qb.getSelectedFields(), selectionProxy);
+        return new Proxy(
+          new PgView({
+            pgConfig: this.config,
+            config: {
+              name: this.name,
+              schema: this.schema,
+              selectedFields: aliasedSelection,
+              query: qb.getSQL().inlineParams()
+            }
+          }),
+          selectionProxy
+        );
+      }
+    };
+    ManualViewBuilder = class extends DefaultViewBuilderCore {
+      static {
+        __name(this, "ManualViewBuilder");
+      }
+      static [entityKind] = "PgManualViewBuilder";
+      columns;
+      constructor(name, columns, schema) {
+        super(name, schema);
+        this.columns = getTableColumns(pgTable(name, columns));
+      }
+      existing() {
+        return new Proxy(
+          new PgView({
+            pgConfig: void 0,
+            config: {
+              name: this.name,
+              schema: this.schema,
+              selectedFields: this.columns,
+              query: void 0
+            }
+          }),
+          new SelectionProxyHandler({
+            alias: this.name,
+            sqlBehavior: "error",
+            sqlAliasedBehavior: "alias",
+            replaceOriginalName: true
+          })
+        );
+      }
+      as(query) {
+        return new Proxy(
+          new PgView({
+            pgConfig: this.config,
+            config: {
+              name: this.name,
+              schema: this.schema,
+              selectedFields: this.columns,
+              query: query.inlineParams()
+            }
+          }),
+          new SelectionProxyHandler({
+            alias: this.name,
+            sqlBehavior: "error",
+            sqlAliasedBehavior: "alias",
+            replaceOriginalName: true
+          })
+        );
+      }
+    };
+    MaterializedViewBuilderCore = class {
+      static {
+        __name(this, "MaterializedViewBuilderCore");
+      }
+      constructor(name, schema) {
+        this.name = name;
+        this.schema = schema;
+      }
+      static [entityKind] = "PgMaterializedViewBuilderCore";
+      config = {};
+      using(using) {
+        this.config.using = using;
+        return this;
+      }
+      with(config2) {
+        this.config.with = config2;
+        return this;
+      }
+      tablespace(tablespace) {
+        this.config.tablespace = tablespace;
+        return this;
+      }
+      withNoData() {
+        this.config.withNoData = true;
+        return this;
+      }
+    };
+    MaterializedViewBuilder = class extends MaterializedViewBuilderCore {
+      static {
+        __name(this, "MaterializedViewBuilder");
+      }
+      static [entityKind] = "PgMaterializedViewBuilder";
+      as(qb) {
+        if (typeof qb === "function") {
+          qb = qb(new QueryBuilder());
+        }
+        const selectionProxy = new SelectionProxyHandler({
+          alias: this.name,
+          sqlBehavior: "error",
+          sqlAliasedBehavior: "alias",
+          replaceOriginalName: true
+        });
+        const aliasedSelection = new Proxy(qb.getSelectedFields(), selectionProxy);
+        return new Proxy(
+          new PgMaterializedView({
+            pgConfig: {
+              with: this.config.with,
+              using: this.config.using,
+              tablespace: this.config.tablespace,
+              withNoData: this.config.withNoData
+            },
+            config: {
+              name: this.name,
+              schema: this.schema,
+              selectedFields: aliasedSelection,
+              query: qb.getSQL().inlineParams()
+            }
+          }),
+          selectionProxy
+        );
+      }
+    };
+    ManualMaterializedViewBuilder = class extends MaterializedViewBuilderCore {
+      static {
+        __name(this, "ManualMaterializedViewBuilder");
+      }
+      static [entityKind] = "PgManualMaterializedViewBuilder";
+      columns;
+      constructor(name, columns, schema) {
+        super(name, schema);
+        this.columns = getTableColumns(pgTable(name, columns));
+      }
+      existing() {
+        return new Proxy(
+          new PgMaterializedView({
+            pgConfig: {
+              tablespace: this.config.tablespace,
+              using: this.config.using,
+              with: this.config.with,
+              withNoData: this.config.withNoData
+            },
+            config: {
+              name: this.name,
+              schema: this.schema,
+              selectedFields: this.columns,
+              query: void 0
+            }
+          }),
+          new SelectionProxyHandler({
+            alias: this.name,
+            sqlBehavior: "error",
+            sqlAliasedBehavior: "alias",
+            replaceOriginalName: true
+          })
+        );
+      }
+      as(query) {
+        return new Proxy(
+          new PgMaterializedView({
+            pgConfig: {
+              tablespace: this.config.tablespace,
+              using: this.config.using,
+              with: this.config.with,
+              withNoData: this.config.withNoData
+            },
+            config: {
+              name: this.name,
+              schema: this.schema,
+              selectedFields: this.columns,
+              query: query.inlineParams()
+            }
+          }),
+          new SelectionProxyHandler({
+            alias: this.name,
+            sqlBehavior: "error",
+            sqlAliasedBehavior: "alias",
+            replaceOriginalName: true
+          })
+        );
+      }
+    };
+    PgView = class extends PgViewBase {
+      static {
+        __name(this, "PgView");
+      }
+      static [entityKind] = "PgView";
+      [PgViewConfig];
+      constructor({ pgConfig, config: config2 }) {
+        super(config2);
+        if (pgConfig) {
+          this[PgViewConfig] = {
+            with: pgConfig.with
+          };
+        }
+      }
+    };
+    PgMaterializedViewConfig = /* @__PURE__ */ Symbol.for("drizzle:PgMaterializedViewConfig");
+    PgMaterializedView = class extends PgViewBase {
+      static {
+        __name(this, "PgMaterializedView");
+      }
+      static [entityKind] = "PgMaterializedView";
+      [PgMaterializedViewConfig];
+      constructor({ pgConfig, config: config2 }) {
+        super(config2);
+        this[PgMaterializedViewConfig] = {
+          with: pgConfig?.with,
+          using: pgConfig?.using,
+          tablespace: pgConfig?.tablespace,
+          withNoData: pgConfig?.withNoData
+        };
+      }
+    };
+    __name(pgViewWithSchema, "pgViewWithSchema");
+    __name(pgMaterializedViewWithSchema, "pgMaterializedViewWithSchema");
+    __name(pgView, "pgView");
+    __name(pgMaterializedView, "pgMaterializedView");
+    __name(isPgView, "isPgView");
+    __name(isPgMaterializedView, "isPgMaterializedView");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/utils.js
+function getTableConfig(table) {
+  const columns = Object.values(table[Table.Symbol.Columns]);
+  const indexes = [];
+  const checks = [];
+  const primaryKeys = [];
+  const foreignKeys = Object.values(table[PgTable.Symbol.InlineForeignKeys]);
+  const uniqueConstraints = [];
+  const name = table[Table.Symbol.Name];
+  const schema = table[Table.Symbol.Schema];
+  const policies = [];
+  const enableRLS = table[PgTable.Symbol.EnableRLS];
+  const extraConfigBuilder = table[PgTable.Symbol.ExtraConfigBuilder];
+  if (extraConfigBuilder !== void 0) {
+    const extraConfig = extraConfigBuilder(table[Table.Symbol.ExtraConfigColumns]);
+    const extraValues = Array.isArray(extraConfig) ? extraConfig.flat(1) : Object.values(extraConfig);
+    for (const builder of extraValues) {
+      if (is(builder, IndexBuilder)) {
+        indexes.push(builder.build(table));
+      } else if (is(builder, CheckBuilder)) {
+        checks.push(builder.build(table));
+      } else if (is(builder, UniqueConstraintBuilder)) {
+        uniqueConstraints.push(builder.build(table));
+      } else if (is(builder, PrimaryKeyBuilder)) {
+        primaryKeys.push(builder.build(table));
+      } else if (is(builder, ForeignKeyBuilder)) {
+        foreignKeys.push(builder.build(table));
+      } else if (is(builder, PgPolicy)) {
+        policies.push(builder);
+      }
+    }
+  }
+  return {
+    columns,
+    indexes,
+    foreignKeys,
+    checks,
+    primaryKeys,
+    uniqueConstraints,
+    name,
+    schema,
+    policies,
+    enableRLS
+  };
+}
+function extractUsedTable(table) {
+  if (is(table, PgTable)) {
+    return [table[Schema] ? `${table[Schema]}.${table[Table.Symbol.BaseName]}` : table[Table.Symbol.BaseName]];
+  }
+  if (is(table, Subquery)) {
+    return table._.usedTables ?? [];
+  }
+  if (is(table, SQL)) {
+    return table.usedTables ?? [];
+  }
+  return [];
+}
+function getViewConfig(view) {
+  return {
+    ...view[ViewBaseConfig],
+    ...view[PgViewConfig]
+  };
+}
+function getMaterializedViewConfig(view) {
+  return {
+    ...view[ViewBaseConfig],
+    ...view[PgMaterializedViewConfig]
+  };
+}
+var init_utils3 = __esm({
+  "node_modules/drizzle-orm/pg-core/utils.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_table2();
+    init_sql();
+    init_subquery();
+    init_table();
+    init_view_common();
+    init_checks();
+    init_foreign_keys();
+    init_indexes();
+    init_policies();
+    init_primary_keys();
+    init_unique_constraint();
+    init_view_common2();
+    init_view();
+    __name(getTableConfig, "getTableConfig");
+    __name(extractUsedTable, "extractUsedTable");
+    __name(getViewConfig, "getViewConfig");
+    __name(getMaterializedViewConfig, "getMaterializedViewConfig");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/query-builders/delete.js
+var PgDeleteBase;
+var init_delete = __esm({
+  "node_modules/drizzle-orm/pg-core/query-builders/delete.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_query_promise();
+    init_selection_proxy();
+    init_table();
+    init_tracing();
+    init_utils();
+    init_utils3();
+    PgDeleteBase = class extends QueryPromise {
+      static {
+        __name(this, "PgDeleteBase");
+      }
+      constructor(table, session, dialect, withList) {
+        super();
+        this.session = session;
+        this.dialect = dialect;
+        this.config = { table, withList };
+      }
+      static [entityKind] = "PgDelete";
+      config;
+      cacheConfig;
+      /**
+       * Adds a `where` clause to the query.
+       *
+       * Calling this method will delete only those rows that fulfill a specified condition.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/delete}
+       *
+       * @param where the `where` clause.
+       *
+       * @example
+       * You can use conditional operators and `sql function` to filter the rows to be deleted.
+       *
+       * ```ts
+       * // Delete all cars with green color
+       * await db.delete(cars).where(eq(cars.color, 'green'));
+       * // or
+       * await db.delete(cars).where(sql`${cars.color} = 'green'`)
+       * ```
+       *
+       * You can logically combine conditional operators with `and()` and `or()` operators:
+       *
+       * ```ts
+       * // Delete all BMW cars with a green color
+       * await db.delete(cars).where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
+       *
+       * // Delete all cars with the green or blue color
+       * await db.delete(cars).where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
+       * ```
+       */
+      where(where) {
+        this.config.where = where;
+        return this;
+      }
+      returning(fields = this.config.table[Table.Symbol.Columns]) {
+        this.config.returningFields = fields;
+        this.config.returning = orderSelectedFields(fields);
+        return this;
+      }
+      /** @internal */
+      getSQL() {
+        return this.dialect.buildDeleteQuery(this.config);
+      }
+      toSQL() {
+        const { typings: _typings, ...rest } = this.dialect.sqlToQuery(this.getSQL());
+        return rest;
+      }
+      /** @internal */
+      _prepare(name) {
+        return tracer.startActiveSpan("drizzle.prepareQuery", () => {
+          return this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), this.config.returning, name, true, void 0, {
+            type: "delete",
+            tables: extractUsedTable(this.config.table)
+          }, this.cacheConfig);
+        });
+      }
+      prepare(name) {
+        return this._prepare(name);
+      }
+      authToken;
+      /** @internal */
+      setToken(token) {
+        this.authToken = token;
+        return this;
+      }
+      execute = /* @__PURE__ */ __name((placeholderValues) => {
+        return tracer.startActiveSpan("drizzle.operation", () => {
+          return this._prepare().execute(placeholderValues, this.authToken);
+        });
+      }, "execute");
+      /** @internal */
+      getSelectedFields() {
+        return this.config.returningFields ? new Proxy(
+          this.config.returningFields,
+          new SelectionProxyHandler({
+            alias: getTableName(this.config.table),
+            sqlAliasedBehavior: "alias",
+            sqlBehavior: "error"
+          })
+        ) : void 0;
+      }
+      $dynamic() {
+        return this;
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/query-builders/insert.js
+var PgInsertBuilder, PgInsertBase;
+var init_insert = __esm({
+  "node_modules/drizzle-orm/pg-core/query-builders/insert.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_query_promise();
+    init_selection_proxy();
+    init_sql();
+    init_table();
+    init_tracing();
+    init_utils();
+    init_utils3();
+    init_query_builder2();
+    PgInsertBuilder = class {
+      static {
+        __name(this, "PgInsertBuilder");
+      }
+      constructor(table, session, dialect, withList, overridingSystemValue_) {
+        this.table = table;
+        this.session = session;
+        this.dialect = dialect;
+        this.withList = withList;
+        this.overridingSystemValue_ = overridingSystemValue_;
+      }
+      static [entityKind] = "PgInsertBuilder";
+      authToken;
+      /** @internal */
+      setToken(token) {
+        this.authToken = token;
+        return this;
+      }
+      overridingSystemValue() {
+        this.overridingSystemValue_ = true;
+        return this;
+      }
+      values(values) {
+        values = Array.isArray(values) ? values : [values];
+        if (values.length === 0) {
+          throw new Error("values() must be called with at least one value");
+        }
+        const mappedValues = values.map((entry) => {
+          const result = {};
+          const cols = this.table[Table.Symbol.Columns];
+          for (const colKey of Object.keys(entry)) {
+            const colValue = entry[colKey];
+            result[colKey] = is(colValue, SQL) ? colValue : new Param(colValue, cols[colKey]);
+          }
+          return result;
+        });
+        return new PgInsertBase(
+          this.table,
+          mappedValues,
+          this.session,
+          this.dialect,
+          this.withList,
+          false,
+          this.overridingSystemValue_
+        ).setToken(this.authToken);
+      }
+      select(selectQuery) {
+        const select = typeof selectQuery === "function" ? selectQuery(new QueryBuilder()) : selectQuery;
+        if (!is(select, SQL) && !haveSameKeys(this.table[Columns], select._.selectedFields)) {
+          throw new Error(
+            "Insert select error: selected fields are not the same or are in a different order compared to the table definition"
+          );
+        }
+        return new PgInsertBase(this.table, select, this.session, this.dialect, this.withList, true);
+      }
+    };
+    PgInsertBase = class extends QueryPromise {
+      static {
+        __name(this, "PgInsertBase");
+      }
+      constructor(table, values, session, dialect, withList, select, overridingSystemValue_) {
+        super();
+        this.session = session;
+        this.dialect = dialect;
+        this.config = { table, values, withList, select, overridingSystemValue_ };
+      }
+      static [entityKind] = "PgInsert";
+      config;
+      cacheConfig;
+      returning(fields = this.config.table[Table.Symbol.Columns]) {
+        this.config.returningFields = fields;
+        this.config.returning = orderSelectedFields(fields);
+        return this;
+      }
+      /**
+       * Adds an `on conflict do nothing` clause to the query.
+       *
+       * Calling this method simply avoids inserting a row as its alternative action.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/insert#on-conflict-do-nothing}
+       *
+       * @param config The `target` and `where` clauses.
+       *
+       * @example
+       * ```ts
+       * // Insert one row and cancel the insert if there's a conflict
+       * await db.insert(cars)
+       *   .values({ id: 1, brand: 'BMW' })
+       *   .onConflictDoNothing();
+       *
+       * // Explicitly specify conflict target
+       * await db.insert(cars)
+       *   .values({ id: 1, brand: 'BMW' })
+       *   .onConflictDoNothing({ target: cars.id });
+       * ```
+       */
+      onConflictDoNothing(config2 = {}) {
+        if (config2.target === void 0) {
+          this.config.onConflict = sql`do nothing`;
+        } else {
+          let targetColumn = "";
+          targetColumn = Array.isArray(config2.target) ? config2.target.map((it2) => this.dialect.escapeName(this.dialect.casing.getColumnCasing(it2))).join(",") : this.dialect.escapeName(this.dialect.casing.getColumnCasing(config2.target));
+          const whereSql = config2.where ? sql` where ${config2.where}` : void 0;
+          this.config.onConflict = sql`(${sql.raw(targetColumn)})${whereSql} do nothing`;
+        }
+        return this;
+      }
+      /**
+       * Adds an `on conflict do update` clause to the query.
+       *
+       * Calling this method will update the existing row that conflicts with the row proposed for insertion as its alternative action.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/insert#upserts-and-conflicts}
+       *
+       * @param config The `target`, `set` and `where` clauses.
+       *
+       * @example
+       * ```ts
+       * // Update the row if there's a conflict
+       * await db.insert(cars)
+       *   .values({ id: 1, brand: 'BMW' })
+       *   .onConflictDoUpdate({
+       *     target: cars.id,
+       *     set: { brand: 'Porsche' }
+       *   });
+       *
+       * // Upsert with 'where' clause
+       * await db.insert(cars)
+       *   .values({ id: 1, brand: 'BMW' })
+       *   .onConflictDoUpdate({
+       *     target: cars.id,
+       *     set: { brand: 'newBMW' },
+       *     targetWhere: sql`${cars.createdAt} > '2023-01-01'::date`,
+       *   });
+       * ```
+       */
+      onConflictDoUpdate(config2) {
+        if (config2.where && (config2.targetWhere || config2.setWhere)) {
+          throw new Error(
+            'You cannot use both "where" and "targetWhere"/"setWhere" at the same time - "where" is deprecated, use "targetWhere" or "setWhere" instead.'
+          );
+        }
+        const whereSql = config2.where ? sql` where ${config2.where}` : void 0;
+        const targetWhereSql = config2.targetWhere ? sql` where ${config2.targetWhere}` : void 0;
+        const setWhereSql = config2.setWhere ? sql` where ${config2.setWhere}` : void 0;
+        const setSql = this.dialect.buildUpdateSet(this.config.table, mapUpdateSet(this.config.table, config2.set));
+        let targetColumn = "";
+        targetColumn = Array.isArray(config2.target) ? config2.target.map((it2) => this.dialect.escapeName(this.dialect.casing.getColumnCasing(it2))).join(",") : this.dialect.escapeName(this.dialect.casing.getColumnCasing(config2.target));
+        this.config.onConflict = sql`(${sql.raw(targetColumn)})${targetWhereSql} do update set ${setSql}${whereSql}${setWhereSql}`;
+        return this;
+      }
+      /** @internal */
+      getSQL() {
+        return this.dialect.buildInsertQuery(this.config);
+      }
+      toSQL() {
+        const { typings: _typings, ...rest } = this.dialect.sqlToQuery(this.getSQL());
+        return rest;
+      }
+      /** @internal */
+      _prepare(name) {
+        return tracer.startActiveSpan("drizzle.prepareQuery", () => {
+          return this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), this.config.returning, name, true, void 0, {
+            type: "insert",
+            tables: extractUsedTable(this.config.table)
+          }, this.cacheConfig);
+        });
+      }
+      prepare(name) {
+        return this._prepare(name);
+      }
+      authToken;
+      /** @internal */
+      setToken(token) {
+        this.authToken = token;
+        return this;
+      }
+      execute = /* @__PURE__ */ __name((placeholderValues) => {
+        return tracer.startActiveSpan("drizzle.operation", () => {
+          return this._prepare().execute(placeholderValues, this.authToken);
+        });
+      }, "execute");
+      /** @internal */
+      getSelectedFields() {
+        return this.config.returningFields ? new Proxy(
+          this.config.returningFields,
+          new SelectionProxyHandler({
+            alias: getTableName(this.config.table),
+            sqlAliasedBehavior: "alias",
+            sqlBehavior: "error"
+          })
+        ) : void 0;
+      }
+      $dynamic() {
+        return this;
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/query-builders/refresh-materialized-view.js
+var PgRefreshMaterializedView;
+var init_refresh_materialized_view = __esm({
+  "node_modules/drizzle-orm/pg-core/query-builders/refresh-materialized-view.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_query_promise();
+    init_tracing();
+    PgRefreshMaterializedView = class extends QueryPromise {
+      static {
+        __name(this, "PgRefreshMaterializedView");
+      }
+      constructor(view, session, dialect) {
+        super();
+        this.session = session;
+        this.dialect = dialect;
+        this.config = { view };
+      }
+      static [entityKind] = "PgRefreshMaterializedView";
+      config;
+      concurrently() {
+        if (this.config.withNoData !== void 0) {
+          throw new Error("Cannot use concurrently and withNoData together");
+        }
+        this.config.concurrently = true;
+        return this;
+      }
+      withNoData() {
+        if (this.config.concurrently !== void 0) {
+          throw new Error("Cannot use concurrently and withNoData together");
+        }
+        this.config.withNoData = true;
+        return this;
+      }
+      /** @internal */
+      getSQL() {
+        return this.dialect.buildRefreshMaterializedViewQuery(this.config);
+      }
+      toSQL() {
+        const { typings: _typings, ...rest } = this.dialect.sqlToQuery(this.getSQL());
+        return rest;
+      }
+      /** @internal */
+      _prepare(name) {
+        return tracer.startActiveSpan("drizzle.prepareQuery", () => {
+          return this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), void 0, name, true);
+        });
+      }
+      prepare(name) {
+        return this._prepare(name);
+      }
+      authToken;
+      /** @internal */
+      setToken(token) {
+        this.authToken = token;
+        return this;
+      }
+      execute = /* @__PURE__ */ __name((placeholderValues) => {
+        return tracer.startActiveSpan("drizzle.operation", () => {
+          return this._prepare().execute(placeholderValues, this.authToken);
+        });
+      }, "execute");
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/query-builders/select.types.js
+var init_select_types = __esm({
+  "node_modules/drizzle-orm/pg-core/query-builders/select.types.js"() {
+    init_modules_watch_stub();
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/query-builders/update.js
+var PgUpdateBuilder, PgUpdateBase;
+var init_update = __esm({
+  "node_modules/drizzle-orm/pg-core/query-builders/update.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_table2();
+    init_query_promise();
+    init_selection_proxy();
+    init_sql();
+    init_subquery();
+    init_table();
+    init_utils();
+    init_view_common();
+    init_utils3();
+    PgUpdateBuilder = class {
+      static {
+        __name(this, "PgUpdateBuilder");
+      }
+      constructor(table, session, dialect, withList) {
+        this.table = table;
+        this.session = session;
+        this.dialect = dialect;
+        this.withList = withList;
+      }
+      static [entityKind] = "PgUpdateBuilder";
+      authToken;
+      setToken(token) {
+        this.authToken = token;
+        return this;
+      }
+      set(values) {
+        return new PgUpdateBase(
+          this.table,
+          mapUpdateSet(this.table, values),
+          this.session,
+          this.dialect,
+          this.withList
+        ).setToken(this.authToken);
+      }
+    };
+    PgUpdateBase = class extends QueryPromise {
+      static {
+        __name(this, "PgUpdateBase");
+      }
+      constructor(table, set2, session, dialect, withList) {
+        super();
+        this.session = session;
+        this.dialect = dialect;
+        this.config = { set: set2, table, withList, joins: [] };
+        this.tableName = getTableLikeName(table);
+        this.joinsNotNullableMap = typeof this.tableName === "string" ? { [this.tableName]: true } : {};
+      }
+      static [entityKind] = "PgUpdate";
+      config;
+      tableName;
+      joinsNotNullableMap;
+      cacheConfig;
+      from(source) {
+        const src = source;
+        const tableName = getTableLikeName(src);
+        if (typeof tableName === "string") {
+          this.joinsNotNullableMap[tableName] = true;
+        }
+        this.config.from = src;
+        return this;
+      }
+      getTableLikeFields(table) {
+        if (is(table, PgTable)) {
+          return table[Table.Symbol.Columns];
+        } else if (is(table, Subquery)) {
+          return table._.selectedFields;
+        }
+        return table[ViewBaseConfig].selectedFields;
+      }
+      createJoin(joinType) {
+        return (table, on) => {
+          const tableName = getTableLikeName(table);
+          if (typeof tableName === "string" && this.config.joins.some((join) => join.alias === tableName)) {
+            throw new Error(`Alias "${tableName}" is already used in this query`);
+          }
+          if (typeof on === "function") {
+            const from = this.config.from && !is(this.config.from, SQL) ? this.getTableLikeFields(this.config.from) : void 0;
+            on = on(
+              new Proxy(
+                this.config.table[Table.Symbol.Columns],
+                new SelectionProxyHandler({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
+              ),
+              from && new Proxy(
+                from,
+                new SelectionProxyHandler({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
+              )
+            );
+          }
+          this.config.joins.push({ on, table, joinType, alias: tableName });
+          if (typeof tableName === "string") {
+            switch (joinType) {
+              case "left": {
+                this.joinsNotNullableMap[tableName] = false;
+                break;
+              }
+              case "right": {
+                this.joinsNotNullableMap = Object.fromEntries(
+                  Object.entries(this.joinsNotNullableMap).map(([key]) => [key, false])
+                );
+                this.joinsNotNullableMap[tableName] = true;
+                break;
+              }
+              case "inner": {
+                this.joinsNotNullableMap[tableName] = true;
+                break;
+              }
+              case "full": {
+                this.joinsNotNullableMap = Object.fromEntries(
+                  Object.entries(this.joinsNotNullableMap).map(([key]) => [key, false])
+                );
+                this.joinsNotNullableMap[tableName] = false;
+                break;
+              }
+            }
+          }
+          return this;
+        };
+      }
+      leftJoin = this.createJoin("left");
+      rightJoin = this.createJoin("right");
+      innerJoin = this.createJoin("inner");
+      fullJoin = this.createJoin("full");
+      /**
+       * Adds a 'where' clause to the query.
+       *
+       * Calling this method will update only those rows that fulfill a specified condition.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/update}
+       *
+       * @param where the 'where' clause.
+       *
+       * @example
+       * You can use conditional operators and `sql function` to filter the rows to be updated.
+       *
+       * ```ts
+       * // Update all cars with green color
+       * await db.update(cars).set({ color: 'red' })
+       *   .where(eq(cars.color, 'green'));
+       * // or
+       * await db.update(cars).set({ color: 'red' })
+       *   .where(sql`${cars.color} = 'green'`)
+       * ```
+       *
+       * You can logically combine conditional operators with `and()` and `or()` operators:
+       *
+       * ```ts
+       * // Update all BMW cars with a green color
+       * await db.update(cars).set({ color: 'red' })
+       *   .where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
+       *
+       * // Update all cars with the green or blue color
+       * await db.update(cars).set({ color: 'red' })
+       *   .where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
+       * ```
+       */
+      where(where) {
+        this.config.where = where;
+        return this;
+      }
+      returning(fields) {
+        if (!fields) {
+          fields = Object.assign({}, this.config.table[Table.Symbol.Columns]);
+          if (this.config.from) {
+            const tableName = getTableLikeName(this.config.from);
+            if (typeof tableName === "string" && this.config.from && !is(this.config.from, SQL)) {
+              const fromFields = this.getTableLikeFields(this.config.from);
+              fields[tableName] = fromFields;
+            }
+            for (const join of this.config.joins) {
+              const tableName2 = getTableLikeName(join.table);
+              if (typeof tableName2 === "string" && !is(join.table, SQL)) {
+                const fromFields = this.getTableLikeFields(join.table);
+                fields[tableName2] = fromFields;
+              }
+            }
+          }
+        }
+        this.config.returningFields = fields;
+        this.config.returning = orderSelectedFields(fields);
+        return this;
+      }
+      /** @internal */
+      getSQL() {
+        return this.dialect.buildUpdateQuery(this.config);
+      }
+      toSQL() {
+        const { typings: _typings, ...rest } = this.dialect.sqlToQuery(this.getSQL());
+        return rest;
+      }
+      /** @internal */
+      _prepare(name) {
+        const query = this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), this.config.returning, name, true, void 0, {
+          type: "insert",
+          tables: extractUsedTable(this.config.table)
+        }, this.cacheConfig);
+        query.joinsNotNullableMap = this.joinsNotNullableMap;
+        return query;
+      }
+      prepare(name) {
+        return this._prepare(name);
+      }
+      authToken;
+      /** @internal */
+      setToken(token) {
+        this.authToken = token;
+        return this;
+      }
+      execute = /* @__PURE__ */ __name((placeholderValues) => {
+        return this._prepare().execute(placeholderValues, this.authToken);
+      }, "execute");
+      /** @internal */
+      getSelectedFields() {
+        return this.config.returningFields ? new Proxy(
+          this.config.returningFields,
+          new SelectionProxyHandler({
+            alias: getTableName(this.config.table),
+            sqlAliasedBehavior: "alias",
+            sqlBehavior: "error"
+          })
+        ) : void 0;
+      }
+      $dynamic() {
+        return this;
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/query-builders/index.js
+var init_query_builders = __esm({
+  "node_modules/drizzle-orm/pg-core/query-builders/index.js"() {
+    init_modules_watch_stub();
+    init_delete();
+    init_insert();
+    init_query_builder2();
+    init_refresh_materialized_view();
+    init_select2();
+    init_select_types();
+    init_update();
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/query-builders/count.js
+var PgCountBuilder;
+var init_count = __esm({
+  "node_modules/drizzle-orm/pg-core/query-builders/count.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_sql();
+    PgCountBuilder = class _PgCountBuilder extends SQL {
+      static {
+        __name(this, "PgCountBuilder");
+      }
+      constructor(params) {
+        super(_PgCountBuilder.buildEmbeddedCount(params.source, params.filters).queryChunks);
+        this.params = params;
+        this.mapWith(Number);
+        this.session = params.session;
+        this.sql = _PgCountBuilder.buildCount(
+          params.source,
+          params.filters
+        );
+      }
+      sql;
+      token;
+      static [entityKind] = "PgCountBuilder";
+      [Symbol.toStringTag] = "PgCountBuilder";
+      session;
+      static buildEmbeddedCount(source, filters) {
+        return sql`(select count(*) from ${source}${sql.raw(" where ").if(filters)}${filters})`;
+      }
+      static buildCount(source, filters) {
+        return sql`select count(*) as count from ${source}${sql.raw(" where ").if(filters)}${filters};`;
+      }
+      /** @intrnal */
+      setToken(token) {
+        this.token = token;
+        return this;
+      }
+      then(onfulfilled, onrejected) {
+        return Promise.resolve(this.session.count(this.sql, this.token)).then(
+          onfulfilled,
+          onrejected
+        );
+      }
+      catch(onRejected) {
+        return this.then(void 0, onRejected);
+      }
+      finally(onFinally) {
+        return this.then(
+          (value) => {
+            onFinally?.();
+            return value;
+          },
+          (reason) => {
+            onFinally?.();
+            throw reason;
+          }
+        );
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/query-builders/query.js
+var RelationalQueryBuilder, PgRelationalQuery;
+var init_query = __esm({
+  "node_modules/drizzle-orm/pg-core/query-builders/query.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_query_promise();
+    init_relations();
+    init_tracing();
+    RelationalQueryBuilder = class {
+      static {
+        __name(this, "RelationalQueryBuilder");
+      }
+      constructor(fullSchema, schema, tableNamesMap, table, tableConfig, dialect, session) {
+        this.fullSchema = fullSchema;
+        this.schema = schema;
+        this.tableNamesMap = tableNamesMap;
+        this.table = table;
+        this.tableConfig = tableConfig;
+        this.dialect = dialect;
+        this.session = session;
+      }
+      static [entityKind] = "PgRelationalQueryBuilder";
+      findMany(config2) {
+        return new PgRelationalQuery(
+          this.fullSchema,
+          this.schema,
+          this.tableNamesMap,
+          this.table,
+          this.tableConfig,
+          this.dialect,
+          this.session,
+          config2 ? config2 : {},
+          "many"
+        );
+      }
+      findFirst(config2) {
+        return new PgRelationalQuery(
+          this.fullSchema,
+          this.schema,
+          this.tableNamesMap,
+          this.table,
+          this.tableConfig,
+          this.dialect,
+          this.session,
+          config2 ? { ...config2, limit: 1 } : { limit: 1 },
+          "first"
+        );
+      }
+    };
+    PgRelationalQuery = class extends QueryPromise {
+      static {
+        __name(this, "PgRelationalQuery");
+      }
+      constructor(fullSchema, schema, tableNamesMap, table, tableConfig, dialect, session, config2, mode) {
+        super();
+        this.fullSchema = fullSchema;
+        this.schema = schema;
+        this.tableNamesMap = tableNamesMap;
+        this.table = table;
+        this.tableConfig = tableConfig;
+        this.dialect = dialect;
+        this.session = session;
+        this.config = config2;
+        this.mode = mode;
+      }
+      static [entityKind] = "PgRelationalQuery";
+      /** @internal */
+      _prepare(name) {
+        return tracer.startActiveSpan("drizzle.prepareQuery", () => {
+          const { query, builtQuery } = this._toSQL();
+          return this.session.prepareQuery(
+            builtQuery,
+            void 0,
+            name,
+            true,
+            (rawRows, mapColumnValue) => {
+              const rows = rawRows.map(
+                (row) => mapRelationalRow(this.schema, this.tableConfig, row, query.selection, mapColumnValue)
+              );
+              if (this.mode === "first") {
+                return rows[0];
+              }
+              return rows;
+            }
+          );
+        });
+      }
+      prepare(name) {
+        return this._prepare(name);
+      }
+      _getQuery() {
+        return this.dialect.buildRelationalQueryWithoutPK({
+          fullSchema: this.fullSchema,
+          schema: this.schema,
+          tableNamesMap: this.tableNamesMap,
+          table: this.table,
+          tableConfig: this.tableConfig,
+          queryConfig: this.config,
+          tableAlias: this.tableConfig.tsName
+        });
+      }
+      /** @internal */
+      getSQL() {
+        return this._getQuery().sql;
+      }
+      _toSQL() {
+        const query = this._getQuery();
+        const builtQuery = this.dialect.sqlToQuery(query.sql);
+        return { query, builtQuery };
+      }
+      toSQL() {
+        return this._toSQL().builtQuery;
+      }
+      authToken;
+      /** @internal */
+      setToken(token) {
+        this.authToken = token;
+        return this;
+      }
+      execute() {
+        return tracer.startActiveSpan("drizzle.operation", () => {
+          return this._prepare().execute(void 0, this.authToken);
+        });
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/query-builders/raw.js
+var PgRaw;
+var init_raw = __esm({
+  "node_modules/drizzle-orm/pg-core/query-builders/raw.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_query_promise();
+    PgRaw = class extends QueryPromise {
+      static {
+        __name(this, "PgRaw");
+      }
+      constructor(execute, sql2, query, mapBatchResult) {
+        super();
+        this.execute = execute;
+        this.sql = sql2;
+        this.query = query;
+        this.mapBatchResult = mapBatchResult;
+      }
+      static [entityKind] = "PgRaw";
+      /** @internal */
+      getSQL() {
+        return this.sql;
+      }
+      getQuery() {
+        return this.query;
+      }
+      mapResult(result, isFromBatch) {
+        return isFromBatch ? this.mapBatchResult(result) : result;
+      }
+      _prepare() {
+        return this;
+      }
+      /** @internal */
+      isResponseInArrayMode() {
+        return false;
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/db.js
+var PgDatabase, withReplicas;
+var init_db = __esm({
+  "node_modules/drizzle-orm/pg-core/db.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_query_builders();
+    init_selection_proxy();
+    init_sql();
+    init_subquery();
+    init_count();
+    init_query();
+    init_raw();
+    init_refresh_materialized_view();
+    PgDatabase = class {
+      static {
+        __name(this, "PgDatabase");
+      }
+      constructor(dialect, session, schema) {
+        this.dialect = dialect;
+        this.session = session;
+        this._ = schema ? {
+          schema: schema.schema,
+          fullSchema: schema.fullSchema,
+          tableNamesMap: schema.tableNamesMap,
+          session
+        } : {
+          schema: void 0,
+          fullSchema: {},
+          tableNamesMap: {},
+          session
+        };
+        this.query = {};
+        if (this._.schema) {
+          for (const [tableName, columns] of Object.entries(this._.schema)) {
+            this.query[tableName] = new RelationalQueryBuilder(
+              schema.fullSchema,
+              this._.schema,
+              this._.tableNamesMap,
+              schema.fullSchema[tableName],
+              columns,
+              dialect,
+              session
+            );
+          }
+        }
+        this.$cache = { invalidate: /* @__PURE__ */ __name(async (_params) => {
+        }, "invalidate") };
+      }
+      static [entityKind] = "PgDatabase";
+      query;
+      /**
+       * Creates a subquery that defines a temporary named result set as a CTE.
+       *
+       * It is useful for breaking down complex queries into simpler parts and for reusing the result set in subsequent parts of the query.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/select#with-clause}
+       *
+       * @param alias The alias for the subquery.
+       *
+       * Failure to provide an alias will result in a DrizzleTypeError, preventing the subquery from being referenced in other queries.
+       *
+       * @example
+       *
+       * ```ts
+       * // Create a subquery with alias 'sq' and use it in the select query
+       * const sq = db.$with('sq').as(db.select().from(users).where(eq(users.id, 42)));
+       *
+       * const result = await db.with(sq).select().from(sq);
+       * ```
+       *
+       * To select arbitrary SQL values as fields in a CTE and reference them in other CTEs or in the main query, you need to add aliases to them:
+       *
+       * ```ts
+       * // Select an arbitrary SQL value as a field in a CTE and reference it in the main query
+       * const sq = db.$with('sq').as(db.select({
+       *   name: sql<string>`upper(${users.name})`.as('name'),
+       * })
+       * .from(users));
+       *
+       * const result = await db.with(sq).select({ name: sq.name }).from(sq);
+       * ```
+       */
+      $with = /* @__PURE__ */ __name((alias2, selection) => {
+        const self = this;
+        const as2 = /* @__PURE__ */ __name((qb) => {
+          if (typeof qb === "function") {
+            qb = qb(new QueryBuilder(self.dialect));
+          }
+          return new Proxy(
+            new WithSubquery(
+              qb.getSQL(),
+              selection ?? ("getSelectedFields" in qb ? qb.getSelectedFields() ?? {} : {}),
+              alias2,
+              true
+            ),
+            new SelectionProxyHandler({ alias: alias2, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
+          );
+        }, "as");
+        return { as: as2 };
+      }, "$with");
+      $count(source, filters) {
+        return new PgCountBuilder({ source, filters, session: this.session });
+      }
+      $cache;
+      /**
+       * Incorporates a previously defined CTE (using `$with`) into the main query.
+       *
+       * This method allows the main query to reference a temporary named result set.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/select#with-clause}
+       *
+       * @param queries The CTEs to incorporate into the main query.
+       *
+       * @example
+       *
+       * ```ts
+       * // Define a subquery 'sq' as a CTE using $with
+       * const sq = db.$with('sq').as(db.select().from(users).where(eq(users.id, 42)));
+       *
+       * // Incorporate the CTE 'sq' into the main query and select from it
+       * const result = await db.with(sq).select().from(sq);
+       * ```
+       */
+      with(...queries) {
+        const self = this;
+        function select(fields) {
+          return new PgSelectBuilder({
+            fields: fields ?? void 0,
+            session: self.session,
+            dialect: self.dialect,
+            withList: queries
+          });
+        }
+        __name(select, "select");
+        function selectDistinct(fields) {
+          return new PgSelectBuilder({
+            fields: fields ?? void 0,
+            session: self.session,
+            dialect: self.dialect,
+            withList: queries,
+            distinct: true
+          });
+        }
+        __name(selectDistinct, "selectDistinct");
+        function selectDistinctOn(on, fields) {
+          return new PgSelectBuilder({
+            fields: fields ?? void 0,
+            session: self.session,
+            dialect: self.dialect,
+            withList: queries,
+            distinct: { on }
+          });
+        }
+        __name(selectDistinctOn, "selectDistinctOn");
+        function update(table) {
+          return new PgUpdateBuilder(table, self.session, self.dialect, queries);
+        }
+        __name(update, "update");
+        function insert(table) {
+          return new PgInsertBuilder(table, self.session, self.dialect, queries);
+        }
+        __name(insert, "insert");
+        function delete_(table) {
+          return new PgDeleteBase(table, self.session, self.dialect, queries);
+        }
+        __name(delete_, "delete_");
+        return { select, selectDistinct, selectDistinctOn, update, insert, delete: delete_ };
+      }
+      select(fields) {
+        return new PgSelectBuilder({
+          fields: fields ?? void 0,
+          session: this.session,
+          dialect: this.dialect
+        });
+      }
+      selectDistinct(fields) {
+        return new PgSelectBuilder({
+          fields: fields ?? void 0,
+          session: this.session,
+          dialect: this.dialect,
+          distinct: true
+        });
+      }
+      selectDistinctOn(on, fields) {
+        return new PgSelectBuilder({
+          fields: fields ?? void 0,
+          session: this.session,
+          dialect: this.dialect,
+          distinct: { on }
+        });
+      }
+      /**
+       * Creates an update query.
+       *
+       * Calling this method without `.where()` clause will update all rows in a table. The `.where()` clause specifies which rows should be updated.
+       *
+       * Use `.set()` method to specify which values to update.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/update}
+       *
+       * @param table The table to update.
+       *
+       * @example
+       *
+       * ```ts
+       * // Update all rows in the 'cars' table
+       * await db.update(cars).set({ color: 'red' });
+       *
+       * // Update rows with filters and conditions
+       * await db.update(cars).set({ color: 'red' }).where(eq(cars.brand, 'BMW'));
+       *
+       * // Update with returning clause
+       * const updatedCar: Car[] = await db.update(cars)
+       *   .set({ color: 'red' })
+       *   .where(eq(cars.id, 1))
+       *   .returning();
+       * ```
+       */
+      update(table) {
+        return new PgUpdateBuilder(table, this.session, this.dialect);
+      }
+      /**
+       * Creates an insert query.
+       *
+       * Calling this method will create new rows in a table. Use `.values()` method to specify which values to insert.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/insert}
+       *
+       * @param table The table to insert into.
+       *
+       * @example
+       *
+       * ```ts
+       * // Insert one row
+       * await db.insert(cars).values({ brand: 'BMW' });
+       *
+       * // Insert multiple rows
+       * await db.insert(cars).values([{ brand: 'BMW' }, { brand: 'Porsche' }]);
+       *
+       * // Insert with returning clause
+       * const insertedCar: Car[] = await db.insert(cars)
+       *   .values({ brand: 'BMW' })
+       *   .returning();
+       * ```
+       */
+      insert(table) {
+        return new PgInsertBuilder(table, this.session, this.dialect);
+      }
+      /**
+       * Creates a delete query.
+       *
+       * Calling this method without `.where()` clause will delete all rows in a table. The `.where()` clause specifies which rows should be deleted.
+       *
+       * See docs: {@link https://orm.drizzle.team/docs/delete}
+       *
+       * @param table The table to delete from.
+       *
+       * @example
+       *
+       * ```ts
+       * // Delete all rows in the 'cars' table
+       * await db.delete(cars);
+       *
+       * // Delete rows with filters and conditions
+       * await db.delete(cars).where(eq(cars.color, 'green'));
+       *
+       * // Delete with returning clause
+       * const deletedCar: Car[] = await db.delete(cars)
+       *   .where(eq(cars.id, 1))
+       *   .returning();
+       * ```
+       */
+      delete(table) {
+        return new PgDeleteBase(table, this.session, this.dialect);
+      }
+      refreshMaterializedView(view) {
+        return new PgRefreshMaterializedView(view, this.session, this.dialect);
+      }
+      authToken;
+      execute(query) {
+        const sequel = typeof query === "string" ? sql.raw(query) : query.getSQL();
+        const builtQuery = this.dialect.sqlToQuery(sequel);
+        const prepared = this.session.prepareQuery(
+          builtQuery,
+          void 0,
+          void 0,
+          false
+        );
+        return new PgRaw(
+          () => prepared.execute(void 0, this.authToken),
+          sequel,
+          builtQuery,
+          (result) => prepared.mapResult(result, true)
+        );
+      }
+      transaction(transaction, config2) {
+        return this.session.transaction(transaction, config2);
+      }
+    };
+    withReplicas = /* @__PURE__ */ __name((primary, replicas, getReplica = () => replicas[Math.floor(Math.random() * replicas.length)]) => {
+      const select = /* @__PURE__ */ __name((...args) => getReplica(replicas).select(...args), "select");
+      const selectDistinct = /* @__PURE__ */ __name((...args) => getReplica(replicas).selectDistinct(...args), "selectDistinct");
+      const selectDistinctOn = /* @__PURE__ */ __name((...args) => getReplica(replicas).selectDistinctOn(...args), "selectDistinctOn");
+      const $count = /* @__PURE__ */ __name((...args) => getReplica(replicas).$count(...args), "$count");
+      const _with = /* @__PURE__ */ __name((...args) => getReplica(replicas).with(...args), "_with");
+      const $with = /* @__PURE__ */ __name((arg) => getReplica(replicas).$with(arg), "$with");
+      const update = /* @__PURE__ */ __name((...args) => primary.update(...args), "update");
+      const insert = /* @__PURE__ */ __name((...args) => primary.insert(...args), "insert");
+      const $delete = /* @__PURE__ */ __name((...args) => primary.delete(...args), "$delete");
+      const execute = /* @__PURE__ */ __name((...args) => primary.execute(...args), "execute");
+      const transaction = /* @__PURE__ */ __name((...args) => primary.transaction(...args), "transaction");
+      const refreshMaterializedView = /* @__PURE__ */ __name((...args) => primary.refreshMaterializedView(...args), "refreshMaterializedView");
+      return {
+        ...primary,
+        update,
+        insert,
+        delete: $delete,
+        execute,
+        transaction,
+        refreshMaterializedView,
+        $primary: primary,
+        $replicas: replicas,
+        select,
+        selectDistinct,
+        selectDistinctOn,
+        $count,
+        $with,
+        with: _with,
+        get query() {
+          return getReplica(replicas).query;
+        }
+      };
+    }, "withReplicas");
+  }
+});
+
+// node_modules/drizzle-orm/cache/core/cache.js
+async function hashQuery(sql2, params) {
+  const dataToHash = `${sql2}-${JSON.stringify(params)}`;
+  const encoder = new TextEncoder();
+  const data = encoder.encode(dataToHash);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = [...new Uint8Array(hashBuffer)];
+  const hashHex = hashArray.map((b2) => b2.toString(16).padStart(2, "0")).join("");
+  return hashHex;
+}
+var Cache, NoopCache;
+var init_cache = __esm({
+  "node_modules/drizzle-orm/cache/core/cache.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    Cache = class {
+      static {
+        __name(this, "Cache");
+      }
+      static [entityKind] = "Cache";
+    };
+    NoopCache = class extends Cache {
+      static {
+        __name(this, "NoopCache");
+      }
+      strategy() {
+        return "all";
+      }
+      static [entityKind] = "NoopCache";
+      async get(_key) {
+        return void 0;
+      }
+      async put(_hashedQuery, _response, _tables, _config) {
+      }
+      async onMutate(_params) {
+      }
+    };
+    __name(hashQuery, "hashQuery");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/alias.js
+function alias(table, alias2) {
+  return new Proxy(table, new TableAliasProxyHandler(alias2, false));
+}
+var init_alias2 = __esm({
+  "node_modules/drizzle-orm/pg-core/alias.js"() {
+    init_modules_watch_stub();
+    init_alias();
+    __name(alias, "alias");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/roles.js
+function pgRole(name, config2) {
+  return new PgRole(name, config2);
+}
+var PgRole;
+var init_roles = __esm({
+  "node_modules/drizzle-orm/pg-core/roles.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    PgRole = class {
+      static {
+        __name(this, "PgRole");
+      }
+      constructor(name, config2) {
+        this.name = name;
+        if (config2) {
+          this.createDb = config2.createDb;
+          this.createRole = config2.createRole;
+          this.inherit = config2.inherit;
+        }
+      }
+      static [entityKind] = "PgRole";
+      /** @internal */
+      _existing;
+      /** @internal */
+      createDb;
+      /** @internal */
+      createRole;
+      /** @internal */
+      inherit;
+      existing() {
+        this._existing = true;
+        return this;
+      }
+    };
+    __name(pgRole, "pgRole");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/sequence.js
+function pgSequence(name, options) {
+  return pgSequenceWithSchema(name, options, void 0);
+}
+function pgSequenceWithSchema(name, options, schema) {
+  return new PgSequence(name, options, schema);
+}
+function isPgSequence(obj) {
+  return is(obj, PgSequence);
+}
+var PgSequence;
+var init_sequence = __esm({
+  "node_modules/drizzle-orm/pg-core/sequence.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    PgSequence = class {
+      static {
+        __name(this, "PgSequence");
+      }
+      constructor(seqName, seqOptions, schema) {
+        this.seqName = seqName;
+        this.seqOptions = seqOptions;
+        this.schema = schema;
+      }
+      static [entityKind] = "PgSequence";
+    };
+    __name(pgSequence, "pgSequence");
+    __name(pgSequenceWithSchema, "pgSequenceWithSchema");
+    __name(isPgSequence, "isPgSequence");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/schema.js
+function isPgSchema(obj) {
+  return is(obj, PgSchema);
+}
+function pgSchema(name) {
+  if (name === "public") {
+    throw new Error(
+      `You can't specify 'public' as schema name. Postgres is using public schema by default. If you want to use 'public' schema, just use pgTable() instead of creating a schema`
+    );
+  }
+  return new PgSchema(name);
+}
+var PgSchema;
+var init_schema = __esm({
+  "node_modules/drizzle-orm/pg-core/schema.js"() {
+    init_modules_watch_stub();
+    init_entity();
+    init_sql();
+    init_enum();
+    init_sequence();
+    init_table2();
+    init_view();
+    PgSchema = class {
+      static {
+        __name(this, "PgSchema");
+      }
+      constructor(schemaName) {
+        this.schemaName = schemaName;
+      }
+      static [entityKind] = "PgSchema";
+      table = /* @__PURE__ */ __name((name, columns, extraConfig) => {
+        return pgTableWithSchema(name, columns, extraConfig, this.schemaName);
+      }, "table");
+      view = /* @__PURE__ */ __name((name, columns) => {
+        return pgViewWithSchema(name, columns, this.schemaName);
+      }, "view");
+      materializedView = /* @__PURE__ */ __name((name, columns) => {
+        return pgMaterializedViewWithSchema(name, columns, this.schemaName);
+      }, "materializedView");
+      enum(enumName, input2) {
+        return Array.isArray(input2) ? pgEnumWithSchema(
+          enumName,
+          [...input2],
+          this.schemaName
+        ) : pgEnumObjectWithSchema(enumName, input2, this.schemaName);
+      }
+      sequence = /* @__PURE__ */ __name((name, options) => {
+        return pgSequenceWithSchema(name, options, this.schemaName);
+      }, "sequence");
+      getSQL() {
+        return new SQL([sql.identifier(this.schemaName)]);
+      }
+      shouldOmitSQLParens() {
+        return true;
+      }
+    };
+    __name(isPgSchema, "isPgSchema");
+    __name(pgSchema, "pgSchema");
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/session.js
+var PgPreparedQuery, PgSession, PgTransaction;
+var init_session = __esm({
+  "node_modules/drizzle-orm/pg-core/session.js"() {
+    init_modules_watch_stub();
+    init_cache();
+    init_entity();
+    init_errors();
+    init_sql2();
+    init_tracing();
+    init_db();
+    PgPreparedQuery = class {
+      static {
+        __name(this, "PgPreparedQuery");
+      }
+      constructor(query, cache, queryMetadata, cacheConfig) {
+        this.query = query;
+        this.cache = cache;
+        this.queryMetadata = queryMetadata;
+        this.cacheConfig = cacheConfig;
+        if (cache && cache.strategy() === "all" && cacheConfig === void 0) {
+          this.cacheConfig = { enable: true, autoInvalidate: true };
+        }
+        if (!this.cacheConfig?.enable) {
+          this.cacheConfig = void 0;
+        }
+      }
+      authToken;
+      getQuery() {
+        return this.query;
+      }
+      mapResult(response, _isFromBatch) {
+        return response;
+      }
+      /** @internal */
+      setToken(token) {
+        this.authToken = token;
+        return this;
+      }
+      static [entityKind] = "PgPreparedQuery";
+      /** @internal */
+      joinsNotNullableMap;
+      /** @internal */
+      async queryWithCache(queryString, params, query) {
+        if (this.cache === void 0 || is(this.cache, NoopCache) || this.queryMetadata === void 0) {
+          try {
+            return await query();
+          } catch (e) {
+            throw new DrizzleQueryError(queryString, params, e);
+          }
+        }
+        if (this.cacheConfig && !this.cacheConfig.enable) {
+          try {
+            return await query();
+          } catch (e) {
+            throw new DrizzleQueryError(queryString, params, e);
+          }
+        }
+        if ((this.queryMetadata.type === "insert" || this.queryMetadata.type === "update" || this.queryMetadata.type === "delete") && this.queryMetadata.tables.length > 0) {
+          try {
+            const [res] = await Promise.all([
+              query(),
+              this.cache.onMutate({ tables: this.queryMetadata.tables })
+            ]);
+            return res;
+          } catch (e) {
+            throw new DrizzleQueryError(queryString, params, e);
+          }
+        }
+        if (!this.cacheConfig) {
+          try {
+            return await query();
+          } catch (e) {
+            throw new DrizzleQueryError(queryString, params, e);
+          }
+        }
+        if (this.queryMetadata.type === "select") {
+          const fromCache = await this.cache.get(
+            this.cacheConfig.tag ?? await hashQuery(queryString, params),
+            this.queryMetadata.tables,
+            this.cacheConfig.tag !== void 0,
+            this.cacheConfig.autoInvalidate
+          );
+          if (fromCache === void 0) {
+            let result;
+            try {
+              result = await query();
+            } catch (e) {
+              throw new DrizzleQueryError(queryString, params, e);
+            }
+            await this.cache.put(
+              this.cacheConfig.tag ?? await hashQuery(queryString, params),
+              result,
+              // make sure we send tables that were used in a query only if user wants to invalidate it on each write
+              this.cacheConfig.autoInvalidate ? this.queryMetadata.tables : [],
+              this.cacheConfig.tag !== void 0,
+              this.cacheConfig.config
+            );
+            return result;
+          }
+          return fromCache;
+        }
+        try {
+          return await query();
+        } catch (e) {
+          throw new DrizzleQueryError(queryString, params, e);
+        }
+      }
+    };
+    PgSession = class {
+      static {
+        __name(this, "PgSession");
+      }
+      constructor(dialect) {
+        this.dialect = dialect;
+      }
+      static [entityKind] = "PgSession";
+      /** @internal */
+      execute(query, token) {
+        return tracer.startActiveSpan("drizzle.operation", () => {
+          const prepared = tracer.startActiveSpan("drizzle.prepareQuery", () => {
+            return this.prepareQuery(
+              this.dialect.sqlToQuery(query),
+              void 0,
+              void 0,
+              false
+            );
+          });
+          return prepared.setToken(token).execute(void 0, token);
+        });
+      }
+      all(query) {
+        return this.prepareQuery(
+          this.dialect.sqlToQuery(query),
+          void 0,
+          void 0,
+          false
+        ).all();
+      }
+      /** @internal */
+      async count(sql2, token) {
+        const res = await this.execute(sql2, token);
+        return Number(
+          res[0]["count"]
+        );
+      }
+    };
+    PgTransaction = class extends PgDatabase {
+      static {
+        __name(this, "PgTransaction");
+      }
+      constructor(dialect, session, schema, nestedIndex = 0) {
+        super(dialect, session, schema);
+        this.schema = schema;
+        this.nestedIndex = nestedIndex;
+      }
+      static [entityKind] = "PgTransaction";
+      rollback() {
+        throw new TransactionRollbackError();
+      }
+      /** @internal */
+      getTransactionConfigSQL(config2) {
+        const chunks = [];
+        if (config2.isolationLevel) {
+          chunks.push(`isolation level ${config2.isolationLevel}`);
+        }
+        if (config2.accessMode) {
+          chunks.push(config2.accessMode);
+        }
+        if (typeof config2.deferrable === "boolean") {
+          chunks.push(config2.deferrable ? "deferrable" : "not deferrable");
+        }
+        return sql.raw(chunks.join(" "));
+      }
+      setTransaction(config2) {
+        return this.session.execute(sql`set transaction ${this.getTransactionConfigSQL(config2)}`);
+      }
+    };
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/subquery.js
+var init_subquery2 = __esm({
+  "node_modules/drizzle-orm/pg-core/subquery.js"() {
+    init_modules_watch_stub();
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/utils/index.js
+var init_utils4 = __esm({
+  "node_modules/drizzle-orm/pg-core/utils/index.js"() {
+    init_modules_watch_stub();
+    init_array();
+  }
+});
+
+// node_modules/drizzle-orm/pg-core/index.js
+var pg_core_exports = {};
+__export(pg_core_exports, {
+  Check: () => Check,
+  CheckBuilder: () => CheckBuilder,
+  DefaultViewBuilderCore: () => DefaultViewBuilderCore,
+  EnableRLS: () => EnableRLS,
+  ExtraConfigColumn: () => ExtraConfigColumn,
+  ForeignKey: () => ForeignKey,
+  ForeignKeyBuilder: () => ForeignKeyBuilder,
+  Index: () => Index,
+  IndexBuilder: () => IndexBuilder,
+  IndexBuilderOn: () => IndexBuilderOn,
+  IndexedColumn: () => IndexedColumn,
+  InlineForeignKeys: () => InlineForeignKeys,
+  ManualMaterializedViewBuilder: () => ManualMaterializedViewBuilder,
+  ManualViewBuilder: () => ManualViewBuilder,
+  MaterializedViewBuilder: () => MaterializedViewBuilder,
+  MaterializedViewBuilderCore: () => MaterializedViewBuilderCore,
+  PgArray: () => PgArray,
+  PgArrayBuilder: () => PgArrayBuilder,
+  PgBigInt53: () => PgBigInt53,
+  PgBigInt53Builder: () => PgBigInt53Builder,
+  PgBigInt64: () => PgBigInt64,
+  PgBigInt64Builder: () => PgBigInt64Builder,
+  PgBigSerial53: () => PgBigSerial53,
+  PgBigSerial53Builder: () => PgBigSerial53Builder,
+  PgBigSerial64: () => PgBigSerial64,
+  PgBigSerial64Builder: () => PgBigSerial64Builder,
+  PgBinaryVector: () => PgBinaryVector,
+  PgBinaryVectorBuilder: () => PgBinaryVectorBuilder,
+  PgBoolean: () => PgBoolean,
+  PgBooleanBuilder: () => PgBooleanBuilder,
+  PgChar: () => PgChar,
+  PgCharBuilder: () => PgCharBuilder,
+  PgCidr: () => PgCidr,
+  PgCidrBuilder: () => PgCidrBuilder,
+  PgColumn: () => PgColumn,
+  PgColumnBuilder: () => PgColumnBuilder,
+  PgCustomColumn: () => PgCustomColumn,
+  PgCustomColumnBuilder: () => PgCustomColumnBuilder,
+  PgDatabase: () => PgDatabase,
+  PgDate: () => PgDate,
+  PgDateBuilder: () => PgDateBuilder,
+  PgDateString: () => PgDateString,
+  PgDateStringBuilder: () => PgDateStringBuilder,
+  PgDeleteBase: () => PgDeleteBase,
+  PgDialect: () => PgDialect,
+  PgDoublePrecision: () => PgDoublePrecision,
+  PgDoublePrecisionBuilder: () => PgDoublePrecisionBuilder,
+  PgEnumColumn: () => PgEnumColumn,
+  PgEnumColumnBuilder: () => PgEnumColumnBuilder,
+  PgEnumObjectColumn: () => PgEnumObjectColumn,
+  PgEnumObjectColumnBuilder: () => PgEnumObjectColumnBuilder,
+  PgGeometry: () => PgGeometry,
+  PgGeometryBuilder: () => PgGeometryBuilder,
+  PgGeometryObject: () => PgGeometryObject,
+  PgGeometryObjectBuilder: () => PgGeometryObjectBuilder,
+  PgHalfVector: () => PgHalfVector,
+  PgHalfVectorBuilder: () => PgHalfVectorBuilder,
+  PgInet: () => PgInet,
+  PgInetBuilder: () => PgInetBuilder,
+  PgInsertBase: () => PgInsertBase,
+  PgInsertBuilder: () => PgInsertBuilder,
+  PgIntColumnBaseBuilder: () => PgIntColumnBaseBuilder,
+  PgInteger: () => PgInteger,
+  PgIntegerBuilder: () => PgIntegerBuilder,
+  PgInterval: () => PgInterval,
+  PgIntervalBuilder: () => PgIntervalBuilder,
+  PgJson: () => PgJson,
+  PgJsonBuilder: () => PgJsonBuilder,
+  PgJsonb: () => PgJsonb,
+  PgJsonbBuilder: () => PgJsonbBuilder,
+  PgLineABC: () => PgLineABC,
+  PgLineABCBuilder: () => PgLineABCBuilder,
+  PgLineBuilder: () => PgLineBuilder,
+  PgLineTuple: () => PgLineTuple,
+  PgMacaddr: () => PgMacaddr,
+  PgMacaddr8: () => PgMacaddr8,
+  PgMacaddr8Builder: () => PgMacaddr8Builder,
+  PgMacaddrBuilder: () => PgMacaddrBuilder,
+  PgMaterializedView: () => PgMaterializedView,
+  PgMaterializedViewConfig: () => PgMaterializedViewConfig,
+  PgNumeric: () => PgNumeric,
+  PgNumericBigInt: () => PgNumericBigInt,
+  PgNumericBigIntBuilder: () => PgNumericBigIntBuilder,
+  PgNumericBuilder: () => PgNumericBuilder,
+  PgNumericNumber: () => PgNumericNumber,
+  PgNumericNumberBuilder: () => PgNumericNumberBuilder,
+  PgPointObject: () => PgPointObject,
+  PgPointObjectBuilder: () => PgPointObjectBuilder,
+  PgPointTuple: () => PgPointTuple,
+  PgPointTupleBuilder: () => PgPointTupleBuilder,
+  PgPolicy: () => PgPolicy,
+  PgPreparedQuery: () => PgPreparedQuery,
+  PgReal: () => PgReal,
+  PgRealBuilder: () => PgRealBuilder,
+  PgRefreshMaterializedView: () => PgRefreshMaterializedView,
+  PgRole: () => PgRole,
+  PgSchema: () => PgSchema,
+  PgSelectBase: () => PgSelectBase,
+  PgSelectBuilder: () => PgSelectBuilder,
+  PgSelectQueryBuilderBase: () => PgSelectQueryBuilderBase,
+  PgSequence: () => PgSequence,
+  PgSerial: () => PgSerial,
+  PgSerialBuilder: () => PgSerialBuilder,
+  PgSession: () => PgSession,
+  PgSmallInt: () => PgSmallInt,
+  PgSmallIntBuilder: () => PgSmallIntBuilder,
+  PgSmallSerial: () => PgSmallSerial,
+  PgSmallSerialBuilder: () => PgSmallSerialBuilder,
+  PgSparseVector: () => PgSparseVector,
+  PgSparseVectorBuilder: () => PgSparseVectorBuilder,
+  PgTable: () => PgTable,
+  PgText: () => PgText,
+  PgTextBuilder: () => PgTextBuilder,
+  PgTime: () => PgTime,
+  PgTimeBuilder: () => PgTimeBuilder,
+  PgTimestamp: () => PgTimestamp,
+  PgTimestampBuilder: () => PgTimestampBuilder,
+  PgTimestampString: () => PgTimestampString,
+  PgTimestampStringBuilder: () => PgTimestampStringBuilder,
+  PgTransaction: () => PgTransaction,
+  PgUUID: () => PgUUID,
+  PgUUIDBuilder: () => PgUUIDBuilder,
+  PgUpdateBase: () => PgUpdateBase,
+  PgUpdateBuilder: () => PgUpdateBuilder,
+  PgVarchar: () => PgVarchar,
+  PgVarcharBuilder: () => PgVarcharBuilder,
+  PgVector: () => PgVector,
+  PgVectorBuilder: () => PgVectorBuilder,
+  PgView: () => PgView,
+  PgViewConfig: () => PgViewConfig,
+  PrimaryKey: () => PrimaryKey,
+  PrimaryKeyBuilder: () => PrimaryKeyBuilder,
+  QueryBuilder: () => QueryBuilder,
+  UniqueConstraint: () => UniqueConstraint,
+  UniqueConstraintBuilder: () => UniqueConstraintBuilder,
+  UniqueOnConstraintBuilder: () => UniqueOnConstraintBuilder,
+  ViewBuilder: () => ViewBuilder,
+  alias: () => alias,
+  bigint: () => bigint,
+  bigserial: () => bigserial,
+  bit: () => bit,
+  boolean: () => boolean,
+  char: () => char,
+  check: () => check,
+  cidr: () => cidr,
+  customType: () => customType,
+  date: () => date,
+  decimal: () => decimal,
+  doublePrecision: () => doublePrecision,
+  except: () => except,
+  exceptAll: () => exceptAll,
+  extractUsedTable: () => extractUsedTable,
+  foreignKey: () => foreignKey,
+  geometry: () => geometry,
+  getMaterializedViewConfig: () => getMaterializedViewConfig,
+  getTableConfig: () => getTableConfig,
+  getViewConfig: () => getViewConfig,
+  halfvec: () => halfvec,
+  index: () => index,
+  inet: () => inet,
+  integer: () => integer,
+  intersect: () => intersect,
+  intersectAll: () => intersectAll,
+  interval: () => interval,
+  isPgEnum: () => isPgEnum,
+  isPgMaterializedView: () => isPgMaterializedView,
+  isPgSchema: () => isPgSchema,
+  isPgSequence: () => isPgSequence,
+  isPgView: () => isPgView,
+  json: () => json,
+  jsonb: () => jsonb,
+  line: () => line,
+  macaddr: () => macaddr,
+  macaddr8: () => macaddr8,
+  makePgArray: () => makePgArray,
+  numeric: () => numeric,
+  parsePgArray: () => parsePgArray,
+  parsePgNestedArray: () => parsePgNestedArray,
+  pgEnum: () => pgEnum,
+  pgEnumObjectWithSchema: () => pgEnumObjectWithSchema,
+  pgEnumWithSchema: () => pgEnumWithSchema,
+  pgMaterializedView: () => pgMaterializedView,
+  pgMaterializedViewWithSchema: () => pgMaterializedViewWithSchema,
+  pgPolicy: () => pgPolicy,
+  pgRole: () => pgRole,
+  pgSchema: () => pgSchema,
+  pgSequence: () => pgSequence,
+  pgSequenceWithSchema: () => pgSequenceWithSchema,
+  pgTable: () => pgTable,
+  pgTableCreator: () => pgTableCreator,
+  pgTableWithSchema: () => pgTableWithSchema,
+  pgView: () => pgView,
+  pgViewWithSchema: () => pgViewWithSchema,
+  point: () => point,
+  primaryKey: () => primaryKey,
+  real: () => real,
+  serial: () => serial,
+  smallint: () => smallint,
+  smallserial: () => smallserial,
+  sparsevec: () => sparsevec,
+  text: () => text,
+  time: () => time2,
+  timestamp: () => timestamp,
+  union: () => union,
+  unionAll: () => unionAll,
+  unique: () => unique,
+  uniqueIndex: () => uniqueIndex,
+  uniqueKeyName: () => uniqueKeyName,
+  uuid: () => uuid,
+  varchar: () => varchar,
+  vector: () => vector,
+  withReplicas: () => withReplicas
+});
+var init_pg_core = __esm({
+  "node_modules/drizzle-orm/pg-core/index.js"() {
+    init_modules_watch_stub();
+    init_alias2();
+    init_checks();
+    init_columns();
+    init_db();
+    init_dialect();
+    init_foreign_keys();
+    init_indexes();
+    init_policies();
+    init_primary_keys();
+    init_query_builders();
+    init_roles();
+    init_schema();
+    init_sequence();
+    init_session();
+    init_subquery2();
+    init_table2();
+    init_unique_constraint();
+    init_utils3();
+    init_utils4();
+    init_view_common2();
+    init_view();
+  }
+});
+
+// .wrangler/tmp/bundle-J7Sxwp/middleware-loader.entry.ts
+init_modules_watch_stub();
+
+// .wrangler/tmp/bundle-J7Sxwp/middleware-insertion-facade.js
+init_modules_watch_stub();
+
+// src/index.js
+init_modules_watch_stub();
+
+// node_modules/hono/dist/index.js
+init_modules_watch_stub();
+
+// node_modules/hono/dist/hono.js
+init_modules_watch_stub();
+
+// node_modules/hono/dist/hono-base.js
+init_modules_watch_stub();
+
 // node_modules/hono/dist/compose.js
+init_modules_watch_stub();
 var compose = /* @__PURE__ */ __name((middleware, onError, onNotFound) => {
   return (context, next) => {
-    let index = -1;
+    let index2 = -1;
     return dispatch(0);
     async function dispatch(i) {
-      if (i <= index) {
+      if (i <= index2) {
         throw new Error("next() called multiple times");
       }
-      index = i;
+      index2 = i;
       let res;
       let isError = false;
       let handler;
@@ -50,8 +9223,27 @@ var compose = /* @__PURE__ */ __name((middleware, onError, onNotFound) => {
   };
 }, "compose");
 
+// node_modules/hono/dist/context.js
+init_modules_watch_stub();
+
+// node_modules/hono/dist/request.js
+init_modules_watch_stub();
+
+// node_modules/hono/dist/http-exception.js
+init_modules_watch_stub();
+
 // node_modules/hono/dist/request/constants.js
+init_modules_watch_stub();
 var GET_MATCH_RESULT = /* @__PURE__ */ Symbol();
+
+// node_modules/hono/dist/utils/body.js
+init_modules_watch_stub();
+
+// node_modules/hono/dist/utils/buffer.js
+init_modules_watch_stub();
+
+// node_modules/hono/dist/utils/crypto.js
+init_modules_watch_stub();
 
 // node_modules/hono/dist/utils/buffer.js
 var bufferToFormData = /* @__PURE__ */ __name((arrayBuffer, contentType) => {
@@ -146,8 +9338,8 @@ var handleParsingNestedValues = /* @__PURE__ */ __name((form, key, value, state)
   if (keys.length > MAX_NESTING_DEPTH + 1) {
     throwNestingLimitExceeded();
   }
-  keys.forEach((key2, index) => {
-    if (index === keys.length - 1) {
+  keys.forEach((key2, index2) => {
+    if (index2 === keys.length - 1) {
       nestedForm[key2] = value;
     } else {
       if (!nestedForm[key2] || typeof nestedForm[key2] !== "object" || Array.isArray(nestedForm[key2]) || nestedForm[key2] instanceof File) {
@@ -165,6 +9357,7 @@ var throwNestingLimitExceeded = /* @__PURE__ */ __name(() => {
 }, "throwNestingLimitExceeded");
 
 // node_modules/hono/dist/utils/url.js
+init_modules_watch_stub();
 var splitPath = /* @__PURE__ */ __name((path) => {
   const paths = path.split("/");
   if (paths[0] === "") {
@@ -179,8 +9372,8 @@ var splitRoutingPath = /* @__PURE__ */ __name((routePath) => {
 }, "splitRoutingPath");
 var extractGroupsFromPath = /* @__PURE__ */ __name((path) => {
   const groups = [];
-  path = path.replace(/\{[^}]+\}/g, (match2, index) => {
-    const mark = `@${index}`;
+  path = path.replace(/\{[^}]+\}/g, (match2, index2) => {
+    const mark = `@${index2}`;
     groups.push([mark, match2]);
     return mark;
   });
@@ -658,6 +9851,7 @@ var HonoRequest = class {
 };
 
 // node_modules/hono/dist/utils/html.js
+init_modules_watch_stub();
 var HtmlEscapedCallbackPhase = {
   Stringify: 1,
   BeforeStream: 2,
@@ -1129,6 +10323,7 @@ var Context = class {
 };
 
 // node_modules/hono/dist/router.js
+init_modules_watch_stub();
 var METHOD_NAME_ALL = "ALL";
 var METHOD_NAME_ALL_LOWERCASE = "all";
 var METHODS = ["get", "post", "put", "delete", "options", "patch", "query"];
@@ -1140,6 +10335,7 @@ var UnsupportedPathError = class extends Error {
 };
 
 // node_modules/hono/dist/utils/constants.js
+init_modules_watch_stub();
 var COMPOSED_HANDLER = "__COMPOSED_HANDLER";
 
 // node_modules/hono/dist/hono-base.js
@@ -1523,10 +10719,18 @@ var Hono = class _Hono {
   }, "fire");
 };
 
+// node_modules/hono/dist/router/reg-exp-router/index.js
+init_modules_watch_stub();
+
+// node_modules/hono/dist/router/reg-exp-router/router.js
+init_modules_watch_stub();
+
 // node_modules/hono/dist/router/utils.js
+init_modules_watch_stub();
 var createNullObject = /* @__PURE__ */ __name(() => /* @__PURE__ */ Object.create(null), "createNullObject");
 
 // node_modules/hono/dist/router/reg-exp-router/matcher.js
+init_modules_watch_stub();
 var emptyParam = [];
 function match(method, path) {
   const matchers = this.buildAllMatchers();
@@ -1540,8 +10744,8 @@ function match(method, path) {
     if (!match3) {
       return [[], emptyParam];
     }
-    const index = match3.indexOf("", 1);
-    return [matcher[1][index], match3];
+    const index2 = match3.indexOf("", 1);
+    return [matcher[1][index2], match3];
   }), "match2");
   this.match = match2;
   return match2(method, path);
@@ -1549,6 +10753,7 @@ function match(method, path) {
 __name(match, "match");
 
 // node_modules/hono/dist/router/reg-exp-router/node.js
+init_modules_watch_stub();
 var LABEL_REG_EXP_STR = "[^/]+";
 var ONLY_WILDCARD_REG_EXP_STR = ".*";
 var TAIL_WILDCARD_REG_EXP_STR = "(?:|/.*)";
@@ -1582,7 +10787,7 @@ var Node = class _Node {
   #index;
   #varIndex;
   #children = createNullObject();
-  insert(tokens, index, paramMap, context, isStatic) {
+  insert(tokens, index2, paramMap, context, isStatic) {
     let node2 = this;
     for (let i = 0, len = tokens.length; i < len; i++) {
       const token = tokens[i];
@@ -1637,7 +10842,7 @@ var Node = class _Node {
     if (node2.#index !== void 0) {
       throw PATH_ERROR;
     }
-    node2.#index = isStatic ? -1 : index;
+    node2.#index = isStatic ? -1 : index2;
   }
   buildRegExpStr() {
     const childKeys = Object.keys(this.#children).sort(compareKey);
@@ -1660,6 +10865,7 @@ var Node = class _Node {
 };
 
 // node_modules/hono/dist/router/reg-exp-router/trie.js
+init_modules_watch_stub();
 var Trie = class {
   static {
     __name(this, "Trie");
@@ -1852,7 +11058,14 @@ var RegExpRouter = class {
   }
 };
 
+// node_modules/hono/dist/router/reg-exp-router/prepared-router.js
+init_modules_watch_stub();
+
+// node_modules/hono/dist/router/smart-router/index.js
+init_modules_watch_stub();
+
 // node_modules/hono/dist/router/smart-router/router.js
+init_modules_watch_stub();
 var SmartRouter = class {
   static {
     __name(this, "SmartRouter");
@@ -1879,20 +11092,20 @@ var SmartRouter = class {
     let i = 0;
     let res;
     for (; i < len; i++) {
-      const router6 = routers[i];
+      const router8 = routers[i];
       try {
         for (let i2 = 0, len2 = routes.length; i2 < len2; i2++) {
-          router6.add(...routes[i2]);
+          router8.add(...routes[i2]);
         }
-        res = router6.match(method, path);
+        res = router8.match(method, path);
       } catch (e) {
         if (e instanceof UnsupportedPathError) {
           continue;
         }
         throw e;
       }
-      this.match = router6.match.bind(router6);
-      this.#routers = [router6];
+      this.match = router8.match.bind(router8);
+      this.#routers = [router8];
       this.#routes = void 0;
       break;
     }
@@ -1910,7 +11123,14 @@ var SmartRouter = class {
   }
 };
 
+// node_modules/hono/dist/router/trie-router/index.js
+init_modules_watch_stub();
+
+// node_modules/hono/dist/router/trie-router/router.js
+init_modules_watch_stub();
+
 // node_modules/hono/dist/router/trie-router/node.js
+init_modules_watch_stub();
 var emptyParams = createNullObject();
 var order = 0;
 var Node2 = class _Node2 {
@@ -2108,7 +11328,11 @@ var Hono2 = class extends Hono {
   }
 };
 
+// node_modules/hono/dist/middleware/logger/index.js
+init_modules_watch_stub();
+
 // node_modules/hono/dist/utils/color.js
+init_modules_watch_stub();
 function getColorEnabled() {
   const { process, Deno } = globalThis;
   const isNoColor = typeof Deno?.noColor === "boolean" ? Deno.noColor : process !== void 0 ? (
@@ -2174,1423 +11398,9 @@ var logger = /* @__PURE__ */ __name((fn = console.log) => {
   }, "logger2");
 }, "logger");
 
-// node_modules/drizzle-orm/entity.js
-var entityKind = /* @__PURE__ */ Symbol.for("drizzle:entityKind");
-function is(value, type) {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-  if (value instanceof type) {
-    return true;
-  }
-  if (!Object.prototype.hasOwnProperty.call(type, entityKind)) {
-    throw new Error(
-      `Class "${type.name ?? "<unknown>"}" doesn't look like a Drizzle entity. If this is incorrect and the class is provided by Drizzle, please report this as a bug.`
-    );
-  }
-  let cls = Object.getPrototypeOf(value).constructor;
-  if (cls) {
-    while (cls) {
-      if (entityKind in cls && cls[entityKind] === type[entityKind]) {
-        return true;
-      }
-      cls = Object.getPrototypeOf(cls);
-    }
-  }
-  return false;
-}
-__name(is, "is");
-
-// node_modules/drizzle-orm/column.js
-var Column = class {
-  static {
-    __name(this, "Column");
-  }
-  constructor(table, config2) {
-    this.table = table;
-    this.config = config2;
-    this.name = config2.name;
-    this.keyAsName = config2.keyAsName;
-    this.notNull = config2.notNull;
-    this.default = config2.default;
-    this.defaultFn = config2.defaultFn;
-    this.onUpdateFn = config2.onUpdateFn;
-    this.hasDefault = config2.hasDefault;
-    this.primary = config2.primaryKey;
-    this.isUnique = config2.isUnique;
-    this.uniqueName = config2.uniqueName;
-    this.uniqueType = config2.uniqueType;
-    this.dataType = config2.dataType;
-    this.columnType = config2.columnType;
-    this.generated = config2.generated;
-    this.generatedIdentity = config2.generatedIdentity;
-  }
-  static [entityKind] = "Column";
-  name;
-  keyAsName;
-  primary;
-  notNull;
-  default;
-  defaultFn;
-  onUpdateFn;
-  hasDefault;
-  isUnique;
-  uniqueName;
-  uniqueType;
-  dataType;
-  columnType;
-  enumValues = void 0;
-  generated = void 0;
-  generatedIdentity = void 0;
-  config;
-  mapFromDriverValue(value) {
-    return value;
-  }
-  mapToDriverValue(value) {
-    return value;
-  }
-  // ** @internal */
-  shouldDisableInsert() {
-    return this.config.generated !== void 0 && this.config.generated.type !== "byDefault";
-  }
-};
-
-// node_modules/drizzle-orm/column-builder.js
-var ColumnBuilder = class {
-  static {
-    __name(this, "ColumnBuilder");
-  }
-  static [entityKind] = "ColumnBuilder";
-  config;
-  constructor(name, dataType, columnType) {
-    this.config = {
-      name,
-      keyAsName: name === "",
-      notNull: false,
-      default: void 0,
-      hasDefault: false,
-      primaryKey: false,
-      isUnique: false,
-      uniqueName: void 0,
-      uniqueType: void 0,
-      dataType,
-      columnType,
-      generated: void 0
-    };
-  }
-  /**
-   * Changes the data type of the column. Commonly used with `json` columns. Also, useful for branded types.
-   *
-   * @example
-   * ```ts
-   * const users = pgTable('users', {
-   * 	id: integer('id').$type<UserId>().primaryKey(),
-   * 	details: json('details').$type<UserDetails>().notNull(),
-   * });
-   * ```
-   */
-  $type() {
-    return this;
-  }
-  /**
-   * Adds a `not null` clause to the column definition.
-   *
-   * Affects the `select` model of the table - columns *without* `not null` will be nullable on select.
-   */
-  notNull() {
-    this.config.notNull = true;
-    return this;
-  }
-  /**
-   * Adds a `default <value>` clause to the column definition.
-   *
-   * Affects the `insert` model of the table - columns *with* `default` are optional on insert.
-   *
-   * If you need to set a dynamic default value, use {@link $defaultFn} instead.
-   */
-  default(value) {
-    this.config.default = value;
-    this.config.hasDefault = true;
-    return this;
-  }
-  /**
-   * Adds a dynamic default value to the column.
-   * The function will be called when the row is inserted, and the returned value will be used as the column value.
-   *
-   * **Note:** This value does not affect the `drizzle-kit` behavior, it is only used at runtime in `drizzle-orm`.
-   */
-  $defaultFn(fn) {
-    this.config.defaultFn = fn;
-    this.config.hasDefault = true;
-    return this;
-  }
-  /**
-   * Alias for {@link $defaultFn}.
-   */
-  $default = this.$defaultFn;
-  /**
-   * Adds a dynamic update value to the column.
-   * The function will be called when the row is updated, and the returned value will be used as the column value if none is provided.
-   * If no `default` (or `$defaultFn`) value is provided, the function will be called when the row is inserted as well, and the returned value will be used as the column value.
-   *
-   * **Note:** This value does not affect the `drizzle-kit` behavior, it is only used at runtime in `drizzle-orm`.
-   */
-  $onUpdateFn(fn) {
-    this.config.onUpdateFn = fn;
-    this.config.hasDefault = true;
-    return this;
-  }
-  /**
-   * Alias for {@link $onUpdateFn}.
-   */
-  $onUpdate = this.$onUpdateFn;
-  /**
-   * Adds a `primary key` clause to the column definition. This implicitly makes the column `not null`.
-   *
-   * In SQLite, `integer primary key` implicitly makes the column auto-incrementing.
-   */
-  primaryKey() {
-    this.config.primaryKey = true;
-    this.config.notNull = true;
-    return this;
-  }
-  /** @internal Sets the name of the column to the key within the table definition if a name was not given. */
-  setName(name) {
-    if (this.config.name !== "") return;
-    this.config.name = name;
-  }
-};
-
-// node_modules/drizzle-orm/table.utils.js
-var TableName = /* @__PURE__ */ Symbol.for("drizzle:Name");
-
-// node_modules/drizzle-orm/pg-core/foreign-keys.js
-var ForeignKeyBuilder = class {
-  static {
-    __name(this, "ForeignKeyBuilder");
-  }
-  static [entityKind] = "PgForeignKeyBuilder";
-  /** @internal */
-  reference;
-  /** @internal */
-  _onUpdate = "no action";
-  /** @internal */
-  _onDelete = "no action";
-  constructor(config2, actions) {
-    this.reference = () => {
-      const { name, columns, foreignColumns } = config2();
-      return { name, columns, foreignTable: foreignColumns[0].table, foreignColumns };
-    };
-    if (actions) {
-      this._onUpdate = actions.onUpdate;
-      this._onDelete = actions.onDelete;
-    }
-  }
-  onUpdate(action) {
-    this._onUpdate = action === void 0 ? "no action" : action;
-    return this;
-  }
-  onDelete(action) {
-    this._onDelete = action === void 0 ? "no action" : action;
-    return this;
-  }
-  /** @internal */
-  build(table) {
-    return new ForeignKey(table, this);
-  }
-};
-var ForeignKey = class {
-  static {
-    __name(this, "ForeignKey");
-  }
-  constructor(table, builder) {
-    this.table = table;
-    this.reference = builder.reference;
-    this.onUpdate = builder._onUpdate;
-    this.onDelete = builder._onDelete;
-  }
-  static [entityKind] = "PgForeignKey";
-  reference;
-  onUpdate;
-  onDelete;
-  getName() {
-    const { name, columns, foreignColumns } = this.reference();
-    const columnNames = columns.map((column) => column.name);
-    const foreignColumnNames = foreignColumns.map((column) => column.name);
-    const chunks = [
-      this.table[TableName],
-      ...columnNames,
-      foreignColumns[0].table[TableName],
-      ...foreignColumnNames
-    ];
-    return name ?? `${chunks.join("_")}_fk`;
-  }
-};
-
-// node_modules/drizzle-orm/tracing-utils.js
-function iife(fn, ...args) {
-  return fn(...args);
-}
-__name(iife, "iife");
-
-// node_modules/drizzle-orm/pg-core/unique-constraint.js
-function unique(name) {
-  return new UniqueOnConstraintBuilder(name);
-}
-__name(unique, "unique");
-function uniqueKeyName(table, columns) {
-  return `${table[TableName]}_${columns.join("_")}_unique`;
-}
-__name(uniqueKeyName, "uniqueKeyName");
-var UniqueConstraintBuilder = class {
-  static {
-    __name(this, "UniqueConstraintBuilder");
-  }
-  constructor(columns, name) {
-    this.name = name;
-    this.columns = columns;
-  }
-  static [entityKind] = "PgUniqueConstraintBuilder";
-  /** @internal */
-  columns;
-  /** @internal */
-  nullsNotDistinctConfig = false;
-  nullsNotDistinct() {
-    this.nullsNotDistinctConfig = true;
-    return this;
-  }
-  /** @internal */
-  build(table) {
-    return new UniqueConstraint(table, this.columns, this.nullsNotDistinctConfig, this.name);
-  }
-};
-var UniqueOnConstraintBuilder = class {
-  static {
-    __name(this, "UniqueOnConstraintBuilder");
-  }
-  static [entityKind] = "PgUniqueOnConstraintBuilder";
-  /** @internal */
-  name;
-  constructor(name) {
-    this.name = name;
-  }
-  on(...columns) {
-    return new UniqueConstraintBuilder(columns, this.name);
-  }
-};
-var UniqueConstraint = class {
-  static {
-    __name(this, "UniqueConstraint");
-  }
-  constructor(table, columns, nullsNotDistinct, name) {
-    this.table = table;
-    this.columns = columns;
-    this.name = name ?? uniqueKeyName(this.table, this.columns.map((column) => column.name));
-    this.nullsNotDistinct = nullsNotDistinct;
-  }
-  static [entityKind] = "PgUniqueConstraint";
-  columns;
-  name;
-  nullsNotDistinct = false;
-  getName() {
-    return this.name;
-  }
-};
-
-// node_modules/drizzle-orm/pg-core/utils/array.js
-function parsePgArrayValue(arrayString, startFrom, inQuotes) {
-  for (let i = startFrom; i < arrayString.length; i++) {
-    const char2 = arrayString[i];
-    if (char2 === "\\") {
-      i++;
-      continue;
-    }
-    if (char2 === '"') {
-      return [arrayString.slice(startFrom, i).replace(/\\/g, ""), i + 1];
-    }
-    if (inQuotes) {
-      continue;
-    }
-    if (char2 === "," || char2 === "}") {
-      return [arrayString.slice(startFrom, i).replace(/\\/g, ""), i];
-    }
-  }
-  return [arrayString.slice(startFrom).replace(/\\/g, ""), arrayString.length];
-}
-__name(parsePgArrayValue, "parsePgArrayValue");
-function parsePgNestedArray(arrayString, startFrom = 0) {
-  const result = [];
-  let i = startFrom;
-  let lastCharIsComma = false;
-  while (i < arrayString.length) {
-    const char2 = arrayString[i];
-    if (char2 === ",") {
-      if (lastCharIsComma || i === startFrom) {
-        result.push("");
-      }
-      lastCharIsComma = true;
-      i++;
-      continue;
-    }
-    lastCharIsComma = false;
-    if (char2 === "\\") {
-      i += 2;
-      continue;
-    }
-    if (char2 === '"') {
-      const [value2, startFrom2] = parsePgArrayValue(arrayString, i + 1, true);
-      result.push(value2);
-      i = startFrom2;
-      continue;
-    }
-    if (char2 === "}") {
-      return [result, i + 1];
-    }
-    if (char2 === "{") {
-      const [value2, startFrom2] = parsePgNestedArray(arrayString, i + 1);
-      result.push(value2);
-      i = startFrom2;
-      continue;
-    }
-    const [value, newStartFrom] = parsePgArrayValue(arrayString, i, false);
-    result.push(value);
-    i = newStartFrom;
-  }
-  return [result, i];
-}
-__name(parsePgNestedArray, "parsePgNestedArray");
-function parsePgArray(arrayString) {
-  const [result] = parsePgNestedArray(arrayString, 1);
-  return result;
-}
-__name(parsePgArray, "parsePgArray");
-function makePgArray(array2) {
-  return `{${array2.map((item) => {
-    if (Array.isArray(item)) {
-      return makePgArray(item);
-    }
-    if (typeof item === "string") {
-      return `"${item.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
-    }
-    return `${item}`;
-  }).join(",")}}`;
-}
-__name(makePgArray, "makePgArray");
-
-// node_modules/drizzle-orm/pg-core/columns/common.js
-var PgColumnBuilder = class extends ColumnBuilder {
-  static {
-    __name(this, "PgColumnBuilder");
-  }
-  foreignKeyConfigs = [];
-  static [entityKind] = "PgColumnBuilder";
-  array(size) {
-    return new PgArrayBuilder(this.config.name, this, size);
-  }
-  references(ref, actions = {}) {
-    this.foreignKeyConfigs.push({ ref, actions });
-    return this;
-  }
-  unique(name, config2) {
-    this.config.isUnique = true;
-    this.config.uniqueName = name;
-    this.config.uniqueType = config2?.nulls;
-    return this;
-  }
-  generatedAlwaysAs(as2) {
-    this.config.generated = {
-      as: as2,
-      type: "always",
-      mode: "stored"
-    };
-    return this;
-  }
-  /** @internal */
-  buildForeignKeys(column, table) {
-    return this.foreignKeyConfigs.map(({ ref, actions }) => {
-      return iife(
-        (ref2, actions2) => {
-          const builder = new ForeignKeyBuilder(() => {
-            const foreignColumn = ref2();
-            return { columns: [column], foreignColumns: [foreignColumn] };
-          });
-          if (actions2.onUpdate) {
-            builder.onUpdate(actions2.onUpdate);
-          }
-          if (actions2.onDelete) {
-            builder.onDelete(actions2.onDelete);
-          }
-          return builder.build(table);
-        },
-        ref,
-        actions
-      );
-    });
-  }
-  /** @internal */
-  buildExtraConfigColumn(table) {
-    return new ExtraConfigColumn(table, this.config);
-  }
-};
-var PgColumn = class extends Column {
-  static {
-    __name(this, "PgColumn");
-  }
-  constructor(table, config2) {
-    if (!config2.uniqueName) {
-      config2.uniqueName = uniqueKeyName(table, [config2.name]);
-    }
-    super(table, config2);
-    this.table = table;
-  }
-  static [entityKind] = "PgColumn";
-};
-var ExtraConfigColumn = class extends PgColumn {
-  static {
-    __name(this, "ExtraConfigColumn");
-  }
-  static [entityKind] = "ExtraConfigColumn";
-  getSQLType() {
-    return this.getSQLType();
-  }
-  indexConfig = {
-    order: this.config.order ?? "asc",
-    nulls: this.config.nulls ?? "last",
-    opClass: this.config.opClass
-  };
-  defaultConfig = {
-    order: "asc",
-    nulls: "last",
-    opClass: void 0
-  };
-  asc() {
-    this.indexConfig.order = "asc";
-    return this;
-  }
-  desc() {
-    this.indexConfig.order = "desc";
-    return this;
-  }
-  nullsFirst() {
-    this.indexConfig.nulls = "first";
-    return this;
-  }
-  nullsLast() {
-    this.indexConfig.nulls = "last";
-    return this;
-  }
-  /**
-   * ### PostgreSQL documentation quote
-   *
-   * > An operator class with optional parameters can be specified for each column of an index.
-   * The operator class identifies the operators to be used by the index for that column.
-   * For example, a B-tree index on four-byte integers would use the int4_ops class;
-   * this operator class includes comparison functions for four-byte integers.
-   * In practice the default operator class for the column's data type is usually sufficient.
-   * The main point of having operator classes is that for some data types, there could be more than one meaningful ordering.
-   * For example, we might want to sort a complex-number data type either by absolute value or by real part.
-   * We could do this by defining two operator classes for the data type and then selecting the proper class when creating an index.
-   * More information about operator classes check:
-   *
-   * ### Useful links
-   * https://www.postgresql.org/docs/current/sql-createindex.html
-   *
-   * https://www.postgresql.org/docs/current/indexes-opclass.html
-   *
-   * https://www.postgresql.org/docs/current/xindex.html
-   *
-   * ### Additional types
-   * If you have the `pg_vector` extension installed in your database, you can use the
-   * `vector_l2_ops`, `vector_ip_ops`, `vector_cosine_ops`, `vector_l1_ops`, `bit_hamming_ops`, `bit_jaccard_ops`, `halfvec_l2_ops`, `sparsevec_l2_ops` options, which are predefined types.
-   *
-   * **You can always specify any string you want in the operator class, in case Drizzle doesn't have it natively in its types**
-   *
-   * @param opClass
-   * @returns
-   */
-  op(opClass) {
-    this.indexConfig.opClass = opClass;
-    return this;
-  }
-};
-var IndexedColumn = class {
-  static {
-    __name(this, "IndexedColumn");
-  }
-  static [entityKind] = "IndexedColumn";
-  constructor(name, keyAsName, type, indexConfig) {
-    this.name = name;
-    this.keyAsName = keyAsName;
-    this.type = type;
-    this.indexConfig = indexConfig;
-  }
-  name;
-  keyAsName;
-  type;
-  indexConfig;
-};
-var PgArrayBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgArrayBuilder");
-  }
-  static [entityKind] = "PgArrayBuilder";
-  constructor(name, baseBuilder, size) {
-    super(name, "array", "PgArray");
-    this.config.baseBuilder = baseBuilder;
-    this.config.size = size;
-  }
-  /** @internal */
-  build(table) {
-    const baseColumn = this.config.baseBuilder.build(table);
-    return new PgArray(
-      table,
-      this.config,
-      baseColumn
-    );
-  }
-};
-var PgArray = class _PgArray extends PgColumn {
-  static {
-    __name(this, "PgArray");
-  }
-  constructor(table, config2, baseColumn, range) {
-    super(table, config2);
-    this.baseColumn = baseColumn;
-    this.range = range;
-    this.size = config2.size;
-  }
-  size;
-  static [entityKind] = "PgArray";
-  getSQLType() {
-    return `${this.baseColumn.getSQLType()}[${typeof this.size === "number" ? this.size : ""}]`;
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "string") {
-      value = parsePgArray(value);
-    }
-    return value.map((v2) => this.baseColumn.mapFromDriverValue(v2));
-  }
-  mapToDriverValue(value, isNestedArray = false) {
-    const a2 = value.map(
-      (v2) => v2 === null ? null : is(this.baseColumn, _PgArray) ? this.baseColumn.mapToDriverValue(v2, true) : this.baseColumn.mapToDriverValue(v2)
-    );
-    if (isNestedArray) return a2;
-    return makePgArray(a2);
-  }
-};
-
-// node_modules/drizzle-orm/pg-core/columns/enum.js
-var PgEnumObjectColumnBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgEnumObjectColumnBuilder");
-  }
-  static [entityKind] = "PgEnumObjectColumnBuilder";
-  constructor(name, enumInstance) {
-    super(name, "string", "PgEnumObjectColumn");
-    this.config.enum = enumInstance;
-  }
-  /** @internal */
-  build(table) {
-    return new PgEnumObjectColumn(
-      table,
-      this.config
-    );
-  }
-};
-var PgEnumObjectColumn = class extends PgColumn {
-  static {
-    __name(this, "PgEnumObjectColumn");
-  }
-  static [entityKind] = "PgEnumObjectColumn";
-  enum;
-  enumValues = this.config.enum.enumValues;
-  constructor(table, config2) {
-    super(table, config2);
-    this.enum = config2.enum;
-  }
-  getSQLType() {
-    return this.enum.enumName;
-  }
-};
-var isPgEnumSym = /* @__PURE__ */ Symbol.for("drizzle:isPgEnum");
-function isPgEnum(obj) {
-  return !!obj && typeof obj === "function" && isPgEnumSym in obj && obj[isPgEnumSym] === true;
-}
-__name(isPgEnum, "isPgEnum");
-var PgEnumColumnBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgEnumColumnBuilder");
-  }
-  static [entityKind] = "PgEnumColumnBuilder";
-  constructor(name, enumInstance) {
-    super(name, "string", "PgEnumColumn");
-    this.config.enum = enumInstance;
-  }
-  /** @internal */
-  build(table) {
-    return new PgEnumColumn(
-      table,
-      this.config
-    );
-  }
-};
-var PgEnumColumn = class extends PgColumn {
-  static {
-    __name(this, "PgEnumColumn");
-  }
-  static [entityKind] = "PgEnumColumn";
-  enum = this.config.enum;
-  enumValues = this.config.enum.enumValues;
-  constructor(table, config2) {
-    super(table, config2);
-    this.enum = config2.enum;
-  }
-  getSQLType() {
-    return this.enum.enumName;
-  }
-};
-function pgEnum(enumName, input2) {
-  return Array.isArray(input2) ? pgEnumWithSchema(enumName, [...input2], void 0) : pgEnumObjectWithSchema(enumName, input2, void 0);
-}
-__name(pgEnum, "pgEnum");
-function pgEnumWithSchema(enumName, values, schema) {
-  const enumInstance = Object.assign(
-    (name) => new PgEnumColumnBuilder(name ?? "", enumInstance),
-    {
-      enumName,
-      enumValues: values,
-      schema,
-      [isPgEnumSym]: true
-    }
-  );
-  return enumInstance;
-}
-__name(pgEnumWithSchema, "pgEnumWithSchema");
-function pgEnumObjectWithSchema(enumName, values, schema) {
-  const enumInstance = Object.assign(
-    (name) => new PgEnumObjectColumnBuilder(name ?? "", enumInstance),
-    {
-      enumName,
-      enumValues: Object.values(values),
-      schema,
-      [isPgEnumSym]: true
-    }
-  );
-  return enumInstance;
-}
-__name(pgEnumObjectWithSchema, "pgEnumObjectWithSchema");
-
-// node_modules/drizzle-orm/subquery.js
-var Subquery = class {
-  static {
-    __name(this, "Subquery");
-  }
-  static [entityKind] = "Subquery";
-  constructor(sql2, fields, alias2, isWith = false, usedTables = []) {
-    this._ = {
-      brand: "Subquery",
-      sql: sql2,
-      selectedFields: fields,
-      alias: alias2,
-      isWith,
-      usedTables
-    };
-  }
-  // getSQL(): SQL<unknown> {
-  // 	return new SQL([this]);
-  // }
-};
-var WithSubquery = class extends Subquery {
-  static {
-    __name(this, "WithSubquery");
-  }
-  static [entityKind] = "WithSubquery";
-};
-
-// node_modules/drizzle-orm/version.js
-var version = "0.45.3";
-
-// node_modules/drizzle-orm/tracing.js
-var otel;
-var rawTracer;
-var tracer = {
-  startActiveSpan(name, fn) {
-    if (!otel) {
-      return fn();
-    }
-    if (!rawTracer) {
-      rawTracer = otel.trace.getTracer("drizzle-orm", version);
-    }
-    return iife(
-      (otel2, rawTracer2) => rawTracer2.startActiveSpan(
-        name,
-        (span) => {
-          try {
-            return fn(span);
-          } catch (e) {
-            span.setStatus({
-              code: otel2.SpanStatusCode.ERROR,
-              message: e instanceof Error ? e.message : "Unknown error"
-              // eslint-disable-line no-instanceof/no-instanceof
-            });
-            throw e;
-          } finally {
-            span.end();
-          }
-        }
-      ),
-      otel,
-      rawTracer
-    );
-  }
-};
-
-// node_modules/drizzle-orm/view-common.js
-var ViewBaseConfig = /* @__PURE__ */ Symbol.for("drizzle:ViewBaseConfig");
-
-// node_modules/drizzle-orm/table.js
-var Schema = /* @__PURE__ */ Symbol.for("drizzle:Schema");
-var Columns = /* @__PURE__ */ Symbol.for("drizzle:Columns");
-var ExtraConfigColumns = /* @__PURE__ */ Symbol.for("drizzle:ExtraConfigColumns");
-var OriginalName = /* @__PURE__ */ Symbol.for("drizzle:OriginalName");
-var BaseName = /* @__PURE__ */ Symbol.for("drizzle:BaseName");
-var IsAlias = /* @__PURE__ */ Symbol.for("drizzle:IsAlias");
-var ExtraConfigBuilder = /* @__PURE__ */ Symbol.for("drizzle:ExtraConfigBuilder");
-var IsDrizzleTable = /* @__PURE__ */ Symbol.for("drizzle:IsDrizzleTable");
-var Table = class {
-  static {
-    __name(this, "Table");
-  }
-  static [entityKind] = "Table";
-  /** @internal */
-  static Symbol = {
-    Name: TableName,
-    Schema,
-    OriginalName,
-    Columns,
-    ExtraConfigColumns,
-    BaseName,
-    IsAlias,
-    ExtraConfigBuilder
-  };
-  /**
-   * @internal
-   * Can be changed if the table is aliased.
-   */
-  [TableName];
-  /**
-   * @internal
-   * Used to store the original name of the table, before any aliasing.
-   */
-  [OriginalName];
-  /** @internal */
-  [Schema];
-  /** @internal */
-  [Columns];
-  /** @internal */
-  [ExtraConfigColumns];
-  /**
-   *  @internal
-   * Used to store the table name before the transformation via the `tableCreator` functions.
-   */
-  [BaseName];
-  /** @internal */
-  [IsAlias] = false;
-  /** @internal */
-  [IsDrizzleTable] = true;
-  /** @internal */
-  [ExtraConfigBuilder] = void 0;
-  constructor(name, schema, baseName) {
-    this[TableName] = this[OriginalName] = name;
-    this[Schema] = schema;
-    this[BaseName] = baseName;
-  }
-};
-function getTableName(table) {
-  return table[TableName];
-}
-__name(getTableName, "getTableName");
-function getTableUniqueName(table) {
-  return `${table[Schema] ?? "public"}.${table[TableName]}`;
-}
-__name(getTableUniqueName, "getTableUniqueName");
-
-// node_modules/drizzle-orm/sql/sql.js
-var FakePrimitiveParam = class {
-  static {
-    __name(this, "FakePrimitiveParam");
-  }
-  static [entityKind] = "FakePrimitiveParam";
-};
-function isSQLWrapper(value) {
-  return value !== null && value !== void 0 && typeof value.getSQL === "function";
-}
-__name(isSQLWrapper, "isSQLWrapper");
-function mergeQueries(queries) {
-  const result = { sql: "", params: [] };
-  for (const query of queries) {
-    result.sql += query.sql;
-    result.params.push(...query.params);
-    if (query.typings?.length) {
-      if (!result.typings) {
-        result.typings = [];
-      }
-      result.typings.push(...query.typings);
-    }
-  }
-  return result;
-}
-__name(mergeQueries, "mergeQueries");
-var StringChunk = class {
-  static {
-    __name(this, "StringChunk");
-  }
-  static [entityKind] = "StringChunk";
-  value;
-  constructor(value) {
-    this.value = Array.isArray(value) ? value : [value];
-  }
-  getSQL() {
-    return new SQL([this]);
-  }
-};
-var SQL = class _SQL {
-  static {
-    __name(this, "SQL");
-  }
-  constructor(queryChunks) {
-    this.queryChunks = queryChunks;
-    for (const chunk of queryChunks) {
-      if (is(chunk, Table)) {
-        const schemaName = chunk[Table.Symbol.Schema];
-        this.usedTables.push(
-          schemaName === void 0 ? chunk[Table.Symbol.Name] : schemaName + "." + chunk[Table.Symbol.Name]
-        );
-      }
-    }
-  }
-  static [entityKind] = "SQL";
-  /** @internal */
-  decoder = noopDecoder;
-  shouldInlineParams = false;
-  /** @internal */
-  usedTables = [];
-  append(query) {
-    this.queryChunks.push(...query.queryChunks);
-    return this;
-  }
-  toQuery(config2) {
-    return tracer.startActiveSpan("drizzle.buildSQL", (span) => {
-      const query = this.buildQueryFromSourceParams(this.queryChunks, config2);
-      span?.setAttributes({
-        "drizzle.query.text": query.sql,
-        "drizzle.query.params": JSON.stringify(query.params)
-      });
-      return query;
-    });
-  }
-  buildQueryFromSourceParams(chunks, _config) {
-    const config2 = Object.assign({}, _config, {
-      inlineParams: _config.inlineParams || this.shouldInlineParams,
-      paramStartIndex: _config.paramStartIndex || { value: 0 }
-    });
-    const {
-      casing,
-      escapeName,
-      escapeParam,
-      prepareTyping,
-      inlineParams,
-      paramStartIndex
-    } = config2;
-    return mergeQueries(chunks.map((chunk) => {
-      if (is(chunk, StringChunk)) {
-        return { sql: chunk.value.join(""), params: [] };
-      }
-      if (is(chunk, Name)) {
-        return { sql: escapeName(chunk.value), params: [] };
-      }
-      if (chunk === void 0) {
-        return { sql: "", params: [] };
-      }
-      if (Array.isArray(chunk)) {
-        const result = [new StringChunk("(")];
-        for (const [i, p2] of chunk.entries()) {
-          result.push(p2);
-          if (i < chunk.length - 1) {
-            result.push(new StringChunk(", "));
-          }
-        }
-        result.push(new StringChunk(")"));
-        return this.buildQueryFromSourceParams(result, config2);
-      }
-      if (is(chunk, _SQL)) {
-        return this.buildQueryFromSourceParams(chunk.queryChunks, {
-          ...config2,
-          inlineParams: inlineParams || chunk.shouldInlineParams
-        });
-      }
-      if (is(chunk, Table)) {
-        const schemaName = chunk[Table.Symbol.Schema];
-        const tableName = chunk[Table.Symbol.Name];
-        return {
-          sql: schemaName === void 0 || chunk[IsAlias] ? escapeName(tableName) : escapeName(schemaName) + "." + escapeName(tableName),
-          params: []
-        };
-      }
-      if (is(chunk, Column)) {
-        const columnName = casing.getColumnCasing(chunk);
-        if (_config.invokeSource === "indexes") {
-          return { sql: escapeName(columnName), params: [] };
-        }
-        const schemaName = chunk.table[Table.Symbol.Schema];
-        return {
-          sql: chunk.table[IsAlias] || schemaName === void 0 ? escapeName(chunk.table[Table.Symbol.Name]) + "." + escapeName(columnName) : escapeName(schemaName) + "." + escapeName(chunk.table[Table.Symbol.Name]) + "." + escapeName(columnName),
-          params: []
-        };
-      }
-      if (is(chunk, View)) {
-        const schemaName = chunk[ViewBaseConfig].schema;
-        const viewName = chunk[ViewBaseConfig].name;
-        return {
-          sql: schemaName === void 0 || chunk[ViewBaseConfig].isAlias ? escapeName(viewName) : escapeName(schemaName) + "." + escapeName(viewName),
-          params: []
-        };
-      }
-      if (is(chunk, Param)) {
-        if (is(chunk.value, Placeholder)) {
-          return { sql: escapeParam(paramStartIndex.value++, chunk), params: [chunk], typings: ["none"] };
-        }
-        const mappedValue = chunk.value === null ? null : chunk.encoder.mapToDriverValue(chunk.value);
-        if (is(mappedValue, _SQL)) {
-          return this.buildQueryFromSourceParams([mappedValue], config2);
-        }
-        if (inlineParams) {
-          return { sql: this.mapInlineParam(mappedValue, config2), params: [] };
-        }
-        let typings = ["none"];
-        if (prepareTyping) {
-          typings = [prepareTyping(chunk.encoder)];
-        }
-        return { sql: escapeParam(paramStartIndex.value++, mappedValue), params: [mappedValue], typings };
-      }
-      if (is(chunk, Placeholder)) {
-        return { sql: escapeParam(paramStartIndex.value++, chunk), params: [chunk], typings: ["none"] };
-      }
-      if (is(chunk, _SQL.Aliased) && chunk.fieldAlias !== void 0) {
-        return { sql: escapeName(chunk.fieldAlias), params: [] };
-      }
-      if (is(chunk, Subquery)) {
-        if (chunk._.isWith) {
-          return { sql: escapeName(chunk._.alias), params: [] };
-        }
-        return this.buildQueryFromSourceParams([
-          new StringChunk("("),
-          chunk._.sql,
-          new StringChunk(") "),
-          new Name(chunk._.alias)
-        ], config2);
-      }
-      if (isPgEnum(chunk)) {
-        if (chunk.schema) {
-          return { sql: escapeName(chunk.schema) + "." + escapeName(chunk.enumName), params: [] };
-        }
-        return { sql: escapeName(chunk.enumName), params: [] };
-      }
-      if (isSQLWrapper(chunk)) {
-        if (chunk.shouldOmitSQLParens?.()) {
-          return this.buildQueryFromSourceParams([chunk.getSQL()], config2);
-        }
-        return this.buildQueryFromSourceParams([
-          new StringChunk("("),
-          chunk.getSQL(),
-          new StringChunk(")")
-        ], config2);
-      }
-      if (inlineParams) {
-        return { sql: this.mapInlineParam(chunk, config2), params: [] };
-      }
-      return { sql: escapeParam(paramStartIndex.value++, chunk), params: [chunk], typings: ["none"] };
-    }));
-  }
-  mapInlineParam(chunk, { escapeString }) {
-    if (chunk === null) {
-      return "null";
-    }
-    if (typeof chunk === "number" || typeof chunk === "boolean") {
-      return chunk.toString();
-    }
-    if (typeof chunk === "string") {
-      return escapeString(chunk);
-    }
-    if (typeof chunk === "object") {
-      const mappedValueAsString = chunk.toString();
-      if (mappedValueAsString === "[object Object]") {
-        return escapeString(JSON.stringify(chunk));
-      }
-      return escapeString(mappedValueAsString);
-    }
-    throw new Error("Unexpected param value: " + chunk);
-  }
-  getSQL() {
-    return this;
-  }
-  as(alias2) {
-    if (alias2 === void 0) {
-      return this;
-    }
-    return new _SQL.Aliased(this, alias2);
-  }
-  mapWith(decoder) {
-    this.decoder = typeof decoder === "function" ? { mapFromDriverValue: decoder } : decoder;
-    return this;
-  }
-  inlineParams() {
-    this.shouldInlineParams = true;
-    return this;
-  }
-  /**
-   * This method is used to conditionally include a part of the query.
-   *
-   * @param condition - Condition to check
-   * @returns itself if the condition is `true`, otherwise `undefined`
-   */
-  if(condition) {
-    return condition ? this : void 0;
-  }
-};
-var Name = class {
-  static {
-    __name(this, "Name");
-  }
-  constructor(value) {
-    this.value = value;
-  }
-  static [entityKind] = "Name";
-  brand;
-  getSQL() {
-    return new SQL([this]);
-  }
-};
-function isDriverValueEncoder(value) {
-  return typeof value === "object" && value !== null && "mapToDriverValue" in value && typeof value.mapToDriverValue === "function";
-}
-__name(isDriverValueEncoder, "isDriverValueEncoder");
-var noopDecoder = {
-  mapFromDriverValue: /* @__PURE__ */ __name((value) => value, "mapFromDriverValue")
-};
-var noopEncoder = {
-  mapToDriverValue: /* @__PURE__ */ __name((value) => value, "mapToDriverValue")
-};
-var noopMapper = {
-  ...noopDecoder,
-  ...noopEncoder
-};
-var Param = class {
-  static {
-    __name(this, "Param");
-  }
-  /**
-   * @param value - Parameter value
-   * @param encoder - Encoder to convert the value to a driver parameter
-   */
-  constructor(value, encoder = noopEncoder) {
-    this.value = value;
-    this.encoder = encoder;
-  }
-  static [entityKind] = "Param";
-  brand;
-  getSQL() {
-    return new SQL([this]);
-  }
-};
-function sql(strings, ...params) {
-  const queryChunks = [];
-  if (params.length > 0 || strings.length > 0 && strings[0] !== "") {
-    queryChunks.push(new StringChunk(strings[0]));
-  }
-  for (const [paramIndex, param2] of params.entries()) {
-    queryChunks.push(param2, new StringChunk(strings[paramIndex + 1]));
-  }
-  return new SQL(queryChunks);
-}
-__name(sql, "sql");
-((sql2) => {
-  function empty() {
-    return new SQL([]);
-  }
-  __name(empty, "empty");
-  sql2.empty = empty;
-  function fromList(list) {
-    return new SQL(list);
-  }
-  __name(fromList, "fromList");
-  sql2.fromList = fromList;
-  function raw2(str) {
-    return new SQL([new StringChunk(str)]);
-  }
-  __name(raw2, "raw");
-  sql2.raw = raw2;
-  function join(chunks, separator) {
-    const result = [];
-    for (const [i, chunk] of chunks.entries()) {
-      if (i > 0 && separator !== void 0) {
-        result.push(separator);
-      }
-      result.push(chunk);
-    }
-    return new SQL(result);
-  }
-  __name(join, "join");
-  sql2.join = join;
-  function identifier(value) {
-    return new Name(value);
-  }
-  __name(identifier, "identifier");
-  sql2.identifier = identifier;
-  function placeholder2(name2) {
-    return new Placeholder(name2);
-  }
-  __name(placeholder2, "placeholder2");
-  sql2.placeholder = placeholder2;
-  function param2(value, encoder) {
-    return new Param(value, encoder);
-  }
-  __name(param2, "param2");
-  sql2.param = param2;
-})(sql || (sql = {}));
-((SQL2) => {
-  class Aliased {
-    static {
-      __name(this, "Aliased");
-    }
-    constructor(sql2, fieldAlias) {
-      this.sql = sql2;
-      this.fieldAlias = fieldAlias;
-    }
-    static [entityKind] = "SQL.Aliased";
-    /** @internal */
-    isSelectionField = false;
-    getSQL() {
-      return this.sql;
-    }
-    /** @internal */
-    clone() {
-      return new Aliased(this.sql, this.fieldAlias);
-    }
-  }
-  SQL2.Aliased = Aliased;
-})(SQL || (SQL = {}));
-var Placeholder = class {
-  static {
-    __name(this, "Placeholder");
-  }
-  constructor(name2) {
-    this.name = name2;
-  }
-  static [entityKind] = "Placeholder";
-  getSQL() {
-    return new SQL([this]);
-  }
-};
-function fillPlaceholders(params, values) {
-  return params.map((p2) => {
-    if (is(p2, Placeholder)) {
-      if (!(p2.name in values)) {
-        throw new Error(`No value for placeholder "${p2.name}" was provided`);
-      }
-      return values[p2.name];
-    }
-    if (is(p2, Param) && is(p2.value, Placeholder)) {
-      if (!(p2.value.name in values)) {
-        throw new Error(`No value for placeholder "${p2.value.name}" was provided`);
-      }
-      return p2.encoder.mapToDriverValue(values[p2.value.name]);
-    }
-    return p2;
-  });
-}
-__name(fillPlaceholders, "fillPlaceholders");
-var IsDrizzleView = /* @__PURE__ */ Symbol.for("drizzle:IsDrizzleView");
-var View = class {
-  static {
-    __name(this, "View");
-  }
-  static [entityKind] = "View";
-  /** @internal */
-  [ViewBaseConfig];
-  /** @internal */
-  [IsDrizzleView] = true;
-  constructor({ name: name2, schema, selectedFields, query }) {
-    this[ViewBaseConfig] = {
-      name: name2,
-      originalName: name2,
-      schema,
-      selectedFields,
-      query,
-      isExisting: !query,
-      isAlias: false
-    };
-  }
-  getSQL() {
-    return new SQL([this]);
-  }
-};
-Column.prototype.getSQL = function() {
-  return new SQL([this]);
-};
-Table.prototype.getSQL = function() {
-  return new SQL([this]);
-};
-Subquery.prototype.getSQL = function() {
-  return new SQL([this]);
-};
-
-// node_modules/drizzle-orm/alias.js
-var ColumnAliasProxyHandler = class {
-  static {
-    __name(this, "ColumnAliasProxyHandler");
-  }
-  constructor(table) {
-    this.table = table;
-  }
-  static [entityKind] = "ColumnAliasProxyHandler";
-  get(columnObj, prop) {
-    if (prop === "table") {
-      return this.table;
-    }
-    return columnObj[prop];
-  }
-};
-var TableAliasProxyHandler = class {
-  static {
-    __name(this, "TableAliasProxyHandler");
-  }
-  constructor(alias2, replaceOriginalName) {
-    this.alias = alias2;
-    this.replaceOriginalName = replaceOriginalName;
-  }
-  static [entityKind] = "TableAliasProxyHandler";
-  get(target, prop) {
-    if (prop === Table.Symbol.IsAlias) {
-      return true;
-    }
-    if (prop === Table.Symbol.Name) {
-      return this.alias;
-    }
-    if (this.replaceOriginalName && prop === Table.Symbol.OriginalName) {
-      return this.alias;
-    }
-    if (prop === ViewBaseConfig) {
-      return {
-        ...target[ViewBaseConfig],
-        name: this.alias,
-        isAlias: true
-      };
-    }
-    if (prop === Table.Symbol.Columns) {
-      const columns = target[Table.Symbol.Columns];
-      if (!columns) {
-        return columns;
-      }
-      const proxiedColumns = {};
-      Object.keys(columns).map((key) => {
-        proxiedColumns[key] = new Proxy(
-          columns[key],
-          new ColumnAliasProxyHandler(new Proxy(target, this))
-        );
-      });
-      return proxiedColumns;
-    }
-    const value = target[prop];
-    if (is(value, Column)) {
-      return new Proxy(value, new ColumnAliasProxyHandler(new Proxy(target, this)));
-    }
-    return value;
-  }
-};
-var RelationTableAliasProxyHandler = class {
-  static {
-    __name(this, "RelationTableAliasProxyHandler");
-  }
-  constructor(alias2) {
-    this.alias = alias2;
-  }
-  static [entityKind] = "RelationTableAliasProxyHandler";
-  get(target, prop) {
-    if (prop === "sourceTable") {
-      return aliasedTable(target.sourceTable, this.alias);
-    }
-    return target[prop];
-  }
-};
-function aliasedTable(table, tableAlias) {
-  return new Proxy(table, new TableAliasProxyHandler(tableAlias, false));
-}
-__name(aliasedTable, "aliasedTable");
-function aliasedTableColumn(column, tableAlias) {
-  return new Proxy(
-    column,
-    new ColumnAliasProxyHandler(new Proxy(column.table, new TableAliasProxyHandler(tableAlias, false)))
-  );
-}
-__name(aliasedTableColumn, "aliasedTableColumn");
-function mapColumnsInAliasedSQLToAlias(query, alias2) {
-  return new SQL.Aliased(mapColumnsInSQLToAlias(query.sql, alias2), query.fieldAlias);
-}
-__name(mapColumnsInAliasedSQLToAlias, "mapColumnsInAliasedSQLToAlias");
-function mapColumnsInSQLToAlias(query, alias2) {
-  return sql.join(query.queryChunks.map((c) => {
-    if (is(c, Column)) {
-      return aliasedTableColumn(c, alias2);
-    }
-    if (is(c, SQL)) {
-      return mapColumnsInSQLToAlias(c, alias2);
-    }
-    if (is(c, SQL.Aliased)) {
-      return mapColumnsInAliasedSQLToAlias(c, alias2);
-    }
-    return c;
-  }));
-}
-__name(mapColumnsInSQLToAlias, "mapColumnsInSQLToAlias");
-
-// node_modules/drizzle-orm/errors.js
-var DrizzleError = class extends Error {
-  static {
-    __name(this, "DrizzleError");
-  }
-  static [entityKind] = "DrizzleError";
-  constructor({ message, cause }) {
-    super(message);
-    this.name = "DrizzleError";
-    this.cause = cause;
-  }
-};
-var DrizzleQueryError = class _DrizzleQueryError extends Error {
-  static {
-    __name(this, "DrizzleQueryError");
-  }
-  constructor(query, params, cause) {
-    super(`Failed query: ${query}
-params: ${params}`);
-    this.query = query;
-    this.params = params;
-    this.cause = cause;
-    Error.captureStackTrace(this, _DrizzleQueryError);
-    if (cause) this.cause = cause;
-  }
-};
-var TransactionRollbackError = class extends DrizzleError {
-  static {
-    __name(this, "TransactionRollbackError");
-  }
-  static [entityKind] = "TransactionRollbackError";
-  constructor() {
-    super({ message: "Rollback" });
-  }
-};
-
 // node_modules/drizzle-orm/logger.js
+init_modules_watch_stub();
+init_entity();
 var ConsoleLogWriter = class {
   static {
     __name(this, "ConsoleLogWriter");
@@ -3630,2362 +11440,11 @@ var NoopLogger = class {
   }
 };
 
-// node_modules/drizzle-orm/query-promise.js
-var QueryPromise = class {
-  static {
-    __name(this, "QueryPromise");
-  }
-  static [entityKind] = "QueryPromise";
-  [Symbol.toStringTag] = "QueryPromise";
-  catch(onRejected) {
-    return this.then(void 0, onRejected);
-  }
-  finally(onFinally) {
-    return this.then(
-      (value) => {
-        onFinally?.();
-        return value;
-      },
-      (reason) => {
-        onFinally?.();
-        throw reason;
-      }
-    );
-  }
-  then(onFulfilled, onRejected) {
-    return this.execute().then(onFulfilled, onRejected);
-  }
-};
-
-// node_modules/drizzle-orm/utils.js
-function mapResultRow(columns, row, joinsNotNullableMap) {
-  const nullifyMap = {};
-  const result = columns.reduce(
-    (result2, { path, field }, columnIndex) => {
-      let decoder;
-      if (is(field, Column)) {
-        decoder = field;
-      } else if (is(field, SQL)) {
-        decoder = field.decoder;
-      } else if (is(field, Subquery)) {
-        decoder = field._.sql.decoder;
-      } else {
-        decoder = field.sql.decoder;
-      }
-      let node2 = result2;
-      for (const [pathChunkIndex, pathChunk] of path.entries()) {
-        if (pathChunkIndex < path.length - 1) {
-          if (!(pathChunk in node2)) {
-            node2[pathChunk] = {};
-          }
-          node2 = node2[pathChunk];
-        } else {
-          const rawValue = row[columnIndex];
-          const value = node2[pathChunk] = rawValue === null ? null : decoder.mapFromDriverValue(rawValue);
-          if (joinsNotNullableMap && is(field, Column) && path.length === 2) {
-            const objectName = path[0];
-            if (!(objectName in nullifyMap)) {
-              nullifyMap[objectName] = value === null ? getTableName(field.table) : false;
-            } else if (typeof nullifyMap[objectName] === "string" && nullifyMap[objectName] !== getTableName(field.table)) {
-              nullifyMap[objectName] = false;
-            }
-          }
-        }
-      }
-      return result2;
-    },
-    {}
-  );
-  if (joinsNotNullableMap && Object.keys(nullifyMap).length > 0) {
-    for (const [objectName, tableName] of Object.entries(nullifyMap)) {
-      if (typeof tableName === "string" && !joinsNotNullableMap[tableName]) {
-        result[objectName] = null;
-      }
-    }
-  }
-  return result;
-}
-__name(mapResultRow, "mapResultRow");
-function orderSelectedFields(fields, pathPrefix) {
-  return Object.entries(fields).reduce((result, [name, field]) => {
-    if (typeof name !== "string") {
-      return result;
-    }
-    const newPath = pathPrefix ? [...pathPrefix, name] : [name];
-    if (is(field, Column) || is(field, SQL) || is(field, SQL.Aliased) || is(field, Subquery)) {
-      result.push({ path: newPath, field });
-    } else if (is(field, Table)) {
-      result.push(...orderSelectedFields(field[Table.Symbol.Columns], newPath));
-    } else {
-      result.push(...orderSelectedFields(field, newPath));
-    }
-    return result;
-  }, []);
-}
-__name(orderSelectedFields, "orderSelectedFields");
-function haveSameKeys(left, right) {
-  const leftKeys = Object.keys(left);
-  const rightKeys = Object.keys(right);
-  if (leftKeys.length !== rightKeys.length) {
-    return false;
-  }
-  for (const [index, key] of leftKeys.entries()) {
-    if (key !== rightKeys[index]) {
-      return false;
-    }
-  }
-  return true;
-}
-__name(haveSameKeys, "haveSameKeys");
-function mapUpdateSet(table, values) {
-  const entries = Object.entries(values).filter(([, value]) => value !== void 0).map(([key, value]) => {
-    if (is(value, SQL) || is(value, Column)) {
-      return [key, value];
-    } else {
-      return [key, new Param(value, table[Table.Symbol.Columns][key])];
-    }
-  });
-  if (entries.length === 0) {
-    throw new Error("No values to set");
-  }
-  return Object.fromEntries(entries);
-}
-__name(mapUpdateSet, "mapUpdateSet");
-function applyMixins(baseClass, extendedClasses) {
-  for (const extendedClass of extendedClasses) {
-    for (const name of Object.getOwnPropertyNames(extendedClass.prototype)) {
-      if (name === "constructor") continue;
-      Object.defineProperty(
-        baseClass.prototype,
-        name,
-        Object.getOwnPropertyDescriptor(extendedClass.prototype, name) || /* @__PURE__ */ Object.create(null)
-      );
-    }
-  }
-}
-__name(applyMixins, "applyMixins");
-function getTableColumns(table) {
-  return table[Table.Symbol.Columns];
-}
-__name(getTableColumns, "getTableColumns");
-function getTableLikeName(table) {
-  return is(table, Subquery) ? table._.alias : is(table, View) ? table[ViewBaseConfig].name : is(table, SQL) ? void 0 : table[Table.Symbol.IsAlias] ? table[Table.Symbol.Name] : table[Table.Symbol.BaseName];
-}
-__name(getTableLikeName, "getTableLikeName");
-function getColumnNameAndConfig(a2, b2) {
-  return {
-    name: typeof a2 === "string" && a2.length > 0 ? a2 : "",
-    config: typeof a2 === "object" ? a2 : b2
-  };
-}
-__name(getColumnNameAndConfig, "getColumnNameAndConfig");
-function isConfig(data) {
-  if (typeof data !== "object" || data === null) return false;
-  if (data.constructor.name !== "Object") return false;
-  if ("logger" in data) {
-    const type = typeof data["logger"];
-    if (type !== "boolean" && (type !== "object" || typeof data["logger"]["logQuery"] !== "function") && type !== "undefined") return false;
-    return true;
-  }
-  if ("schema" in data) {
-    const type = typeof data["schema"];
-    if (type !== "object" && type !== "undefined") return false;
-    return true;
-  }
-  if ("casing" in data) {
-    const type = typeof data["casing"];
-    if (type !== "string" && type !== "undefined") return false;
-    return true;
-  }
-  if ("mode" in data) {
-    if (data["mode"] !== "default" || data["mode"] !== "planetscale" || data["mode"] !== void 0) return false;
-    return true;
-  }
-  if ("connection" in data) {
-    const type = typeof data["connection"];
-    if (type !== "string" && type !== "object" && type !== "undefined") return false;
-    return true;
-  }
-  if ("client" in data) {
-    const type = typeof data["client"];
-    if (type !== "object" && type !== "function" && type !== "undefined") return false;
-    return true;
-  }
-  if (Object.keys(data).length === 0) return true;
-  return false;
-}
-__name(isConfig, "isConfig");
-var textDecoder = typeof TextDecoder === "undefined" ? null : new TextDecoder();
-
-// node_modules/drizzle-orm/pg-core/columns/int.common.js
-var PgIntColumnBaseBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgIntColumnBaseBuilder");
-  }
-  static [entityKind] = "PgIntColumnBaseBuilder";
-  generatedAlwaysAsIdentity(sequence) {
-    if (sequence) {
-      const { name, ...options } = sequence;
-      this.config.generatedIdentity = {
-        type: "always",
-        sequenceName: name,
-        sequenceOptions: options
-      };
-    } else {
-      this.config.generatedIdentity = {
-        type: "always"
-      };
-    }
-    this.config.hasDefault = true;
-    this.config.notNull = true;
-    return this;
-  }
-  generatedByDefaultAsIdentity(sequence) {
-    if (sequence) {
-      const { name, ...options } = sequence;
-      this.config.generatedIdentity = {
-        type: "byDefault",
-        sequenceName: name,
-        sequenceOptions: options
-      };
-    } else {
-      this.config.generatedIdentity = {
-        type: "byDefault"
-      };
-    }
-    this.config.hasDefault = true;
-    this.config.notNull = true;
-    return this;
-  }
-};
-
-// node_modules/drizzle-orm/pg-core/columns/bigint.js
-var PgBigInt53Builder = class extends PgIntColumnBaseBuilder {
-  static {
-    __name(this, "PgBigInt53Builder");
-  }
-  static [entityKind] = "PgBigInt53Builder";
-  constructor(name) {
-    super(name, "number", "PgBigInt53");
-  }
-  /** @internal */
-  build(table) {
-    return new PgBigInt53(table, this.config);
-  }
-};
-var PgBigInt53 = class extends PgColumn {
-  static {
-    __name(this, "PgBigInt53");
-  }
-  static [entityKind] = "PgBigInt53";
-  getSQLType() {
-    return "bigint";
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "number") {
-      return value;
-    }
-    return Number(value);
-  }
-};
-var PgBigInt64Builder = class extends PgIntColumnBaseBuilder {
-  static {
-    __name(this, "PgBigInt64Builder");
-  }
-  static [entityKind] = "PgBigInt64Builder";
-  constructor(name) {
-    super(name, "bigint", "PgBigInt64");
-  }
-  /** @internal */
-  build(table) {
-    return new PgBigInt64(
-      table,
-      this.config
-    );
-  }
-};
-var PgBigInt64 = class extends PgColumn {
-  static {
-    __name(this, "PgBigInt64");
-  }
-  static [entityKind] = "PgBigInt64";
-  getSQLType() {
-    return "bigint";
-  }
-  // eslint-disable-next-line unicorn/prefer-native-coercion-functions
-  mapFromDriverValue(value) {
-    return BigInt(value);
-  }
-};
-function bigint(a2, b2) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  if (config2.mode === "number") {
-    return new PgBigInt53Builder(name);
-  }
-  return new PgBigInt64Builder(name);
-}
-__name(bigint, "bigint");
-
-// node_modules/drizzle-orm/pg-core/columns/bigserial.js
-var PgBigSerial53Builder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgBigSerial53Builder");
-  }
-  static [entityKind] = "PgBigSerial53Builder";
-  constructor(name) {
-    super(name, "number", "PgBigSerial53");
-    this.config.hasDefault = true;
-    this.config.notNull = true;
-  }
-  /** @internal */
-  build(table) {
-    return new PgBigSerial53(
-      table,
-      this.config
-    );
-  }
-};
-var PgBigSerial53 = class extends PgColumn {
-  static {
-    __name(this, "PgBigSerial53");
-  }
-  static [entityKind] = "PgBigSerial53";
-  getSQLType() {
-    return "bigserial";
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "number") {
-      return value;
-    }
-    return Number(value);
-  }
-};
-var PgBigSerial64Builder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgBigSerial64Builder");
-  }
-  static [entityKind] = "PgBigSerial64Builder";
-  constructor(name) {
-    super(name, "bigint", "PgBigSerial64");
-    this.config.hasDefault = true;
-  }
-  /** @internal */
-  build(table) {
-    return new PgBigSerial64(
-      table,
-      this.config
-    );
-  }
-};
-var PgBigSerial64 = class extends PgColumn {
-  static {
-    __name(this, "PgBigSerial64");
-  }
-  static [entityKind] = "PgBigSerial64";
-  getSQLType() {
-    return "bigserial";
-  }
-  // eslint-disable-next-line unicorn/prefer-native-coercion-functions
-  mapFromDriverValue(value) {
-    return BigInt(value);
-  }
-};
-function bigserial(a2, b2) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  if (config2.mode === "number") {
-    return new PgBigSerial53Builder(name);
-  }
-  return new PgBigSerial64Builder(name);
-}
-__name(bigserial, "bigserial");
-
-// node_modules/drizzle-orm/pg-core/columns/boolean.js
-var PgBooleanBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgBooleanBuilder");
-  }
-  static [entityKind] = "PgBooleanBuilder";
-  constructor(name) {
-    super(name, "boolean", "PgBoolean");
-  }
-  /** @internal */
-  build(table) {
-    return new PgBoolean(table, this.config);
-  }
-};
-var PgBoolean = class extends PgColumn {
-  static {
-    __name(this, "PgBoolean");
-  }
-  static [entityKind] = "PgBoolean";
-  getSQLType() {
-    return "boolean";
-  }
-};
-function boolean(name) {
-  return new PgBooleanBuilder(name ?? "");
-}
-__name(boolean, "boolean");
-
-// node_modules/drizzle-orm/pg-core/columns/char.js
-var PgCharBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgCharBuilder");
-  }
-  static [entityKind] = "PgCharBuilder";
-  constructor(name, config2) {
-    super(name, "string", "PgChar");
-    this.config.length = config2.length;
-    this.config.enumValues = config2.enum;
-  }
-  /** @internal */
-  build(table) {
-    return new PgChar(
-      table,
-      this.config
-    );
-  }
-};
-var PgChar = class extends PgColumn {
-  static {
-    __name(this, "PgChar");
-  }
-  static [entityKind] = "PgChar";
-  length = this.config.length;
-  enumValues = this.config.enumValues;
-  getSQLType() {
-    return this.length === void 0 ? `char` : `char(${this.length})`;
-  }
-};
-function char(a2, b2 = {}) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  return new PgCharBuilder(name, config2);
-}
-__name(char, "char");
-
-// node_modules/drizzle-orm/pg-core/columns/cidr.js
-var PgCidrBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgCidrBuilder");
-  }
-  static [entityKind] = "PgCidrBuilder";
-  constructor(name) {
-    super(name, "string", "PgCidr");
-  }
-  /** @internal */
-  build(table) {
-    return new PgCidr(table, this.config);
-  }
-};
-var PgCidr = class extends PgColumn {
-  static {
-    __name(this, "PgCidr");
-  }
-  static [entityKind] = "PgCidr";
-  getSQLType() {
-    return "cidr";
-  }
-};
-function cidr(name) {
-  return new PgCidrBuilder(name ?? "");
-}
-__name(cidr, "cidr");
-
-// node_modules/drizzle-orm/pg-core/columns/custom.js
-var PgCustomColumnBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgCustomColumnBuilder");
-  }
-  static [entityKind] = "PgCustomColumnBuilder";
-  constructor(name, fieldConfig, customTypeParams) {
-    super(name, "custom", "PgCustomColumn");
-    this.config.fieldConfig = fieldConfig;
-    this.config.customTypeParams = customTypeParams;
-  }
-  /** @internal */
-  build(table) {
-    return new PgCustomColumn(
-      table,
-      this.config
-    );
-  }
-};
-var PgCustomColumn = class extends PgColumn {
-  static {
-    __name(this, "PgCustomColumn");
-  }
-  static [entityKind] = "PgCustomColumn";
-  sqlName;
-  mapTo;
-  mapFrom;
-  constructor(table, config2) {
-    super(table, config2);
-    this.sqlName = config2.customTypeParams.dataType(config2.fieldConfig);
-    this.mapTo = config2.customTypeParams.toDriver;
-    this.mapFrom = config2.customTypeParams.fromDriver;
-  }
-  getSQLType() {
-    return this.sqlName;
-  }
-  mapFromDriverValue(value) {
-    return typeof this.mapFrom === "function" ? this.mapFrom(value) : value;
-  }
-  mapToDriverValue(value) {
-    return typeof this.mapTo === "function" ? this.mapTo(value) : value;
-  }
-};
-function customType(customTypeParams) {
-  return (a2, b2) => {
-    const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-    return new PgCustomColumnBuilder(name, config2, customTypeParams);
-  };
-}
-__name(customType, "customType");
-
-// node_modules/drizzle-orm/pg-core/columns/date.common.js
-var PgDateColumnBaseBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgDateColumnBaseBuilder");
-  }
-  static [entityKind] = "PgDateColumnBaseBuilder";
-  defaultNow() {
-    return this.default(sql`now()`);
-  }
-};
-
-// node_modules/drizzle-orm/pg-core/columns/date.js
-var PgDateBuilder = class extends PgDateColumnBaseBuilder {
-  static {
-    __name(this, "PgDateBuilder");
-  }
-  static [entityKind] = "PgDateBuilder";
-  constructor(name) {
-    super(name, "date", "PgDate");
-  }
-  /** @internal */
-  build(table) {
-    return new PgDate(table, this.config);
-  }
-};
-var PgDate = class extends PgColumn {
-  static {
-    __name(this, "PgDate");
-  }
-  static [entityKind] = "PgDate";
-  getSQLType() {
-    return "date";
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "string") return new Date(value);
-    return value;
-  }
-  mapToDriverValue(value) {
-    return value.toISOString();
-  }
-};
-var PgDateStringBuilder = class extends PgDateColumnBaseBuilder {
-  static {
-    __name(this, "PgDateStringBuilder");
-  }
-  static [entityKind] = "PgDateStringBuilder";
-  constructor(name) {
-    super(name, "string", "PgDateString");
-  }
-  /** @internal */
-  build(table) {
-    return new PgDateString(
-      table,
-      this.config
-    );
-  }
-};
-var PgDateString = class extends PgColumn {
-  static {
-    __name(this, "PgDateString");
-  }
-  static [entityKind] = "PgDateString";
-  getSQLType() {
-    return "date";
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "string") return value;
-    return value.toISOString().slice(0, -14);
-  }
-};
-function date(a2, b2) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  if (config2?.mode === "date") {
-    return new PgDateBuilder(name);
-  }
-  return new PgDateStringBuilder(name);
-}
-__name(date, "date");
-
-// node_modules/drizzle-orm/pg-core/columns/double-precision.js
-var PgDoublePrecisionBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgDoublePrecisionBuilder");
-  }
-  static [entityKind] = "PgDoublePrecisionBuilder";
-  constructor(name) {
-    super(name, "number", "PgDoublePrecision");
-  }
-  /** @internal */
-  build(table) {
-    return new PgDoublePrecision(
-      table,
-      this.config
-    );
-  }
-};
-var PgDoublePrecision = class extends PgColumn {
-  static {
-    __name(this, "PgDoublePrecision");
-  }
-  static [entityKind] = "PgDoublePrecision";
-  getSQLType() {
-    return "double precision";
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "string") {
-      return Number.parseFloat(value);
-    }
-    return value;
-  }
-};
-function doublePrecision(name) {
-  return new PgDoublePrecisionBuilder(name ?? "");
-}
-__name(doublePrecision, "doublePrecision");
-
-// node_modules/drizzle-orm/pg-core/columns/inet.js
-var PgInetBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgInetBuilder");
-  }
-  static [entityKind] = "PgInetBuilder";
-  constructor(name) {
-    super(name, "string", "PgInet");
-  }
-  /** @internal */
-  build(table) {
-    return new PgInet(table, this.config);
-  }
-};
-var PgInet = class extends PgColumn {
-  static {
-    __name(this, "PgInet");
-  }
-  static [entityKind] = "PgInet";
-  getSQLType() {
-    return "inet";
-  }
-};
-function inet(name) {
-  return new PgInetBuilder(name ?? "");
-}
-__name(inet, "inet");
-
-// node_modules/drizzle-orm/pg-core/columns/integer.js
-var PgIntegerBuilder = class extends PgIntColumnBaseBuilder {
-  static {
-    __name(this, "PgIntegerBuilder");
-  }
-  static [entityKind] = "PgIntegerBuilder";
-  constructor(name) {
-    super(name, "number", "PgInteger");
-  }
-  /** @internal */
-  build(table) {
-    return new PgInteger(table, this.config);
-  }
-};
-var PgInteger = class extends PgColumn {
-  static {
-    __name(this, "PgInteger");
-  }
-  static [entityKind] = "PgInteger";
-  getSQLType() {
-    return "integer";
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "string") {
-      return Number.parseInt(value);
-    }
-    return value;
-  }
-};
-function integer(name) {
-  return new PgIntegerBuilder(name ?? "");
-}
-__name(integer, "integer");
-
-// node_modules/drizzle-orm/pg-core/columns/interval.js
-var PgIntervalBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgIntervalBuilder");
-  }
-  static [entityKind] = "PgIntervalBuilder";
-  constructor(name, intervalConfig) {
-    super(name, "string", "PgInterval");
-    this.config.intervalConfig = intervalConfig;
-  }
-  /** @internal */
-  build(table) {
-    return new PgInterval(table, this.config);
-  }
-};
-var PgInterval = class extends PgColumn {
-  static {
-    __name(this, "PgInterval");
-  }
-  static [entityKind] = "PgInterval";
-  fields = this.config.intervalConfig.fields;
-  precision = this.config.intervalConfig.precision;
-  getSQLType() {
-    const fields = this.fields ? ` ${this.fields}` : "";
-    const precision = this.precision ? `(${this.precision})` : "";
-    return `interval${fields}${precision}`;
-  }
-};
-function interval(a2, b2 = {}) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  return new PgIntervalBuilder(name, config2);
-}
-__name(interval, "interval");
-
-// node_modules/drizzle-orm/pg-core/columns/json.js
-var PgJsonBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgJsonBuilder");
-  }
-  static [entityKind] = "PgJsonBuilder";
-  constructor(name) {
-    super(name, "json", "PgJson");
-  }
-  /** @internal */
-  build(table) {
-    return new PgJson(table, this.config);
-  }
-};
-var PgJson = class extends PgColumn {
-  static {
-    __name(this, "PgJson");
-  }
-  static [entityKind] = "PgJson";
-  constructor(table, config2) {
-    super(table, config2);
-  }
-  getSQLType() {
-    return "json";
-  }
-  mapToDriverValue(value) {
-    return JSON.stringify(value);
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "string") {
-      try {
-        return JSON.parse(value);
-      } catch {
-        return value;
-      }
-    }
-    return value;
-  }
-};
-function json(name) {
-  return new PgJsonBuilder(name ?? "");
-}
-__name(json, "json");
-
-// node_modules/drizzle-orm/pg-core/columns/jsonb.js
-var PgJsonbBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgJsonbBuilder");
-  }
-  static [entityKind] = "PgJsonbBuilder";
-  constructor(name) {
-    super(name, "json", "PgJsonb");
-  }
-  /** @internal */
-  build(table) {
-    return new PgJsonb(table, this.config);
-  }
-};
-var PgJsonb = class extends PgColumn {
-  static {
-    __name(this, "PgJsonb");
-  }
-  static [entityKind] = "PgJsonb";
-  constructor(table, config2) {
-    super(table, config2);
-  }
-  getSQLType() {
-    return "jsonb";
-  }
-  mapToDriverValue(value) {
-    return JSON.stringify(value);
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "string") {
-      try {
-        return JSON.parse(value);
-      } catch {
-        return value;
-      }
-    }
-    return value;
-  }
-};
-function jsonb(name) {
-  return new PgJsonbBuilder(name ?? "");
-}
-__name(jsonb, "jsonb");
-
-// node_modules/drizzle-orm/pg-core/columns/line.js
-var PgLineBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgLineBuilder");
-  }
-  static [entityKind] = "PgLineBuilder";
-  constructor(name) {
-    super(name, "array", "PgLine");
-  }
-  /** @internal */
-  build(table) {
-    return new PgLineTuple(
-      table,
-      this.config
-    );
-  }
-};
-var PgLineTuple = class extends PgColumn {
-  static {
-    __name(this, "PgLineTuple");
-  }
-  static [entityKind] = "PgLine";
-  getSQLType() {
-    return "line";
-  }
-  mapFromDriverValue(value) {
-    const [a2, b2, c] = value.slice(1, -1).split(",");
-    return [Number.parseFloat(a2), Number.parseFloat(b2), Number.parseFloat(c)];
-  }
-  mapToDriverValue(value) {
-    return `{${value[0]},${value[1]},${value[2]}}`;
-  }
-};
-var PgLineABCBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgLineABCBuilder");
-  }
-  static [entityKind] = "PgLineABCBuilder";
-  constructor(name) {
-    super(name, "json", "PgLineABC");
-  }
-  /** @internal */
-  build(table) {
-    return new PgLineABC(
-      table,
-      this.config
-    );
-  }
-};
-var PgLineABC = class extends PgColumn {
-  static {
-    __name(this, "PgLineABC");
-  }
-  static [entityKind] = "PgLineABC";
-  getSQLType() {
-    return "line";
-  }
-  mapFromDriverValue(value) {
-    const [a2, b2, c] = value.slice(1, -1).split(",");
-    return { a: Number.parseFloat(a2), b: Number.parseFloat(b2), c: Number.parseFloat(c) };
-  }
-  mapToDriverValue(value) {
-    return `{${value.a},${value.b},${value.c}}`;
-  }
-};
-function line(a2, b2) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  if (!config2?.mode || config2.mode === "tuple") {
-    return new PgLineBuilder(name);
-  }
-  return new PgLineABCBuilder(name);
-}
-__name(line, "line");
-
-// node_modules/drizzle-orm/pg-core/columns/macaddr.js
-var PgMacaddrBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgMacaddrBuilder");
-  }
-  static [entityKind] = "PgMacaddrBuilder";
-  constructor(name) {
-    super(name, "string", "PgMacaddr");
-  }
-  /** @internal */
-  build(table) {
-    return new PgMacaddr(table, this.config);
-  }
-};
-var PgMacaddr = class extends PgColumn {
-  static {
-    __name(this, "PgMacaddr");
-  }
-  static [entityKind] = "PgMacaddr";
-  getSQLType() {
-    return "macaddr";
-  }
-};
-function macaddr(name) {
-  return new PgMacaddrBuilder(name ?? "");
-}
-__name(macaddr, "macaddr");
-
-// node_modules/drizzle-orm/pg-core/columns/macaddr8.js
-var PgMacaddr8Builder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgMacaddr8Builder");
-  }
-  static [entityKind] = "PgMacaddr8Builder";
-  constructor(name) {
-    super(name, "string", "PgMacaddr8");
-  }
-  /** @internal */
-  build(table) {
-    return new PgMacaddr8(table, this.config);
-  }
-};
-var PgMacaddr8 = class extends PgColumn {
-  static {
-    __name(this, "PgMacaddr8");
-  }
-  static [entityKind] = "PgMacaddr8";
-  getSQLType() {
-    return "macaddr8";
-  }
-};
-function macaddr8(name) {
-  return new PgMacaddr8Builder(name ?? "");
-}
-__name(macaddr8, "macaddr8");
-
-// node_modules/drizzle-orm/pg-core/columns/numeric.js
-var PgNumericBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgNumericBuilder");
-  }
-  static [entityKind] = "PgNumericBuilder";
-  constructor(name, precision, scale) {
-    super(name, "string", "PgNumeric");
-    this.config.precision = precision;
-    this.config.scale = scale;
-  }
-  /** @internal */
-  build(table) {
-    return new PgNumeric(table, this.config);
-  }
-};
-var PgNumeric = class extends PgColumn {
-  static {
-    __name(this, "PgNumeric");
-  }
-  static [entityKind] = "PgNumeric";
-  precision;
-  scale;
-  constructor(table, config2) {
-    super(table, config2);
-    this.precision = config2.precision;
-    this.scale = config2.scale;
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "string") return value;
-    return String(value);
-  }
-  getSQLType() {
-    if (this.precision !== void 0 && this.scale !== void 0) {
-      return `numeric(${this.precision}, ${this.scale})`;
-    } else if (this.precision === void 0) {
-      return "numeric";
-    } else {
-      return `numeric(${this.precision})`;
-    }
-  }
-};
-var PgNumericNumberBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgNumericNumberBuilder");
-  }
-  static [entityKind] = "PgNumericNumberBuilder";
-  constructor(name, precision, scale) {
-    super(name, "number", "PgNumericNumber");
-    this.config.precision = precision;
-    this.config.scale = scale;
-  }
-  /** @internal */
-  build(table) {
-    return new PgNumericNumber(
-      table,
-      this.config
-    );
-  }
-};
-var PgNumericNumber = class extends PgColumn {
-  static {
-    __name(this, "PgNumericNumber");
-  }
-  static [entityKind] = "PgNumericNumber";
-  precision;
-  scale;
-  constructor(table, config2) {
-    super(table, config2);
-    this.precision = config2.precision;
-    this.scale = config2.scale;
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "number") return value;
-    return Number(value);
-  }
-  mapToDriverValue = String;
-  getSQLType() {
-    if (this.precision !== void 0 && this.scale !== void 0) {
-      return `numeric(${this.precision}, ${this.scale})`;
-    } else if (this.precision === void 0) {
-      return "numeric";
-    } else {
-      return `numeric(${this.precision})`;
-    }
-  }
-};
-var PgNumericBigIntBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgNumericBigIntBuilder");
-  }
-  static [entityKind] = "PgNumericBigIntBuilder";
-  constructor(name, precision, scale) {
-    super(name, "bigint", "PgNumericBigInt");
-    this.config.precision = precision;
-    this.config.scale = scale;
-  }
-  /** @internal */
-  build(table) {
-    return new PgNumericBigInt(
-      table,
-      this.config
-    );
-  }
-};
-var PgNumericBigInt = class extends PgColumn {
-  static {
-    __name(this, "PgNumericBigInt");
-  }
-  static [entityKind] = "PgNumericBigInt";
-  precision;
-  scale;
-  constructor(table, config2) {
-    super(table, config2);
-    this.precision = config2.precision;
-    this.scale = config2.scale;
-  }
-  mapFromDriverValue = BigInt;
-  mapToDriverValue = String;
-  getSQLType() {
-    if (this.precision !== void 0 && this.scale !== void 0) {
-      return `numeric(${this.precision}, ${this.scale})`;
-    } else if (this.precision === void 0) {
-      return "numeric";
-    } else {
-      return `numeric(${this.precision})`;
-    }
-  }
-};
-function numeric(a2, b2) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  const mode = config2?.mode;
-  return mode === "number" ? new PgNumericNumberBuilder(name, config2?.precision, config2?.scale) : mode === "bigint" ? new PgNumericBigIntBuilder(name, config2?.precision, config2?.scale) : new PgNumericBuilder(name, config2?.precision, config2?.scale);
-}
-__name(numeric, "numeric");
-
-// node_modules/drizzle-orm/pg-core/columns/point.js
-var PgPointTupleBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgPointTupleBuilder");
-  }
-  static [entityKind] = "PgPointTupleBuilder";
-  constructor(name) {
-    super(name, "array", "PgPointTuple");
-  }
-  /** @internal */
-  build(table) {
-    return new PgPointTuple(
-      table,
-      this.config
-    );
-  }
-};
-var PgPointTuple = class extends PgColumn {
-  static {
-    __name(this, "PgPointTuple");
-  }
-  static [entityKind] = "PgPointTuple";
-  getSQLType() {
-    return "point";
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "string") {
-      const [x2, y] = value.slice(1, -1).split(",");
-      return [Number.parseFloat(x2), Number.parseFloat(y)];
-    }
-    return [value.x, value.y];
-  }
-  mapToDriverValue(value) {
-    return `(${value[0]},${value[1]})`;
-  }
-};
-var PgPointObjectBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgPointObjectBuilder");
-  }
-  static [entityKind] = "PgPointObjectBuilder";
-  constructor(name) {
-    super(name, "json", "PgPointObject");
-  }
-  /** @internal */
-  build(table) {
-    return new PgPointObject(
-      table,
-      this.config
-    );
-  }
-};
-var PgPointObject = class extends PgColumn {
-  static {
-    __name(this, "PgPointObject");
-  }
-  static [entityKind] = "PgPointObject";
-  getSQLType() {
-    return "point";
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "string") {
-      const [x2, y] = value.slice(1, -1).split(",");
-      return { x: Number.parseFloat(x2), y: Number.parseFloat(y) };
-    }
-    return value;
-  }
-  mapToDriverValue(value) {
-    return `(${value.x},${value.y})`;
-  }
-};
-function point(a2, b2) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  if (!config2?.mode || config2.mode === "tuple") {
-    return new PgPointTupleBuilder(name);
-  }
-  return new PgPointObjectBuilder(name);
-}
-__name(point, "point");
-
-// node_modules/drizzle-orm/pg-core/columns/postgis_extension/utils.js
-function hexToBytes(hex3) {
-  const bytes = [];
-  for (let c = 0; c < hex3.length; c += 2) {
-    bytes.push(Number.parseInt(hex3.slice(c, c + 2), 16));
-  }
-  return new Uint8Array(bytes);
-}
-__name(hexToBytes, "hexToBytes");
-function bytesToFloat64(bytes, offset) {
-  const buffer = new ArrayBuffer(8);
-  const view = new DataView(buffer);
-  for (let i = 0; i < 8; i++) {
-    view.setUint8(i, bytes[offset + i]);
-  }
-  return view.getFloat64(0, true);
-}
-__name(bytesToFloat64, "bytesToFloat64");
-function parseEWKB(hex3) {
-  const bytes = hexToBytes(hex3);
-  let offset = 0;
-  const byteOrder = bytes[offset];
-  offset += 1;
-  const view = new DataView(bytes.buffer);
-  const geomType = view.getUint32(offset, byteOrder === 1);
-  offset += 4;
-  let _srid;
-  if (geomType & 536870912) {
-    _srid = view.getUint32(offset, byteOrder === 1);
-    offset += 4;
-  }
-  if ((geomType & 65535) === 1) {
-    const x2 = bytesToFloat64(bytes, offset);
-    offset += 8;
-    const y = bytesToFloat64(bytes, offset);
-    offset += 8;
-    return [x2, y];
-  }
-  throw new Error("Unsupported geometry type");
-}
-__name(parseEWKB, "parseEWKB");
-
-// node_modules/drizzle-orm/pg-core/columns/postgis_extension/geometry.js
-var PgGeometryBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgGeometryBuilder");
-  }
-  static [entityKind] = "PgGeometryBuilder";
-  constructor(name) {
-    super(name, "array", "PgGeometry");
-  }
-  /** @internal */
-  build(table) {
-    return new PgGeometry(
-      table,
-      this.config
-    );
-  }
-};
-var PgGeometry = class extends PgColumn {
-  static {
-    __name(this, "PgGeometry");
-  }
-  static [entityKind] = "PgGeometry";
-  getSQLType() {
-    return "geometry(point)";
-  }
-  mapFromDriverValue(value) {
-    return parseEWKB(value);
-  }
-  mapToDriverValue(value) {
-    return `point(${value[0]} ${value[1]})`;
-  }
-};
-var PgGeometryObjectBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgGeometryObjectBuilder");
-  }
-  static [entityKind] = "PgGeometryObjectBuilder";
-  constructor(name) {
-    super(name, "json", "PgGeometryObject");
-  }
-  /** @internal */
-  build(table) {
-    return new PgGeometryObject(
-      table,
-      this.config
-    );
-  }
-};
-var PgGeometryObject = class extends PgColumn {
-  static {
-    __name(this, "PgGeometryObject");
-  }
-  static [entityKind] = "PgGeometryObject";
-  getSQLType() {
-    return "geometry(point)";
-  }
-  mapFromDriverValue(value) {
-    const parsed = parseEWKB(value);
-    return { x: parsed[0], y: parsed[1] };
-  }
-  mapToDriverValue(value) {
-    return `point(${value.x} ${value.y})`;
-  }
-};
-function geometry(a2, b2) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  if (!config2?.mode || config2.mode === "tuple") {
-    return new PgGeometryBuilder(name);
-  }
-  return new PgGeometryObjectBuilder(name);
-}
-__name(geometry, "geometry");
-
-// node_modules/drizzle-orm/pg-core/columns/real.js
-var PgRealBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgRealBuilder");
-  }
-  static [entityKind] = "PgRealBuilder";
-  constructor(name, length) {
-    super(name, "number", "PgReal");
-    this.config.length = length;
-  }
-  /** @internal */
-  build(table) {
-    return new PgReal(table, this.config);
-  }
-};
-var PgReal = class extends PgColumn {
-  static {
-    __name(this, "PgReal");
-  }
-  static [entityKind] = "PgReal";
-  constructor(table, config2) {
-    super(table, config2);
-  }
-  getSQLType() {
-    return "real";
-  }
-  mapFromDriverValue = /* @__PURE__ */ __name((value) => {
-    if (typeof value === "string") {
-      return Number.parseFloat(value);
-    }
-    return value;
-  }, "mapFromDriverValue");
-};
-function real(name) {
-  return new PgRealBuilder(name ?? "");
-}
-__name(real, "real");
-
-// node_modules/drizzle-orm/pg-core/columns/serial.js
-var PgSerialBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgSerialBuilder");
-  }
-  static [entityKind] = "PgSerialBuilder";
-  constructor(name) {
-    super(name, "number", "PgSerial");
-    this.config.hasDefault = true;
-    this.config.notNull = true;
-  }
-  /** @internal */
-  build(table) {
-    return new PgSerial(table, this.config);
-  }
-};
-var PgSerial = class extends PgColumn {
-  static {
-    __name(this, "PgSerial");
-  }
-  static [entityKind] = "PgSerial";
-  getSQLType() {
-    return "serial";
-  }
-};
-function serial(name) {
-  return new PgSerialBuilder(name ?? "");
-}
-__name(serial, "serial");
-
-// node_modules/drizzle-orm/pg-core/columns/smallint.js
-var PgSmallIntBuilder = class extends PgIntColumnBaseBuilder {
-  static {
-    __name(this, "PgSmallIntBuilder");
-  }
-  static [entityKind] = "PgSmallIntBuilder";
-  constructor(name) {
-    super(name, "number", "PgSmallInt");
-  }
-  /** @internal */
-  build(table) {
-    return new PgSmallInt(table, this.config);
-  }
-};
-var PgSmallInt = class extends PgColumn {
-  static {
-    __name(this, "PgSmallInt");
-  }
-  static [entityKind] = "PgSmallInt";
-  getSQLType() {
-    return "smallint";
-  }
-  mapFromDriverValue = /* @__PURE__ */ __name((value) => {
-    if (typeof value === "string") {
-      return Number(value);
-    }
-    return value;
-  }, "mapFromDriverValue");
-};
-function smallint(name) {
-  return new PgSmallIntBuilder(name ?? "");
-}
-__name(smallint, "smallint");
-
-// node_modules/drizzle-orm/pg-core/columns/smallserial.js
-var PgSmallSerialBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgSmallSerialBuilder");
-  }
-  static [entityKind] = "PgSmallSerialBuilder";
-  constructor(name) {
-    super(name, "number", "PgSmallSerial");
-    this.config.hasDefault = true;
-    this.config.notNull = true;
-  }
-  /** @internal */
-  build(table) {
-    return new PgSmallSerial(
-      table,
-      this.config
-    );
-  }
-};
-var PgSmallSerial = class extends PgColumn {
-  static {
-    __name(this, "PgSmallSerial");
-  }
-  static [entityKind] = "PgSmallSerial";
-  getSQLType() {
-    return "smallserial";
-  }
-};
-function smallserial(name) {
-  return new PgSmallSerialBuilder(name ?? "");
-}
-__name(smallserial, "smallserial");
-
-// node_modules/drizzle-orm/pg-core/columns/text.js
-var PgTextBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgTextBuilder");
-  }
-  static [entityKind] = "PgTextBuilder";
-  constructor(name, config2) {
-    super(name, "string", "PgText");
-    this.config.enumValues = config2.enum;
-  }
-  /** @internal */
-  build(table) {
-    return new PgText(table, this.config);
-  }
-};
-var PgText = class extends PgColumn {
-  static {
-    __name(this, "PgText");
-  }
-  static [entityKind] = "PgText";
-  enumValues = this.config.enumValues;
-  getSQLType() {
-    return "text";
-  }
-};
-function text(a2, b2 = {}) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  return new PgTextBuilder(name, config2);
-}
-__name(text, "text");
-
-// node_modules/drizzle-orm/pg-core/columns/time.js
-var PgTimeBuilder = class extends PgDateColumnBaseBuilder {
-  static {
-    __name(this, "PgTimeBuilder");
-  }
-  constructor(name, withTimezone, precision) {
-    super(name, "string", "PgTime");
-    this.withTimezone = withTimezone;
-    this.precision = precision;
-    this.config.withTimezone = withTimezone;
-    this.config.precision = precision;
-  }
-  static [entityKind] = "PgTimeBuilder";
-  /** @internal */
-  build(table) {
-    return new PgTime(table, this.config);
-  }
-};
-var PgTime = class extends PgColumn {
-  static {
-    __name(this, "PgTime");
-  }
-  static [entityKind] = "PgTime";
-  withTimezone;
-  precision;
-  constructor(table, config2) {
-    super(table, config2);
-    this.withTimezone = config2.withTimezone;
-    this.precision = config2.precision;
-  }
-  getSQLType() {
-    const precision = this.precision === void 0 ? "" : `(${this.precision})`;
-    return `time${precision}${this.withTimezone ? " with time zone" : ""}`;
-  }
-};
-function time2(a2, b2 = {}) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  return new PgTimeBuilder(name, config2.withTimezone ?? false, config2.precision);
-}
-__name(time2, "time");
-
-// node_modules/drizzle-orm/pg-core/columns/timestamp.js
-var PgTimestampBuilder = class extends PgDateColumnBaseBuilder {
-  static {
-    __name(this, "PgTimestampBuilder");
-  }
-  static [entityKind] = "PgTimestampBuilder";
-  constructor(name, withTimezone, precision) {
-    super(name, "date", "PgTimestamp");
-    this.config.withTimezone = withTimezone;
-    this.config.precision = precision;
-  }
-  /** @internal */
-  build(table) {
-    return new PgTimestamp(table, this.config);
-  }
-};
-var PgTimestamp = class extends PgColumn {
-  static {
-    __name(this, "PgTimestamp");
-  }
-  static [entityKind] = "PgTimestamp";
-  withTimezone;
-  precision;
-  constructor(table, config2) {
-    super(table, config2);
-    this.withTimezone = config2.withTimezone;
-    this.precision = config2.precision;
-  }
-  getSQLType() {
-    const precision = this.precision === void 0 ? "" : ` (${this.precision})`;
-    return `timestamp${precision}${this.withTimezone ? " with time zone" : ""}`;
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "string") return new Date(this.withTimezone ? value : value + "+0000");
-    return value;
-  }
-  mapToDriverValue = /* @__PURE__ */ __name((value) => {
-    return value.toISOString();
-  }, "mapToDriverValue");
-};
-var PgTimestampStringBuilder = class extends PgDateColumnBaseBuilder {
-  static {
-    __name(this, "PgTimestampStringBuilder");
-  }
-  static [entityKind] = "PgTimestampStringBuilder";
-  constructor(name, withTimezone, precision) {
-    super(name, "string", "PgTimestampString");
-    this.config.withTimezone = withTimezone;
-    this.config.precision = precision;
-  }
-  /** @internal */
-  build(table) {
-    return new PgTimestampString(
-      table,
-      this.config
-    );
-  }
-};
-var PgTimestampString = class extends PgColumn {
-  static {
-    __name(this, "PgTimestampString");
-  }
-  static [entityKind] = "PgTimestampString";
-  withTimezone;
-  precision;
-  constructor(table, config2) {
-    super(table, config2);
-    this.withTimezone = config2.withTimezone;
-    this.precision = config2.precision;
-  }
-  getSQLType() {
-    const precision = this.precision === void 0 ? "" : `(${this.precision})`;
-    return `timestamp${precision}${this.withTimezone ? " with time zone" : ""}`;
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "string") return value;
-    const shortened = value.toISOString().slice(0, -1).replace("T", " ");
-    if (this.withTimezone) {
-      const offset = value.getTimezoneOffset();
-      const sign = offset <= 0 ? "+" : "-";
-      return `${shortened}${sign}${Math.floor(Math.abs(offset) / 60).toString().padStart(2, "0")}`;
-    }
-    return shortened;
-  }
-};
-function timestamp(a2, b2 = {}) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  if (config2?.mode === "string") {
-    return new PgTimestampStringBuilder(name, config2.withTimezone ?? false, config2.precision);
-  }
-  return new PgTimestampBuilder(name, config2?.withTimezone ?? false, config2?.precision);
-}
-__name(timestamp, "timestamp");
-
-// node_modules/drizzle-orm/pg-core/columns/uuid.js
-var PgUUIDBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgUUIDBuilder");
-  }
-  static [entityKind] = "PgUUIDBuilder";
-  constructor(name) {
-    super(name, "string", "PgUUID");
-  }
-  /**
-   * Adds `default gen_random_uuid()` to the column definition.
-   */
-  defaultRandom() {
-    return this.default(sql`gen_random_uuid()`);
-  }
-  /** @internal */
-  build(table) {
-    return new PgUUID(table, this.config);
-  }
-};
-var PgUUID = class extends PgColumn {
-  static {
-    __name(this, "PgUUID");
-  }
-  static [entityKind] = "PgUUID";
-  getSQLType() {
-    return "uuid";
-  }
-};
-function uuid(name) {
-  return new PgUUIDBuilder(name ?? "");
-}
-__name(uuid, "uuid");
-
-// node_modules/drizzle-orm/pg-core/columns/varchar.js
-var PgVarcharBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgVarcharBuilder");
-  }
-  static [entityKind] = "PgVarcharBuilder";
-  constructor(name, config2) {
-    super(name, "string", "PgVarchar");
-    this.config.length = config2.length;
-    this.config.enumValues = config2.enum;
-  }
-  /** @internal */
-  build(table) {
-    return new PgVarchar(
-      table,
-      this.config
-    );
-  }
-};
-var PgVarchar = class extends PgColumn {
-  static {
-    __name(this, "PgVarchar");
-  }
-  static [entityKind] = "PgVarchar";
-  length = this.config.length;
-  enumValues = this.config.enumValues;
-  getSQLType() {
-    return this.length === void 0 ? `varchar` : `varchar(${this.length})`;
-  }
-};
-function varchar(a2, b2 = {}) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  return new PgVarcharBuilder(name, config2);
-}
-__name(varchar, "varchar");
-
-// node_modules/drizzle-orm/pg-core/columns/vector_extension/bit.js
-var PgBinaryVectorBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgBinaryVectorBuilder");
-  }
-  static [entityKind] = "PgBinaryVectorBuilder";
-  constructor(name, config2) {
-    super(name, "string", "PgBinaryVector");
-    this.config.dimensions = config2.dimensions;
-  }
-  /** @internal */
-  build(table) {
-    return new PgBinaryVector(
-      table,
-      this.config
-    );
-  }
-};
-var PgBinaryVector = class extends PgColumn {
-  static {
-    __name(this, "PgBinaryVector");
-  }
-  static [entityKind] = "PgBinaryVector";
-  dimensions = this.config.dimensions;
-  getSQLType() {
-    return `bit(${this.dimensions})`;
-  }
-};
-function bit(a2, b2) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  return new PgBinaryVectorBuilder(name, config2);
-}
-__name(bit, "bit");
-
-// node_modules/drizzle-orm/pg-core/columns/vector_extension/halfvec.js
-var PgHalfVectorBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgHalfVectorBuilder");
-  }
-  static [entityKind] = "PgHalfVectorBuilder";
-  constructor(name, config2) {
-    super(name, "array", "PgHalfVector");
-    this.config.dimensions = config2.dimensions;
-  }
-  /** @internal */
-  build(table) {
-    return new PgHalfVector(
-      table,
-      this.config
-    );
-  }
-};
-var PgHalfVector = class extends PgColumn {
-  static {
-    __name(this, "PgHalfVector");
-  }
-  static [entityKind] = "PgHalfVector";
-  dimensions = this.config.dimensions;
-  getSQLType() {
-    return `halfvec(${this.dimensions})`;
-  }
-  mapToDriverValue(value) {
-    return JSON.stringify(value);
-  }
-  mapFromDriverValue(value) {
-    return value.slice(1, -1).split(",").map((v2) => Number.parseFloat(v2));
-  }
-};
-function halfvec(a2, b2) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  return new PgHalfVectorBuilder(name, config2);
-}
-__name(halfvec, "halfvec");
-
-// node_modules/drizzle-orm/pg-core/columns/vector_extension/sparsevec.js
-var PgSparseVectorBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgSparseVectorBuilder");
-  }
-  static [entityKind] = "PgSparseVectorBuilder";
-  constructor(name, config2) {
-    super(name, "string", "PgSparseVector");
-    this.config.dimensions = config2.dimensions;
-  }
-  /** @internal */
-  build(table) {
-    return new PgSparseVector(
-      table,
-      this.config
-    );
-  }
-};
-var PgSparseVector = class extends PgColumn {
-  static {
-    __name(this, "PgSparseVector");
-  }
-  static [entityKind] = "PgSparseVector";
-  dimensions = this.config.dimensions;
-  getSQLType() {
-    return `sparsevec(${this.dimensions})`;
-  }
-};
-function sparsevec(a2, b2) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  return new PgSparseVectorBuilder(name, config2);
-}
-__name(sparsevec, "sparsevec");
-
-// node_modules/drizzle-orm/pg-core/columns/vector_extension/vector.js
-var PgVectorBuilder = class extends PgColumnBuilder {
-  static {
-    __name(this, "PgVectorBuilder");
-  }
-  static [entityKind] = "PgVectorBuilder";
-  constructor(name, config2) {
-    super(name, "array", "PgVector");
-    this.config.dimensions = config2.dimensions;
-  }
-  /** @internal */
-  build(table) {
-    return new PgVector(
-      table,
-      this.config
-    );
-  }
-};
-var PgVector = class extends PgColumn {
-  static {
-    __name(this, "PgVector");
-  }
-  static [entityKind] = "PgVector";
-  dimensions = this.config.dimensions;
-  getSQLType() {
-    return `vector(${this.dimensions})`;
-  }
-  mapToDriverValue(value) {
-    return JSON.stringify(value);
-  }
-  mapFromDriverValue(value) {
-    return value.slice(1, -1).split(",").map((v2) => Number.parseFloat(v2));
-  }
-};
-function vector(a2, b2) {
-  const { name, config: config2 } = getColumnNameAndConfig(a2, b2);
-  return new PgVectorBuilder(name, config2);
-}
-__name(vector, "vector");
-
-// node_modules/drizzle-orm/pg-core/columns/all.js
-function getPgColumnBuilders() {
-  return {
-    bigint,
-    bigserial,
-    boolean,
-    char,
-    cidr,
-    customType,
-    date,
-    doublePrecision,
-    inet,
-    integer,
-    interval,
-    json,
-    jsonb,
-    line,
-    macaddr,
-    macaddr8,
-    numeric,
-    point,
-    geometry,
-    real,
-    serial,
-    smallint,
-    smallserial,
-    text,
-    time: time2,
-    timestamp,
-    uuid,
-    varchar,
-    bit,
-    halfvec,
-    sparsevec,
-    vector
-  };
-}
-__name(getPgColumnBuilders, "getPgColumnBuilders");
-
-// node_modules/drizzle-orm/pg-core/table.js
-var InlineForeignKeys = /* @__PURE__ */ Symbol.for("drizzle:PgInlineForeignKeys");
-var EnableRLS = /* @__PURE__ */ Symbol.for("drizzle:EnableRLS");
-var PgTable = class extends Table {
-  static {
-    __name(this, "PgTable");
-  }
-  static [entityKind] = "PgTable";
-  /** @internal */
-  static Symbol = Object.assign({}, Table.Symbol, {
-    InlineForeignKeys,
-    EnableRLS
-  });
-  /**@internal */
-  [InlineForeignKeys] = [];
-  /** @internal */
-  [EnableRLS] = false;
-  /** @internal */
-  [Table.Symbol.ExtraConfigBuilder] = void 0;
-  /** @internal */
-  [Table.Symbol.ExtraConfigColumns] = {};
-};
-function pgTableWithSchema(name, columns, extraConfig, schema, baseName = name) {
-  const rawTable = new PgTable(name, schema, baseName);
-  const parsedColumns = typeof columns === "function" ? columns(getPgColumnBuilders()) : columns;
-  const builtColumns = Object.fromEntries(
-    Object.entries(parsedColumns).map(([name2, colBuilderBase]) => {
-      const colBuilder = colBuilderBase;
-      colBuilder.setName(name2);
-      const column = colBuilder.build(rawTable);
-      rawTable[InlineForeignKeys].push(...colBuilder.buildForeignKeys(column, rawTable));
-      return [name2, column];
-    })
-  );
-  const builtColumnsForExtraConfig = Object.fromEntries(
-    Object.entries(parsedColumns).map(([name2, colBuilderBase]) => {
-      const colBuilder = colBuilderBase;
-      colBuilder.setName(name2);
-      const column = colBuilder.buildExtraConfigColumn(rawTable);
-      return [name2, column];
-    })
-  );
-  const table = Object.assign(rawTable, builtColumns);
-  table[Table.Symbol.Columns] = builtColumns;
-  table[Table.Symbol.ExtraConfigColumns] = builtColumnsForExtraConfig;
-  if (extraConfig) {
-    table[PgTable.Symbol.ExtraConfigBuilder] = extraConfig;
-  }
-  return Object.assign(table, {
-    enableRLS: /* @__PURE__ */ __name(() => {
-      table[PgTable.Symbol.EnableRLS] = true;
-      return table;
-    }, "enableRLS")
-  });
-}
-__name(pgTableWithSchema, "pgTableWithSchema");
-var pgTable = /* @__PURE__ */ __name((name, columns, extraConfig) => {
-  return pgTableWithSchema(name, columns, extraConfig, void 0);
-}, "pgTable");
-
-// node_modules/drizzle-orm/pg-core/primary-keys.js
-var PrimaryKeyBuilder = class {
-  static {
-    __name(this, "PrimaryKeyBuilder");
-  }
-  static [entityKind] = "PgPrimaryKeyBuilder";
-  /** @internal */
-  columns;
-  /** @internal */
-  name;
-  constructor(columns, name) {
-    this.columns = columns;
-    this.name = name;
-  }
-  /** @internal */
-  build(table) {
-    return new PrimaryKey(table, this.columns, this.name);
-  }
-};
-var PrimaryKey = class {
-  static {
-    __name(this, "PrimaryKey");
-  }
-  constructor(table, columns, name) {
-    this.table = table;
-    this.columns = columns;
-    this.name = name;
-  }
-  static [entityKind] = "PgPrimaryKey";
-  columns;
-  name;
-  getName() {
-    return this.name ?? `${this.table[PgTable.Symbol.Name]}_${this.columns.map((column) => column.name).join("_")}_pk`;
-  }
-};
-
-// node_modules/drizzle-orm/sql/expressions/conditions.js
-function bindIfParam(value, column) {
-  if (isDriverValueEncoder(column) && !isSQLWrapper(value) && !is(value, Param) && !is(value, Placeholder) && !is(value, Column) && !is(value, Table) && !is(value, View)) {
-    return new Param(value, column);
-  }
-  return value;
-}
-__name(bindIfParam, "bindIfParam");
-var eq = /* @__PURE__ */ __name((left, right) => {
-  return sql`${left} = ${bindIfParam(right, left)}`;
-}, "eq");
-var ne = /* @__PURE__ */ __name((left, right) => {
-  return sql`${left} <> ${bindIfParam(right, left)}`;
-}, "ne");
-function and(...unfilteredConditions) {
-  const conditions = unfilteredConditions.filter(
-    (c) => c !== void 0
-  );
-  if (conditions.length === 0) {
-    return void 0;
-  }
-  if (conditions.length === 1) {
-    return new SQL(conditions);
-  }
-  return new SQL([
-    new StringChunk("("),
-    sql.join(conditions, new StringChunk(" and ")),
-    new StringChunk(")")
-  ]);
-}
-__name(and, "and");
-function or(...unfilteredConditions) {
-  const conditions = unfilteredConditions.filter(
-    (c) => c !== void 0
-  );
-  if (conditions.length === 0) {
-    return void 0;
-  }
-  if (conditions.length === 1) {
-    return new SQL(conditions);
-  }
-  return new SQL([
-    new StringChunk("("),
-    sql.join(conditions, new StringChunk(" or ")),
-    new StringChunk(")")
-  ]);
-}
-__name(or, "or");
-function not(condition) {
-  return sql`not ${condition}`;
-}
-__name(not, "not");
-var gt = /* @__PURE__ */ __name((left, right) => {
-  return sql`${left} > ${bindIfParam(right, left)}`;
-}, "gt");
-var gte = /* @__PURE__ */ __name((left, right) => {
-  return sql`${left} >= ${bindIfParam(right, left)}`;
-}, "gte");
-var lt = /* @__PURE__ */ __name((left, right) => {
-  return sql`${left} < ${bindIfParam(right, left)}`;
-}, "lt");
-var lte = /* @__PURE__ */ __name((left, right) => {
-  return sql`${left} <= ${bindIfParam(right, left)}`;
-}, "lte");
-function inArray(column, values) {
-  if (Array.isArray(values)) {
-    if (values.length === 0) {
-      return sql`false`;
-    }
-    return sql`${column} in ${values.map((v2) => bindIfParam(v2, column))}`;
-  }
-  return sql`${column} in ${bindIfParam(values, column)}`;
-}
-__name(inArray, "inArray");
-function notInArray(column, values) {
-  if (Array.isArray(values)) {
-    if (values.length === 0) {
-      return sql`true`;
-    }
-    return sql`${column} not in ${values.map((v2) => bindIfParam(v2, column))}`;
-  }
-  return sql`${column} not in ${bindIfParam(values, column)}`;
-}
-__name(notInArray, "notInArray");
-function isNull(value) {
-  return sql`${value} is null`;
-}
-__name(isNull, "isNull");
-function isNotNull(value) {
-  return sql`${value} is not null`;
-}
-__name(isNotNull, "isNotNull");
-function exists(subquery) {
-  return sql`exists ${subquery}`;
-}
-__name(exists, "exists");
-function notExists(subquery) {
-  return sql`not exists ${subquery}`;
-}
-__name(notExists, "notExists");
-function between(column, min, max) {
-  return sql`${column} between ${bindIfParam(min, column)} and ${bindIfParam(
-    max,
-    column
-  )}`;
-}
-__name(between, "between");
-function notBetween(column, min, max) {
-  return sql`${column} not between ${bindIfParam(
-    min,
-    column
-  )} and ${bindIfParam(max, column)}`;
-}
-__name(notBetween, "notBetween");
-function like(column, value) {
-  return sql`${column} like ${value}`;
-}
-__name(like, "like");
-function notLike(column, value) {
-  return sql`${column} not like ${value}`;
-}
-__name(notLike, "notLike");
-function ilike(column, value) {
-  return sql`${column} ilike ${value}`;
-}
-__name(ilike, "ilike");
-function notIlike(column, value) {
-  return sql`${column} not ilike ${value}`;
-}
-__name(notIlike, "notIlike");
-
-// node_modules/drizzle-orm/sql/expressions/select.js
-function asc(column) {
-  return sql`${column} asc`;
-}
-__name(asc, "asc");
-function desc(column) {
-  return sql`${column} desc`;
-}
-__name(desc, "desc");
-
-// node_modules/drizzle-orm/relations.js
-var Relation = class {
-  static {
-    __name(this, "Relation");
-  }
-  constructor(sourceTable, referencedTable, relationName) {
-    this.sourceTable = sourceTable;
-    this.referencedTable = referencedTable;
-    this.relationName = relationName;
-    this.referencedTableName = referencedTable[Table.Symbol.Name];
-  }
-  static [entityKind] = "Relation";
-  referencedTableName;
-  fieldName;
-};
-var Relations = class {
-  static {
-    __name(this, "Relations");
-  }
-  constructor(table, config2) {
-    this.table = table;
-    this.config = config2;
-  }
-  static [entityKind] = "Relations";
-};
-var One = class _One extends Relation {
-  static {
-    __name(this, "One");
-  }
-  constructor(sourceTable, referencedTable, config2, isNullable) {
-    super(sourceTable, referencedTable, config2?.relationName);
-    this.config = config2;
-    this.isNullable = isNullable;
-  }
-  static [entityKind] = "One";
-  withFieldName(fieldName) {
-    const relation = new _One(
-      this.sourceTable,
-      this.referencedTable,
-      this.config,
-      this.isNullable
-    );
-    relation.fieldName = fieldName;
-    return relation;
-  }
-};
-var Many = class _Many extends Relation {
-  static {
-    __name(this, "Many");
-  }
-  constructor(sourceTable, referencedTable, config2) {
-    super(sourceTable, referencedTable, config2?.relationName);
-    this.config = config2;
-  }
-  static [entityKind] = "Many";
-  withFieldName(fieldName) {
-    const relation = new _Many(
-      this.sourceTable,
-      this.referencedTable,
-      this.config
-    );
-    relation.fieldName = fieldName;
-    return relation;
-  }
-};
-function getOperators() {
-  return {
-    and,
-    between,
-    eq,
-    exists,
-    gt,
-    gte,
-    ilike,
-    inArray,
-    isNull,
-    isNotNull,
-    like,
-    lt,
-    lte,
-    ne,
-    not,
-    notBetween,
-    notExists,
-    notLike,
-    notIlike,
-    notInArray,
-    or,
-    sql
-  };
-}
-__name(getOperators, "getOperators");
-function getOrderByOperators() {
-  return {
-    sql,
-    asc,
-    desc
-  };
-}
-__name(getOrderByOperators, "getOrderByOperators");
-function extractTablesRelationalConfig(schema, configHelpers) {
-  if (Object.keys(schema).length === 1 && "default" in schema && !is(schema["default"], Table)) {
-    schema = schema["default"];
-  }
-  const tableNamesMap = {};
-  const relationsBuffer = {};
-  const tablesConfig = {};
-  for (const [key, value] of Object.entries(schema)) {
-    if (is(value, Table)) {
-      const dbName = getTableUniqueName(value);
-      const bufferedRelations = relationsBuffer[dbName];
-      tableNamesMap[dbName] = key;
-      tablesConfig[key] = {
-        tsName: key,
-        dbName: value[Table.Symbol.Name],
-        schema: value[Table.Symbol.Schema],
-        columns: value[Table.Symbol.Columns],
-        relations: bufferedRelations?.relations ?? {},
-        primaryKey: bufferedRelations?.primaryKey ?? []
-      };
-      for (const column of Object.values(
-        value[Table.Symbol.Columns]
-      )) {
-        if (column.primary) {
-          tablesConfig[key].primaryKey.push(column);
-        }
-      }
-      const extraConfig = value[Table.Symbol.ExtraConfigBuilder]?.(value[Table.Symbol.ExtraConfigColumns]);
-      if (extraConfig) {
-        for (const configEntry of Object.values(extraConfig)) {
-          if (is(configEntry, PrimaryKeyBuilder)) {
-            tablesConfig[key].primaryKey.push(...configEntry.columns);
-          }
-        }
-      }
-    } else if (is(value, Relations)) {
-      const dbName = getTableUniqueName(value.table);
-      const tableName = tableNamesMap[dbName];
-      const relations2 = value.config(
-        configHelpers(value.table)
-      );
-      let primaryKey;
-      for (const [relationName, relation] of Object.entries(relations2)) {
-        if (tableName) {
-          const tableConfig = tablesConfig[tableName];
-          tableConfig.relations[relationName] = relation;
-          if (primaryKey) {
-            tableConfig.primaryKey.push(...primaryKey);
-          }
-        } else {
-          if (!(dbName in relationsBuffer)) {
-            relationsBuffer[dbName] = {
-              relations: {},
-              primaryKey
-            };
-          }
-          relationsBuffer[dbName].relations[relationName] = relation;
-        }
-      }
-    }
-  }
-  return { tables: tablesConfig, tableNamesMap };
-}
-__name(extractTablesRelationalConfig, "extractTablesRelationalConfig");
-function createOne(sourceTable) {
-  return /* @__PURE__ */ __name(function one(table, config2) {
-    return new One(
-      sourceTable,
-      table,
-      config2,
-      config2?.fields.reduce((res, f) => res && f.notNull, true) ?? false
-    );
-  }, "one");
-}
-__name(createOne, "createOne");
-function createMany(sourceTable) {
-  return /* @__PURE__ */ __name(function many(referencedTable, config2) {
-    return new Many(sourceTable, referencedTable, config2);
-  }, "many");
-}
-__name(createMany, "createMany");
-function normalizeRelation(schema, tableNamesMap, relation) {
-  if (is(relation, One) && relation.config) {
-    return {
-      fields: relation.config.fields,
-      references: relation.config.references
-    };
-  }
-  const referencedTableTsName = tableNamesMap[getTableUniqueName(relation.referencedTable)];
-  if (!referencedTableTsName) {
-    throw new Error(
-      `Table "${relation.referencedTable[Table.Symbol.Name]}" not found in schema`
-    );
-  }
-  const referencedTableConfig = schema[referencedTableTsName];
-  if (!referencedTableConfig) {
-    throw new Error(`Table "${referencedTableTsName}" not found in schema`);
-  }
-  const sourceTable = relation.sourceTable;
-  const sourceTableTsName = tableNamesMap[getTableUniqueName(sourceTable)];
-  if (!sourceTableTsName) {
-    throw new Error(
-      `Table "${sourceTable[Table.Symbol.Name]}" not found in schema`
-    );
-  }
-  const reverseRelations = [];
-  for (const referencedTableRelation of Object.values(
-    referencedTableConfig.relations
-  )) {
-    if (relation.relationName && relation !== referencedTableRelation && referencedTableRelation.relationName === relation.relationName || !relation.relationName && referencedTableRelation.referencedTable === relation.sourceTable) {
-      reverseRelations.push(referencedTableRelation);
-    }
-  }
-  if (reverseRelations.length > 1) {
-    throw relation.relationName ? new Error(
-      `There are multiple relations with name "${relation.relationName}" in table "${referencedTableTsName}"`
-    ) : new Error(
-      `There are multiple relations between "${referencedTableTsName}" and "${relation.sourceTable[Table.Symbol.Name]}". Please specify relation name`
-    );
-  }
-  if (reverseRelations[0] && is(reverseRelations[0], One) && reverseRelations[0].config) {
-    return {
-      fields: reverseRelations[0].config.references,
-      references: reverseRelations[0].config.fields
-    };
-  }
-  throw new Error(
-    `There is not enough information to infer relation "${sourceTableTsName}.${relation.fieldName}"`
-  );
-}
-__name(normalizeRelation, "normalizeRelation");
-function createTableRelationsHelpers(sourceTable) {
-  return {
-    one: createOne(sourceTable),
-    many: createMany(sourceTable)
-  };
-}
-__name(createTableRelationsHelpers, "createTableRelationsHelpers");
-function mapRelationalRow(tablesConfig, tableConfig, row, buildQueryResultSelection, mapColumnValue = (value) => value) {
-  const result = {};
-  for (const [
-    selectionItemIndex,
-    selectionItem
-  ] of buildQueryResultSelection.entries()) {
-    if (selectionItem.isJson) {
-      const relation = tableConfig.relations[selectionItem.tsKey];
-      const rawSubRows = row[selectionItemIndex];
-      const subRows = typeof rawSubRows === "string" ? JSON.parse(rawSubRows) : rawSubRows;
-      result[selectionItem.tsKey] = is(relation, One) ? subRows && mapRelationalRow(
-        tablesConfig,
-        tablesConfig[selectionItem.relationTableTsKey],
-        subRows,
-        selectionItem.selection,
-        mapColumnValue
-      ) : subRows.map(
-        (subRow) => mapRelationalRow(
-          tablesConfig,
-          tablesConfig[selectionItem.relationTableTsKey],
-          subRow,
-          selectionItem.selection,
-          mapColumnValue
-        )
-      );
-    } else {
-      const value = mapColumnValue(row[selectionItemIndex]);
-      const field = selectionItem.field;
-      let decoder;
-      if (is(field, Column)) {
-        decoder = field;
-      } else if (is(field, SQL)) {
-        decoder = field.decoder;
-      } else {
-        decoder = field.sql.decoder;
-      }
-      result[selectionItem.tsKey] = value === null ? null : decoder.mapFromDriverValue(value);
-    }
-  }
-  return result;
-}
-__name(mapRelationalRow, "mapRelationalRow");
-
-// node_modules/drizzle-orm/sql/functions/aggregate.js
-function count(expression) {
-  return sql`count(${expression || sql.raw("*")})`.mapWith(Number);
-}
-__name(count, "count");
+// src/db/client.js
+init_modules_watch_stub();
 
 // node_modules/@neondatabase/serverless/index.mjs
+init_modules_watch_stub();
 var So = Object.create;
 var Ie = Object.defineProperty;
 var Eo = Object.getOwnPropertyDescriptor;
@@ -11483,3473 +16942,21 @@ var export_escapeIdentifier = ct.escapeIdentifier;
 var export_escapeLiteral = ct.escapeLiteral;
 var export_types = ct.types;
 
-// node_modules/drizzle-orm/selection-proxy.js
-var SelectionProxyHandler = class _SelectionProxyHandler {
-  static {
-    __name(this, "SelectionProxyHandler");
-  }
-  static [entityKind] = "SelectionProxyHandler";
-  config;
-  constructor(config2) {
-    this.config = { ...config2 };
-  }
-  get(subquery, prop) {
-    if (prop === "_") {
-      return {
-        ...subquery["_"],
-        selectedFields: new Proxy(
-          subquery._.selectedFields,
-          this
-        )
-      };
-    }
-    if (prop === ViewBaseConfig) {
-      return {
-        ...subquery[ViewBaseConfig],
-        selectedFields: new Proxy(
-          subquery[ViewBaseConfig].selectedFields,
-          this
-        )
-      };
-    }
-    if (typeof prop === "symbol") {
-      return subquery[prop];
-    }
-    const columns = is(subquery, Subquery) ? subquery._.selectedFields : is(subquery, View) ? subquery[ViewBaseConfig].selectedFields : subquery;
-    const value = columns[prop];
-    if (is(value, SQL.Aliased)) {
-      if (this.config.sqlAliasedBehavior === "sql" && !value.isSelectionField) {
-        return value.sql;
-      }
-      const newValue = value.clone();
-      newValue.isSelectionField = true;
-      return newValue;
-    }
-    if (is(value, SQL)) {
-      if (this.config.sqlBehavior === "sql") {
-        return value;
-      }
-      throw new Error(
-        `You tried to reference "${prop}" field from a subquery, which is a raw SQL field, but it doesn't have an alias declared. Please add an alias to the field using ".as('alias')" method.`
-      );
-    }
-    if (is(value, Column)) {
-      if (this.config.alias) {
-        return new Proxy(
-          value,
-          new ColumnAliasProxyHandler(
-            new Proxy(
-              value.table,
-              new TableAliasProxyHandler(this.config.alias, this.config.replaceOriginalName ?? false)
-            )
-          )
-        );
-      }
-      return value;
-    }
-    if (typeof value !== "object" || value === null) {
-      return value;
-    }
-    return new Proxy(value, new _SelectionProxyHandler(this.config));
-  }
-};
-
-// node_modules/drizzle-orm/casing.js
-function toSnakeCase(input2) {
-  const words = input2.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
-  return words.map((word) => word.toLowerCase()).join("_");
-}
-__name(toSnakeCase, "toSnakeCase");
-function toCamelCase(input2) {
-  const words = input2.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
-  return words.reduce((acc, word, i) => {
-    const formattedWord = i === 0 ? word.toLowerCase() : `${word[0].toUpperCase()}${word.slice(1)}`;
-    return acc + formattedWord;
-  }, "");
-}
-__name(toCamelCase, "toCamelCase");
-function noopCase(input2) {
-  return input2;
-}
-__name(noopCase, "noopCase");
-var CasingCache = class {
-  static {
-    __name(this, "CasingCache");
-  }
-  static [entityKind] = "CasingCache";
-  /** @internal */
-  cache = {};
-  cachedTables = {};
-  convert;
-  constructor(casing) {
-    this.convert = casing === "snake_case" ? toSnakeCase : casing === "camelCase" ? toCamelCase : noopCase;
-  }
-  getColumnCasing(column) {
-    if (!column.keyAsName) return column.name;
-    const schema = column.table[Table.Symbol.Schema] ?? "public";
-    const tableName = column.table[Table.Symbol.OriginalName];
-    const key = `${schema}.${tableName}.${column.name}`;
-    if (!this.cache[key]) {
-      this.cacheTable(column.table);
-    }
-    return this.cache[key];
-  }
-  cacheTable(table) {
-    const schema = table[Table.Symbol.Schema] ?? "public";
-    const tableName = table[Table.Symbol.OriginalName];
-    const tableKey = `${schema}.${tableName}`;
-    if (!this.cachedTables[tableKey]) {
-      for (const column of Object.values(table[Table.Symbol.Columns])) {
-        const columnKey = `${tableKey}.${column.name}`;
-        this.cache[columnKey] = this.convert(column.name);
-      }
-      this.cachedTables[tableKey] = true;
-    }
-  }
-  clearCache() {
-    this.cache = {};
-    this.cachedTables = {};
-  }
-};
-
-// node_modules/drizzle-orm/pg-core/view-base.js
-var PgViewBase = class extends View {
-  static {
-    __name(this, "PgViewBase");
-  }
-  static [entityKind] = "PgViewBase";
-};
-
-// node_modules/drizzle-orm/pg-core/dialect.js
-var PgDialect = class {
-  static {
-    __name(this, "PgDialect");
-  }
-  static [entityKind] = "PgDialect";
-  /** @internal */
-  casing;
-  constructor(config2) {
-    this.casing = new CasingCache(config2?.casing);
-  }
-  async migrate(migrations, session, config2) {
-    const migrationsTable = typeof config2 === "string" ? "__drizzle_migrations" : config2.migrationsTable ?? "__drizzle_migrations";
-    const migrationsSchema = typeof config2 === "string" ? "drizzle" : config2.migrationsSchema ?? "drizzle";
-    const migrationTableCreate = sql`
-			CREATE TABLE IF NOT EXISTS ${sql.identifier(migrationsSchema)}.${sql.identifier(migrationsTable)} (
-				id SERIAL PRIMARY KEY,
-				hash text NOT NULL,
-				created_at bigint
-			)
-		`;
-    await session.execute(sql`CREATE SCHEMA IF NOT EXISTS ${sql.identifier(migrationsSchema)}`);
-    await session.execute(migrationTableCreate);
-    const dbMigrations = await session.all(
-      sql`select id, hash, created_at from ${sql.identifier(migrationsSchema)}.${sql.identifier(migrationsTable)} order by created_at desc limit 1`
-    );
-    const lastDbMigration = dbMigrations[0];
-    await session.transaction(async (tx) => {
-      for await (const migration of migrations) {
-        if (!lastDbMigration || Number(lastDbMigration.created_at) < migration.folderMillis) {
-          for (const stmt of migration.sql) {
-            await tx.execute(sql.raw(stmt));
-          }
-          await tx.execute(
-            sql`insert into ${sql.identifier(migrationsSchema)}.${sql.identifier(migrationsTable)} ("hash", "created_at") values(${migration.hash}, ${migration.folderMillis})`
-          );
-        }
-      }
-    });
-  }
-  escapeName(name) {
-    return `"${name.replace(/"/g, '""')}"`;
-  }
-  escapeParam(num) {
-    return `$${num + 1}`;
-  }
-  escapeString(str) {
-    return `'${str.replace(/'/g, "''")}'`;
-  }
-  buildWithCTE(queries) {
-    if (!queries?.length) return void 0;
-    const withSqlChunks = [sql`with `];
-    for (const [i, w] of queries.entries()) {
-      withSqlChunks.push(sql`${sql.identifier(w._.alias)} as (${w._.sql})`);
-      if (i < queries.length - 1) {
-        withSqlChunks.push(sql`, `);
-      }
-    }
-    withSqlChunks.push(sql` `);
-    return sql.join(withSqlChunks);
-  }
-  buildDeleteQuery({ table, where, returning, withList }) {
-    const withSql = this.buildWithCTE(withList);
-    const returningSql = returning ? sql` returning ${this.buildSelection(returning, { isSingleTable: true })}` : void 0;
-    const whereSql = where ? sql` where ${where}` : void 0;
-    return sql`${withSql}delete from ${table}${whereSql}${returningSql}`;
-  }
-  buildUpdateSet(table, set2) {
-    const tableColumns = table[Table.Symbol.Columns];
-    const columnNames = Object.keys(tableColumns).filter(
-      (colName) => set2[colName] !== void 0 || tableColumns[colName]?.onUpdateFn !== void 0
-    );
-    const setSize = columnNames.length;
-    return sql.join(columnNames.flatMap((colName, i) => {
-      const col = tableColumns[colName];
-      const onUpdateFnResult = col.onUpdateFn?.();
-      const value = set2[colName] ?? (is(onUpdateFnResult, SQL) ? onUpdateFnResult : sql.param(onUpdateFnResult, col));
-      const res = sql`${sql.identifier(this.casing.getColumnCasing(col))} = ${value}`;
-      if (i < setSize - 1) {
-        return [res, sql.raw(", ")];
-      }
-      return [res];
-    }));
-  }
-  buildUpdateQuery({ table, set: set2, where, returning, withList, from, joins }) {
-    const withSql = this.buildWithCTE(withList);
-    const tableName = table[PgTable.Symbol.Name];
-    const tableSchema = table[PgTable.Symbol.Schema];
-    const origTableName = table[PgTable.Symbol.OriginalName];
-    const alias2 = tableName === origTableName ? void 0 : tableName;
-    const tableSql = sql`${tableSchema ? sql`${sql.identifier(tableSchema)}.` : void 0}${sql.identifier(origTableName)}${alias2 && sql` ${sql.identifier(alias2)}`}`;
-    const setSql = this.buildUpdateSet(table, set2);
-    const fromSql = from && sql.join([sql.raw(" from "), this.buildFromTable(from)]);
-    const joinsSql = this.buildJoins(joins);
-    const returningSql = returning ? sql` returning ${this.buildSelection(returning, { isSingleTable: !from })}` : void 0;
-    const whereSql = where ? sql` where ${where}` : void 0;
-    return sql`${withSql}update ${tableSql} set ${setSql}${fromSql}${joinsSql}${whereSql}${returningSql}`;
-  }
-  /**
-   * Builds selection SQL with provided fields/expressions
-   *
-   * Examples:
-   *
-   * `select <selection> from`
-   *
-   * `insert ... returning <selection>`
-   *
-   * If `isSingleTable` is true, then columns won't be prefixed with table name
-   */
-  buildSelection(fields, { isSingleTable = false } = {}) {
-    const columnsLen = fields.length;
-    const chunks = fields.flatMap(({ field }, i) => {
-      const chunk = [];
-      if (is(field, SQL.Aliased) && field.isSelectionField) {
-        chunk.push(sql.identifier(field.fieldAlias));
-      } else if (is(field, SQL.Aliased) || is(field, SQL)) {
-        const query = is(field, SQL.Aliased) ? field.sql : field;
-        if (isSingleTable) {
-          chunk.push(
-            new SQL(
-              query.queryChunks.map((c) => {
-                if (is(c, PgColumn)) {
-                  return sql.identifier(this.casing.getColumnCasing(c));
-                }
-                return c;
-              })
-            )
-          );
-        } else {
-          chunk.push(query);
-        }
-        if (is(field, SQL.Aliased)) {
-          chunk.push(sql` as ${sql.identifier(field.fieldAlias)}`);
-        }
-      } else if (is(field, Column)) {
-        if (isSingleTable) {
-          chunk.push(sql.identifier(this.casing.getColumnCasing(field)));
-        } else {
-          chunk.push(field);
-        }
-      } else if (is(field, Subquery)) {
-        const entries = Object.entries(field._.selectedFields);
-        if (entries.length === 1) {
-          const entry = entries[0][1];
-          const fieldDecoder = is(entry, SQL) ? entry.decoder : is(entry, Column) ? { mapFromDriverValue: /* @__PURE__ */ __name((v2) => entry.mapFromDriverValue(v2), "mapFromDriverValue") } : entry.sql.decoder;
-          if (fieldDecoder) {
-            field._.sql.decoder = fieldDecoder;
-          }
-        }
-        chunk.push(field);
-      }
-      if (i < columnsLen - 1) {
-        chunk.push(sql`, `);
-      }
-      return chunk;
-    });
-    return sql.join(chunks);
-  }
-  buildJoins(joins) {
-    if (!joins || joins.length === 0) {
-      return void 0;
-    }
-    const joinsArray = [];
-    for (const [index, joinMeta] of joins.entries()) {
-      if (index === 0) {
-        joinsArray.push(sql` `);
-      }
-      const table = joinMeta.table;
-      const lateralSql = joinMeta.lateral ? sql` lateral` : void 0;
-      const onSql = joinMeta.on ? sql` on ${joinMeta.on}` : void 0;
-      if (is(table, PgTable)) {
-        const tableName = table[PgTable.Symbol.Name];
-        const tableSchema = table[PgTable.Symbol.Schema];
-        const origTableName = table[PgTable.Symbol.OriginalName];
-        const alias2 = tableName === origTableName ? void 0 : joinMeta.alias;
-        joinsArray.push(
-          sql`${sql.raw(joinMeta.joinType)} join${lateralSql} ${tableSchema ? sql`${sql.identifier(tableSchema)}.` : void 0}${sql.identifier(origTableName)}${alias2 && sql` ${sql.identifier(alias2)}`}${onSql}`
-        );
-      } else if (is(table, View)) {
-        const viewName = table[ViewBaseConfig].name;
-        const viewSchema = table[ViewBaseConfig].schema;
-        const origViewName = table[ViewBaseConfig].originalName;
-        const alias2 = viewName === origViewName ? void 0 : joinMeta.alias;
-        joinsArray.push(
-          sql`${sql.raw(joinMeta.joinType)} join${lateralSql} ${viewSchema ? sql`${sql.identifier(viewSchema)}.` : void 0}${sql.identifier(origViewName)}${alias2 && sql` ${sql.identifier(alias2)}`}${onSql}`
-        );
-      } else {
-        joinsArray.push(
-          sql`${sql.raw(joinMeta.joinType)} join${lateralSql} ${table}${onSql}`
-        );
-      }
-      if (index < joins.length - 1) {
-        joinsArray.push(sql` `);
-      }
-    }
-    return sql.join(joinsArray);
-  }
-  buildFromTable(table) {
-    if (is(table, Table) && table[Table.Symbol.IsAlias]) {
-      let fullName = sql`${sql.identifier(table[Table.Symbol.OriginalName])}`;
-      if (table[Table.Symbol.Schema]) {
-        fullName = sql`${sql.identifier(table[Table.Symbol.Schema])}.${fullName}`;
-      }
-      return sql`${fullName} ${sql.identifier(table[Table.Symbol.Name])}`;
-    }
-    return table;
-  }
-  buildSelectQuery({
-    withList,
-    fields,
-    fieldsFlat,
-    where,
-    having,
-    table,
-    joins,
-    orderBy,
-    groupBy,
-    limit,
-    offset,
-    lockingClause,
-    distinct,
-    setOperators
-  }) {
-    const fieldsList = fieldsFlat ?? orderSelectedFields(fields);
-    for (const f of fieldsList) {
-      if (is(f.field, Column) && getTableName(f.field.table) !== (is(table, Subquery) ? table._.alias : is(table, PgViewBase) ? table[ViewBaseConfig].name : is(table, SQL) ? void 0 : getTableName(table)) && !((table2) => joins?.some(
-        ({ alias: alias2 }) => alias2 === (table2[Table.Symbol.IsAlias] ? getTableName(table2) : table2[Table.Symbol.BaseName])
-      ))(f.field.table)) {
-        const tableName = getTableName(f.field.table);
-        throw new Error(
-          `Your "${f.path.join("->")}" field references a column "${tableName}"."${f.field.name}", but the table "${tableName}" is not part of the query! Did you forget to join it?`
-        );
-      }
-    }
-    const isSingleTable = !joins || joins.length === 0;
-    const withSql = this.buildWithCTE(withList);
-    let distinctSql;
-    if (distinct) {
-      distinctSql = distinct === true ? sql` distinct` : sql` distinct on (${sql.join(distinct.on, sql`, `)})`;
-    }
-    const selection = this.buildSelection(fieldsList, { isSingleTable });
-    const tableSql = this.buildFromTable(table);
-    const joinsSql = this.buildJoins(joins);
-    const whereSql = where ? sql` where ${where}` : void 0;
-    const havingSql = having ? sql` having ${having}` : void 0;
-    let orderBySql;
-    if (orderBy && orderBy.length > 0) {
-      orderBySql = sql` order by ${sql.join(orderBy, sql`, `)}`;
-    }
-    let groupBySql;
-    if (groupBy && groupBy.length > 0) {
-      groupBySql = sql` group by ${sql.join(groupBy, sql`, `)}`;
-    }
-    const limitSql = typeof limit === "object" || typeof limit === "number" && limit >= 0 ? sql` limit ${limit}` : void 0;
-    const offsetSql = offset ? sql` offset ${offset}` : void 0;
-    const lockingClauseSql = sql.empty();
-    if (lockingClause) {
-      const clauseSql = sql` for ${sql.raw(lockingClause.strength)}`;
-      if (lockingClause.config.of) {
-        clauseSql.append(
-          sql` of ${sql.join(
-            Array.isArray(lockingClause.config.of) ? lockingClause.config.of : [lockingClause.config.of],
-            sql`, `
-          )}`
-        );
-      }
-      if (lockingClause.config.noWait) {
-        clauseSql.append(sql` nowait`);
-      } else if (lockingClause.config.skipLocked) {
-        clauseSql.append(sql` skip locked`);
-      }
-      lockingClauseSql.append(clauseSql);
-    }
-    const finalQuery = sql`${withSql}select${distinctSql} ${selection} from ${tableSql}${joinsSql}${whereSql}${groupBySql}${havingSql}${orderBySql}${limitSql}${offsetSql}${lockingClauseSql}`;
-    if (setOperators.length > 0) {
-      return this.buildSetOperations(finalQuery, setOperators);
-    }
-    return finalQuery;
-  }
-  buildSetOperations(leftSelect, setOperators) {
-    const [setOperator, ...rest] = setOperators;
-    if (!setOperator) {
-      throw new Error("Cannot pass undefined values to any set operator");
-    }
-    if (rest.length === 0) {
-      return this.buildSetOperationQuery({ leftSelect, setOperator });
-    }
-    return this.buildSetOperations(
-      this.buildSetOperationQuery({ leftSelect, setOperator }),
-      rest
-    );
-  }
-  buildSetOperationQuery({
-    leftSelect,
-    setOperator: { type, isAll, rightSelect, limit, orderBy, offset }
-  }) {
-    const leftChunk = sql`(${leftSelect.getSQL()}) `;
-    const rightChunk = sql`(${rightSelect.getSQL()})`;
-    let orderBySql;
-    if (orderBy && orderBy.length > 0) {
-      const orderByValues = [];
-      for (const singleOrderBy of orderBy) {
-        if (is(singleOrderBy, PgColumn)) {
-          orderByValues.push(sql.identifier(singleOrderBy.name));
-        } else if (is(singleOrderBy, SQL)) {
-          for (let i = 0; i < singleOrderBy.queryChunks.length; i++) {
-            const chunk = singleOrderBy.queryChunks[i];
-            if (is(chunk, PgColumn)) {
-              singleOrderBy.queryChunks[i] = sql.identifier(chunk.name);
-            }
-          }
-          orderByValues.push(sql`${singleOrderBy}`);
-        } else {
-          orderByValues.push(sql`${singleOrderBy}`);
-        }
-      }
-      orderBySql = sql` order by ${sql.join(orderByValues, sql`, `)} `;
-    }
-    const limitSql = typeof limit === "object" || typeof limit === "number" && limit >= 0 ? sql` limit ${limit}` : void 0;
-    const operatorChunk = sql.raw(`${type} ${isAll ? "all " : ""}`);
-    const offsetSql = offset ? sql` offset ${offset}` : void 0;
-    return sql`${leftChunk}${operatorChunk}${rightChunk}${orderBySql}${limitSql}${offsetSql}`;
-  }
-  buildInsertQuery({ table, values: valuesOrSelect, onConflict, returning, withList, select, overridingSystemValue_ }) {
-    const valuesSqlList = [];
-    const columns = table[Table.Symbol.Columns];
-    const colEntries = Object.entries(columns).filter(([_, col]) => !col.shouldDisableInsert());
-    const insertOrder = colEntries.map(
-      ([, column]) => sql.identifier(this.casing.getColumnCasing(column))
-    );
-    if (select) {
-      const select2 = valuesOrSelect;
-      if (is(select2, SQL)) {
-        valuesSqlList.push(select2);
-      } else {
-        valuesSqlList.push(select2.getSQL());
-      }
-    } else {
-      const values = valuesOrSelect;
-      valuesSqlList.push(sql.raw("values "));
-      for (const [valueIndex, value] of values.entries()) {
-        const valueList = [];
-        for (const [fieldName, col] of colEntries) {
-          const colValue = value[fieldName];
-          if (colValue === void 0 || is(colValue, Param) && colValue.value === void 0) {
-            if (col.defaultFn !== void 0) {
-              const defaultFnResult = col.defaultFn();
-              const defaultValue = is(defaultFnResult, SQL) ? defaultFnResult : sql.param(defaultFnResult, col);
-              valueList.push(defaultValue);
-            } else if (!col.default && col.onUpdateFn !== void 0) {
-              const onUpdateFnResult = col.onUpdateFn();
-              const newValue = is(onUpdateFnResult, SQL) ? onUpdateFnResult : sql.param(onUpdateFnResult, col);
-              valueList.push(newValue);
-            } else {
-              valueList.push(sql`default`);
-            }
-          } else {
-            valueList.push(colValue);
-          }
-        }
-        valuesSqlList.push(valueList);
-        if (valueIndex < values.length - 1) {
-          valuesSqlList.push(sql`, `);
-        }
-      }
-    }
-    const withSql = this.buildWithCTE(withList);
-    const valuesSql = sql.join(valuesSqlList);
-    const returningSql = returning ? sql` returning ${this.buildSelection(returning, { isSingleTable: true })}` : void 0;
-    const onConflictSql = onConflict ? sql` on conflict ${onConflict}` : void 0;
-    const overridingSql = overridingSystemValue_ === true ? sql`overriding system value ` : void 0;
-    return sql`${withSql}insert into ${table} ${insertOrder} ${overridingSql}${valuesSql}${onConflictSql}${returningSql}`;
-  }
-  buildRefreshMaterializedViewQuery({ view, concurrently, withNoData }) {
-    const concurrentlySql = concurrently ? sql` concurrently` : void 0;
-    const withNoDataSql = withNoData ? sql` with no data` : void 0;
-    return sql`refresh materialized view${concurrentlySql} ${view}${withNoDataSql}`;
-  }
-  prepareTyping(encoder) {
-    if (is(encoder, PgJsonb) || is(encoder, PgJson)) {
-      return "json";
-    } else if (is(encoder, PgNumeric)) {
-      return "decimal";
-    } else if (is(encoder, PgTime)) {
-      return "time";
-    } else if (is(encoder, PgTimestamp) || is(encoder, PgTimestampString)) {
-      return "timestamp";
-    } else if (is(encoder, PgDate) || is(encoder, PgDateString)) {
-      return "date";
-    } else if (is(encoder, PgUUID)) {
-      return "uuid";
-    } else {
-      return "none";
-    }
-  }
-  sqlToQuery(sql2, invokeSource) {
-    return sql2.toQuery({
-      casing: this.casing,
-      escapeName: this.escapeName,
-      escapeParam: this.escapeParam,
-      escapeString: this.escapeString,
-      prepareTyping: this.prepareTyping,
-      invokeSource
-    });
-  }
-  // buildRelationalQueryWithPK({
-  // 	fullSchema,
-  // 	schema,
-  // 	tableNamesMap,
-  // 	table,
-  // 	tableConfig,
-  // 	queryConfig: config,
-  // 	tableAlias,
-  // 	isRoot = false,
-  // 	joinOn,
-  // }: {
-  // 	fullSchema: Record<string, unknown>;
-  // 	schema: TablesRelationalConfig;
-  // 	tableNamesMap: Record<string, string>;
-  // 	table: PgTable;
-  // 	tableConfig: TableRelationalConfig;
-  // 	queryConfig: true | DBQueryConfig<'many', true>;
-  // 	tableAlias: string;
-  // 	isRoot?: boolean;
-  // 	joinOn?: SQL;
-  // }): BuildRelationalQueryResult<PgTable, PgColumn> {
-  // 	// For { "<relation>": true }, return a table with selection of all columns
-  // 	if (config === true) {
-  // 		const selectionEntries = Object.entries(tableConfig.columns);
-  // 		const selection: BuildRelationalQueryResult<PgTable, PgColumn>['selection'] = selectionEntries.map((
-  // 			[key, value],
-  // 		) => ({
-  // 			dbKey: value.name,
-  // 			tsKey: key,
-  // 			field: value as PgColumn,
-  // 			relationTableTsKey: undefined,
-  // 			isJson: false,
-  // 			selection: [],
-  // 		}));
-  // 		return {
-  // 			tableTsKey: tableConfig.tsName,
-  // 			sql: table,
-  // 			selection,
-  // 		};
-  // 	}
-  // 	// let selection: BuildRelationalQueryResult<PgTable, PgColumn>['selection'] = [];
-  // 	// let selectionForBuild = selection;
-  // 	const aliasedColumns = Object.fromEntries(
-  // 		Object.entries(tableConfig.columns).map(([key, value]) => [key, aliasedTableColumn(value, tableAlias)]),
-  // 	);
-  // 	const aliasedRelations = Object.fromEntries(
-  // 		Object.entries(tableConfig.relations).map(([key, value]) => [key, aliasedRelation(value, tableAlias)]),
-  // 	);
-  // 	const aliasedFields = Object.assign({}, aliasedColumns, aliasedRelations);
-  // 	let where, hasUserDefinedWhere;
-  // 	if (config.where) {
-  // 		const whereSql = typeof config.where === 'function' ? config.where(aliasedFields, operators) : config.where;
-  // 		where = whereSql && mapColumnsInSQLToAlias(whereSql, tableAlias);
-  // 		hasUserDefinedWhere = !!where;
-  // 	}
-  // 	where = and(joinOn, where);
-  // 	// const fieldsSelection: { tsKey: string; value: PgColumn | SQL.Aliased; isExtra?: boolean }[] = [];
-  // 	let joins: Join[] = [];
-  // 	let selectedColumns: string[] = [];
-  // 	// Figure out which columns to select
-  // 	if (config.columns) {
-  // 		let isIncludeMode = false;
-  // 		for (const [field, value] of Object.entries(config.columns)) {
-  // 			if (value === undefined) {
-  // 				continue;
-  // 			}
-  // 			if (field in tableConfig.columns) {
-  // 				if (!isIncludeMode && value === true) {
-  // 					isIncludeMode = true;
-  // 				}
-  // 				selectedColumns.push(field);
-  // 			}
-  // 		}
-  // 		if (selectedColumns.length > 0) {
-  // 			selectedColumns = isIncludeMode
-  // 				? selectedColumns.filter((c) => config.columns?.[c] === true)
-  // 				: Object.keys(tableConfig.columns).filter((key) => !selectedColumns.includes(key));
-  // 		}
-  // 	} else {
-  // 		// Select all columns if selection is not specified
-  // 		selectedColumns = Object.keys(tableConfig.columns);
-  // 	}
-  // 	// for (const field of selectedColumns) {
-  // 	// 	const column = tableConfig.columns[field]! as PgColumn;
-  // 	// 	fieldsSelection.push({ tsKey: field, value: column });
-  // 	// }
-  // 	let initiallySelectedRelations: {
-  // 		tsKey: string;
-  // 		queryConfig: true | DBQueryConfig<'many', false>;
-  // 		relation: Relation;
-  // 	}[] = [];
-  // 	// let selectedRelations: BuildRelationalQueryResult<PgTable, PgColumn>['selection'] = [];
-  // 	// Figure out which relations to select
-  // 	if (config.with) {
-  // 		initiallySelectedRelations = Object.entries(config.with)
-  // 			.filter((entry): entry is [typeof entry[0], NonNullable<typeof entry[1]>] => !!entry[1])
-  // 			.map(([tsKey, queryConfig]) => ({ tsKey, queryConfig, relation: tableConfig.relations[tsKey]! }));
-  // 	}
-  // 	const manyRelations = initiallySelectedRelations.filter((r) =>
-  // 		is(r.relation, Many)
-  // 		&& (schema[tableNamesMap[r.relation.referencedTable[Table.Symbol.Name]]!]?.primaryKey.length ?? 0) > 0
-  // 	);
-  // 	// If this is the last Many relation (or there are no Many relations), we are on the innermost subquery level
-  // 	const isInnermostQuery = manyRelations.length < 2;
-  // 	const selectedExtras: {
-  // 		tsKey: string;
-  // 		value: SQL.Aliased;
-  // 	}[] = [];
-  // 	// Figure out which extras to select
-  // 	if (isInnermostQuery && config.extras) {
-  // 		const extras = typeof config.extras === 'function'
-  // 			? config.extras(aliasedFields, { sql })
-  // 			: config.extras;
-  // 		for (const [tsKey, value] of Object.entries(extras)) {
-  // 			selectedExtras.push({
-  // 				tsKey,
-  // 				value: mapColumnsInAliasedSQLToAlias(value, tableAlias),
-  // 			});
-  // 		}
-  // 	}
-  // 	// Transform `fieldsSelection` into `selection`
-  // 	// `fieldsSelection` shouldn't be used after this point
-  // 	// for (const { tsKey, value, isExtra } of fieldsSelection) {
-  // 	// 	selection.push({
-  // 	// 		dbKey: is(value, SQL.Aliased) ? value.fieldAlias : tableConfig.columns[tsKey]!.name,
-  // 	// 		tsKey,
-  // 	// 		field: is(value, Column) ? aliasedTableColumn(value, tableAlias) : value,
-  // 	// 		relationTableTsKey: undefined,
-  // 	// 		isJson: false,
-  // 	// 		isExtra,
-  // 	// 		selection: [],
-  // 	// 	});
-  // 	// }
-  // 	let orderByOrig = typeof config.orderBy === 'function'
-  // 		? config.orderBy(aliasedFields, orderByOperators)
-  // 		: config.orderBy ?? [];
-  // 	if (!Array.isArray(orderByOrig)) {
-  // 		orderByOrig = [orderByOrig];
-  // 	}
-  // 	const orderBy = orderByOrig.map((orderByValue) => {
-  // 		if (is(orderByValue, Column)) {
-  // 			return aliasedTableColumn(orderByValue, tableAlias) as PgColumn;
-  // 		}
-  // 		return mapColumnsInSQLToAlias(orderByValue, tableAlias);
-  // 	});
-  // 	const limit = isInnermostQuery ? config.limit : undefined;
-  // 	const offset = isInnermostQuery ? config.offset : undefined;
-  // 	// For non-root queries without additional config except columns, return a table with selection
-  // 	if (
-  // 		!isRoot
-  // 		&& initiallySelectedRelations.length === 0
-  // 		&& selectedExtras.length === 0
-  // 		&& !where
-  // 		&& orderBy.length === 0
-  // 		&& limit === undefined
-  // 		&& offset === undefined
-  // 	) {
-  // 		return {
-  // 			tableTsKey: tableConfig.tsName,
-  // 			sql: table,
-  // 			selection: selectedColumns.map((key) => ({
-  // 				dbKey: tableConfig.columns[key]!.name,
-  // 				tsKey: key,
-  // 				field: tableConfig.columns[key] as PgColumn,
-  // 				relationTableTsKey: undefined,
-  // 				isJson: false,
-  // 				selection: [],
-  // 			})),
-  // 		};
-  // 	}
-  // 	const selectedRelationsWithoutPK:
-  // 	// Process all relations without primary keys, because they need to be joined differently and will all be on the same query level
-  // 	for (
-  // 		const {
-  // 			tsKey: selectedRelationTsKey,
-  // 			queryConfig: selectedRelationConfigValue,
-  // 			relation,
-  // 		} of initiallySelectedRelations
-  // 	) {
-  // 		const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
-  // 		const relationTableName = relation.referencedTable[Table.Symbol.Name];
-  // 		const relationTableTsName = tableNamesMap[relationTableName]!;
-  // 		const relationTable = schema[relationTableTsName]!;
-  // 		if (relationTable.primaryKey.length > 0) {
-  // 			continue;
-  // 		}
-  // 		const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
-  // 		const joinOn = and(
-  // 			...normalizedRelation.fields.map((field, i) =>
-  // 				eq(
-  // 					aliasedTableColumn(normalizedRelation.references[i]!, relationTableAlias),
-  // 					aliasedTableColumn(field, tableAlias),
-  // 				)
-  // 			),
-  // 		);
-  // 		const builtRelation = this.buildRelationalQueryWithoutPK({
-  // 			fullSchema,
-  // 			schema,
-  // 			tableNamesMap,
-  // 			table: fullSchema[relationTableTsName] as PgTable,
-  // 			tableConfig: schema[relationTableTsName]!,
-  // 			queryConfig: selectedRelationConfigValue,
-  // 			tableAlias: relationTableAlias,
-  // 			joinOn,
-  // 			nestedQueryRelation: relation,
-  // 		});
-  // 		const field = sql`${sql.identifier(relationTableAlias)}.${sql.identifier('data')}`.as(selectedRelationTsKey);
-  // 		joins.push({
-  // 			on: sql`true`,
-  // 			table: new Subquery(builtRelation.sql as SQL, {}, relationTableAlias),
-  // 			alias: relationTableAlias,
-  // 			joinType: 'left',
-  // 			lateral: true,
-  // 		});
-  // 		selectedRelations.push({
-  // 			dbKey: selectedRelationTsKey,
-  // 			tsKey: selectedRelationTsKey,
-  // 			field,
-  // 			relationTableTsKey: relationTableTsName,
-  // 			isJson: true,
-  // 			selection: builtRelation.selection,
-  // 		});
-  // 	}
-  // 	const oneRelations = initiallySelectedRelations.filter((r): r is typeof r & { relation: One } =>
-  // 		is(r.relation, One)
-  // 	);
-  // 	// Process all One relations with PKs, because they can all be joined on the same level
-  // 	for (
-  // 		const {
-  // 			tsKey: selectedRelationTsKey,
-  // 			queryConfig: selectedRelationConfigValue,
-  // 			relation,
-  // 		} of oneRelations
-  // 	) {
-  // 		const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
-  // 		const relationTableName = relation.referencedTable[Table.Symbol.Name];
-  // 		const relationTableTsName = tableNamesMap[relationTableName]!;
-  // 		const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
-  // 		const relationTable = schema[relationTableTsName]!;
-  // 		if (relationTable.primaryKey.length === 0) {
-  // 			continue;
-  // 		}
-  // 		const joinOn = and(
-  // 			...normalizedRelation.fields.map((field, i) =>
-  // 				eq(
-  // 					aliasedTableColumn(normalizedRelation.references[i]!, relationTableAlias),
-  // 					aliasedTableColumn(field, tableAlias),
-  // 				)
-  // 			),
-  // 		);
-  // 		const builtRelation = this.buildRelationalQueryWithPK({
-  // 			fullSchema,
-  // 			schema,
-  // 			tableNamesMap,
-  // 			table: fullSchema[relationTableTsName] as PgTable,
-  // 			tableConfig: schema[relationTableTsName]!,
-  // 			queryConfig: selectedRelationConfigValue,
-  // 			tableAlias: relationTableAlias,
-  // 			joinOn,
-  // 		});
-  // 		const field = sql`case when ${sql.identifier(relationTableAlias)} is null then null else json_build_array(${
-  // 			sql.join(
-  // 				builtRelation.selection.map(({ field }) =>
-  // 					is(field, SQL.Aliased)
-  // 						? sql`${sql.identifier(relationTableAlias)}.${sql.identifier(field.fieldAlias)}`
-  // 						: is(field, Column)
-  // 						? aliasedTableColumn(field, relationTableAlias)
-  // 						: field
-  // 				),
-  // 				sql`, `,
-  // 			)
-  // 		}) end`.as(selectedRelationTsKey);
-  // 		const isLateralJoin = is(builtRelation.sql, SQL);
-  // 		joins.push({
-  // 			on: isLateralJoin ? sql`true` : joinOn,
-  // 			table: is(builtRelation.sql, SQL)
-  // 				? new Subquery(builtRelation.sql, {}, relationTableAlias)
-  // 				: aliasedTable(builtRelation.sql, relationTableAlias),
-  // 			alias: relationTableAlias,
-  // 			joinType: 'left',
-  // 			lateral: is(builtRelation.sql, SQL),
-  // 		});
-  // 		selectedRelations.push({
-  // 			dbKey: selectedRelationTsKey,
-  // 			tsKey: selectedRelationTsKey,
-  // 			field,
-  // 			relationTableTsKey: relationTableTsName,
-  // 			isJson: true,
-  // 			selection: builtRelation.selection,
-  // 		});
-  // 	}
-  // 	let distinct: PgSelectConfig['distinct'];
-  // 	let tableFrom: PgTable | Subquery = table;
-  // 	// Process first Many relation - each one requires a nested subquery
-  // 	const manyRelation = manyRelations[0];
-  // 	if (manyRelation) {
-  // 		const {
-  // 			tsKey: selectedRelationTsKey,
-  // 			queryConfig: selectedRelationQueryConfig,
-  // 			relation,
-  // 		} = manyRelation;
-  // 		distinct = {
-  // 			on: tableConfig.primaryKey.map((c) => aliasedTableColumn(c as PgColumn, tableAlias)),
-  // 		};
-  // 		const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
-  // 		const relationTableName = relation.referencedTable[Table.Symbol.Name];
-  // 		const relationTableTsName = tableNamesMap[relationTableName]!;
-  // 		const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
-  // 		const joinOn = and(
-  // 			...normalizedRelation.fields.map((field, i) =>
-  // 				eq(
-  // 					aliasedTableColumn(normalizedRelation.references[i]!, relationTableAlias),
-  // 					aliasedTableColumn(field, tableAlias),
-  // 				)
-  // 			),
-  // 		);
-  // 		const builtRelationJoin = this.buildRelationalQueryWithPK({
-  // 			fullSchema,
-  // 			schema,
-  // 			tableNamesMap,
-  // 			table: fullSchema[relationTableTsName] as PgTable,
-  // 			tableConfig: schema[relationTableTsName]!,
-  // 			queryConfig: selectedRelationQueryConfig,
-  // 			tableAlias: relationTableAlias,
-  // 			joinOn,
-  // 		});
-  // 		const builtRelationSelectionField = sql`case when ${
-  // 			sql.identifier(relationTableAlias)
-  // 		} is null then '[]' else json_agg(json_build_array(${
-  // 			sql.join(
-  // 				builtRelationJoin.selection.map(({ field }) =>
-  // 					is(field, SQL.Aliased)
-  // 						? sql`${sql.identifier(relationTableAlias)}.${sql.identifier(field.fieldAlias)}`
-  // 						: is(field, Column)
-  // 						? aliasedTableColumn(field, relationTableAlias)
-  // 						: field
-  // 				),
-  // 				sql`, `,
-  // 			)
-  // 		})) over (partition by ${sql.join(distinct.on, sql`, `)}) end`.as(selectedRelationTsKey);
-  // 		const isLateralJoin = is(builtRelationJoin.sql, SQL);
-  // 		joins.push({
-  // 			on: isLateralJoin ? sql`true` : joinOn,
-  // 			table: isLateralJoin
-  // 				? new Subquery(builtRelationJoin.sql as SQL, {}, relationTableAlias)
-  // 				: aliasedTable(builtRelationJoin.sql as PgTable, relationTableAlias),
-  // 			alias: relationTableAlias,
-  // 			joinType: 'left',
-  // 			lateral: isLateralJoin,
-  // 		});
-  // 		// Build the "from" subquery with the remaining Many relations
-  // 		const builtTableFrom = this.buildRelationalQueryWithPK({
-  // 			fullSchema,
-  // 			schema,
-  // 			tableNamesMap,
-  // 			table,
-  // 			tableConfig,
-  // 			queryConfig: {
-  // 				...config,
-  // 				where: undefined,
-  // 				orderBy: undefined,
-  // 				limit: undefined,
-  // 				offset: undefined,
-  // 				with: manyRelations.slice(1).reduce<NonNullable<typeof config['with']>>(
-  // 					(result, { tsKey, queryConfig: configValue }) => {
-  // 						result[tsKey] = configValue;
-  // 						return result;
-  // 					},
-  // 					{},
-  // 				),
-  // 			},
-  // 			tableAlias,
-  // 		});
-  // 		selectedRelations.push({
-  // 			dbKey: selectedRelationTsKey,
-  // 			tsKey: selectedRelationTsKey,
-  // 			field: builtRelationSelectionField,
-  // 			relationTableTsKey: relationTableTsName,
-  // 			isJson: true,
-  // 			selection: builtRelationJoin.selection,
-  // 		});
-  // 		// selection = builtTableFrom.selection.map((item) =>
-  // 		// 	is(item.field, SQL.Aliased)
-  // 		// 		? { ...item, field: sql`${sql.identifier(tableAlias)}.${sql.identifier(item.field.fieldAlias)}` }
-  // 		// 		: item
-  // 		// );
-  // 		// selectionForBuild = [{
-  // 		// 	dbKey: '*',
-  // 		// 	tsKey: '*',
-  // 		// 	field: sql`${sql.identifier(tableAlias)}.*`,
-  // 		// 	selection: [],
-  // 		// 	isJson: false,
-  // 		// 	relationTableTsKey: undefined,
-  // 		// }];
-  // 		// const newSelectionItem: (typeof selection)[number] = {
-  // 		// 	dbKey: selectedRelationTsKey,
-  // 		// 	tsKey: selectedRelationTsKey,
-  // 		// 	field,
-  // 		// 	relationTableTsKey: relationTableTsName,
-  // 		// 	isJson: true,
-  // 		// 	selection: builtRelationJoin.selection,
-  // 		// };
-  // 		// selection.push(newSelectionItem);
-  // 		// selectionForBuild.push(newSelectionItem);
-  // 		tableFrom = is(builtTableFrom.sql, PgTable)
-  // 			? builtTableFrom.sql
-  // 			: new Subquery(builtTableFrom.sql, {}, tableAlias);
-  // 	}
-  // 	if (selectedColumns.length === 0 && selectedRelations.length === 0 && selectedExtras.length === 0) {
-  // 		throw new DrizzleError(`No fields selected for table "${tableConfig.tsName}" ("${tableAlias}")`);
-  // 	}
-  // 	let selection: BuildRelationalQueryResult<PgTable, PgColumn>['selection'];
-  // 	function prepareSelectedColumns() {
-  // 		return selectedColumns.map((key) => ({
-  // 			dbKey: tableConfig.columns[key]!.name,
-  // 			tsKey: key,
-  // 			field: tableConfig.columns[key] as PgColumn,
-  // 			relationTableTsKey: undefined,
-  // 			isJson: false,
-  // 			selection: [],
-  // 		}));
-  // 	}
-  // 	function prepareSelectedExtras() {
-  // 		return selectedExtras.map((item) => ({
-  // 			dbKey: item.value.fieldAlias,
-  // 			tsKey: item.tsKey,
-  // 			field: item.value,
-  // 			relationTableTsKey: undefined,
-  // 			isJson: false,
-  // 			selection: [],
-  // 		}));
-  // 	}
-  // 	if (isRoot) {
-  // 		selection = [
-  // 			...prepareSelectedColumns(),
-  // 			...prepareSelectedExtras(),
-  // 		];
-  // 	}
-  // 	if (hasUserDefinedWhere || orderBy.length > 0) {
-  // 		tableFrom = new Subquery(
-  // 			this.buildSelectQuery({
-  // 				table: is(tableFrom, PgTable) ? aliasedTable(tableFrom, tableAlias) : tableFrom,
-  // 				fields: {},
-  // 				fieldsFlat: selectionForBuild.map(({ field }) => ({
-  // 					path: [],
-  // 					field: is(field, Column) ? aliasedTableColumn(field, tableAlias) : field,
-  // 				})),
-  // 				joins,
-  // 				distinct,
-  // 			}),
-  // 			{},
-  // 			tableAlias,
-  // 		);
-  // 		selectionForBuild = selection.map((item) =>
-  // 			is(item.field, SQL.Aliased)
-  // 				? { ...item, field: sql`${sql.identifier(tableAlias)}.${sql.identifier(item.field.fieldAlias)}` }
-  // 				: item
-  // 		);
-  // 		joins = [];
-  // 		distinct = undefined;
-  // 	}
-  // 	const result = this.buildSelectQuery({
-  // 		table: is(tableFrom, PgTable) ? aliasedTable(tableFrom, tableAlias) : tableFrom,
-  // 		fields: {},
-  // 		fieldsFlat: selectionForBuild.map(({ field }) => ({
-  // 			path: [],
-  // 			field: is(field, Column) ? aliasedTableColumn(field, tableAlias) : field,
-  // 		})),
-  // 		where,
-  // 		limit,
-  // 		offset,
-  // 		joins,
-  // 		orderBy,
-  // 		distinct,
-  // 	});
-  // 	return {
-  // 		tableTsKey: tableConfig.tsName,
-  // 		sql: result,
-  // 		selection,
-  // 	};
-  // }
-  buildRelationalQueryWithoutPK({
-    fullSchema,
-    schema,
-    tableNamesMap,
-    table,
-    tableConfig,
-    queryConfig: config2,
-    tableAlias,
-    nestedQueryRelation,
-    joinOn
-  }) {
-    let selection = [];
-    let limit, offset, orderBy = [], where;
-    const joins = [];
-    if (config2 === true) {
-      const selectionEntries = Object.entries(tableConfig.columns);
-      selection = selectionEntries.map(([key, value]) => ({
-        dbKey: value.name,
-        tsKey: key,
-        field: aliasedTableColumn(value, tableAlias),
-        relationTableTsKey: void 0,
-        isJson: false,
-        selection: []
-      }));
-    } else {
-      const aliasedColumns = Object.fromEntries(
-        Object.entries(tableConfig.columns).map(([key, value]) => [key, aliasedTableColumn(value, tableAlias)])
-      );
-      if (config2.where) {
-        const whereSql = typeof config2.where === "function" ? config2.where(aliasedColumns, getOperators()) : config2.where;
-        where = whereSql && mapColumnsInSQLToAlias(whereSql, tableAlias);
-      }
-      const fieldsSelection = [];
-      let selectedColumns = [];
-      if (config2.columns) {
-        let isIncludeMode = false;
-        for (const [field, value] of Object.entries(config2.columns)) {
-          if (value === void 0) {
-            continue;
-          }
-          if (field in tableConfig.columns) {
-            if (!isIncludeMode && value === true) {
-              isIncludeMode = true;
-            }
-            selectedColumns.push(field);
-          }
-        }
-        if (selectedColumns.length > 0) {
-          selectedColumns = isIncludeMode ? selectedColumns.filter((c) => config2.columns?.[c] === true) : Object.keys(tableConfig.columns).filter((key) => !selectedColumns.includes(key));
-        }
-      } else {
-        selectedColumns = Object.keys(tableConfig.columns);
-      }
-      for (const field of selectedColumns) {
-        const column = tableConfig.columns[field];
-        fieldsSelection.push({ tsKey: field, value: column });
-      }
-      let selectedRelations = [];
-      if (config2.with) {
-        selectedRelations = Object.entries(config2.with).filter((entry) => !!entry[1]).map(([tsKey, queryConfig2]) => ({ tsKey, queryConfig: queryConfig2, relation: tableConfig.relations[tsKey] }));
-      }
-      let extras;
-      if (config2.extras) {
-        extras = typeof config2.extras === "function" ? config2.extras(aliasedColumns, { sql }) : config2.extras;
-        for (const [tsKey, value] of Object.entries(extras)) {
-          fieldsSelection.push({
-            tsKey,
-            value: mapColumnsInAliasedSQLToAlias(value, tableAlias)
-          });
-        }
-      }
-      for (const { tsKey, value } of fieldsSelection) {
-        selection.push({
-          dbKey: is(value, SQL.Aliased) ? value.fieldAlias : tableConfig.columns[tsKey].name,
-          tsKey,
-          field: is(value, Column) ? aliasedTableColumn(value, tableAlias) : value,
-          relationTableTsKey: void 0,
-          isJson: false,
-          selection: []
-        });
-      }
-      let orderByOrig = typeof config2.orderBy === "function" ? config2.orderBy(aliasedColumns, getOrderByOperators()) : config2.orderBy ?? [];
-      if (!Array.isArray(orderByOrig)) {
-        orderByOrig = [orderByOrig];
-      }
-      orderBy = orderByOrig.map((orderByValue) => {
-        if (is(orderByValue, Column)) {
-          return aliasedTableColumn(orderByValue, tableAlias);
-        }
-        return mapColumnsInSQLToAlias(orderByValue, tableAlias);
-      });
-      limit = config2.limit;
-      offset = config2.offset;
-      for (const {
-        tsKey: selectedRelationTsKey,
-        queryConfig: selectedRelationConfigValue,
-        relation
-      } of selectedRelations) {
-        const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
-        const relationTableName = getTableUniqueName(relation.referencedTable);
-        const relationTableTsName = tableNamesMap[relationTableName];
-        const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
-        const joinOn2 = and(
-          ...normalizedRelation.fields.map(
-            (field2, i) => eq(
-              aliasedTableColumn(normalizedRelation.references[i], relationTableAlias),
-              aliasedTableColumn(field2, tableAlias)
-            )
-          )
-        );
-        const builtRelation = this.buildRelationalQueryWithoutPK({
-          fullSchema,
-          schema,
-          tableNamesMap,
-          table: fullSchema[relationTableTsName],
-          tableConfig: schema[relationTableTsName],
-          queryConfig: is(relation, One) ? selectedRelationConfigValue === true ? { limit: 1 } : { ...selectedRelationConfigValue, limit: 1 } : selectedRelationConfigValue,
-          tableAlias: relationTableAlias,
-          joinOn: joinOn2,
-          nestedQueryRelation: relation
-        });
-        const field = sql`${sql.identifier(relationTableAlias)}.${sql.identifier("data")}`.as(selectedRelationTsKey);
-        joins.push({
-          on: sql`true`,
-          table: new Subquery(builtRelation.sql, {}, relationTableAlias),
-          alias: relationTableAlias,
-          joinType: "left",
-          lateral: true
-        });
-        selection.push({
-          dbKey: selectedRelationTsKey,
-          tsKey: selectedRelationTsKey,
-          field,
-          relationTableTsKey: relationTableTsName,
-          isJson: true,
-          selection: builtRelation.selection
-        });
-      }
-    }
-    if (selection.length === 0) {
-      throw new DrizzleError({ message: `No fields selected for table "${tableConfig.tsName}" ("${tableAlias}")` });
-    }
-    let result;
-    where = and(joinOn, where);
-    if (nestedQueryRelation) {
-      let field = sql`json_build_array(${sql.join(
-        selection.map(
-          ({ field: field2, tsKey, isJson }) => isJson ? sql`${sql.identifier(`${tableAlias}_${tsKey}`)}.${sql.identifier("data")}` : is(field2, SQL.Aliased) ? field2.sql : field2
-        ),
-        sql`, `
-      )})`;
-      if (is(nestedQueryRelation, Many)) {
-        field = sql`coalesce(json_agg(${field}${orderBy.length > 0 ? sql` order by ${sql.join(orderBy, sql`, `)}` : void 0}), '[]'::json)`;
-      }
-      const nestedSelection = [{
-        dbKey: "data",
-        tsKey: "data",
-        field: field.as("data"),
-        isJson: true,
-        relationTableTsKey: tableConfig.tsName,
-        selection
-      }];
-      const needsSubquery = limit !== void 0 || offset !== void 0 || orderBy.length > 0;
-      if (needsSubquery) {
-        result = this.buildSelectQuery({
-          table: aliasedTable(table, tableAlias),
-          fields: {},
-          fieldsFlat: [{
-            path: [],
-            field: sql.raw("*")
-          }],
-          where,
-          limit,
-          offset,
-          orderBy,
-          setOperators: []
-        });
-        where = void 0;
-        limit = void 0;
-        offset = void 0;
-        orderBy = [];
-      } else {
-        result = aliasedTable(table, tableAlias);
-      }
-      result = this.buildSelectQuery({
-        table: is(result, PgTable) ? result : new Subquery(result, {}, tableAlias),
-        fields: {},
-        fieldsFlat: nestedSelection.map(({ field: field2 }) => ({
-          path: [],
-          field: is(field2, Column) ? aliasedTableColumn(field2, tableAlias) : field2
-        })),
-        joins,
-        where,
-        limit,
-        offset,
-        orderBy,
-        setOperators: []
-      });
-    } else {
-      result = this.buildSelectQuery({
-        table: aliasedTable(table, tableAlias),
-        fields: {},
-        fieldsFlat: selection.map(({ field }) => ({
-          path: [],
-          field: is(field, Column) ? aliasedTableColumn(field, tableAlias) : field
-        })),
-        joins,
-        where,
-        limit,
-        offset,
-        orderBy,
-        setOperators: []
-      });
-    }
-    return {
-      tableTsKey: tableConfig.tsName,
-      sql: result,
-      selection
-    };
-  }
-};
-
-// node_modules/drizzle-orm/query-builders/query-builder.js
-var TypedQueryBuilder = class {
-  static {
-    __name(this, "TypedQueryBuilder");
-  }
-  static [entityKind] = "TypedQueryBuilder";
-  /** @internal */
-  getSelectedFields() {
-    return this._.selectedFields;
-  }
-};
-
-// node_modules/drizzle-orm/pg-core/query-builders/select.js
-var PgSelectBuilder = class {
-  static {
-    __name(this, "PgSelectBuilder");
-  }
-  static [entityKind] = "PgSelectBuilder";
-  fields;
-  session;
-  dialect;
-  withList = [];
-  distinct;
-  constructor(config2) {
-    this.fields = config2.fields;
-    this.session = config2.session;
-    this.dialect = config2.dialect;
-    if (config2.withList) {
-      this.withList = config2.withList;
-    }
-    this.distinct = config2.distinct;
-  }
-  authToken;
-  /** @internal */
-  setToken(token) {
-    this.authToken = token;
-    return this;
-  }
-  /**
-   * Specify the table, subquery, or other target that you're
-   * building a select query against.
-   *
-   * {@link https://www.postgresql.org/docs/current/sql-select.html#SQL-FROM | Postgres from documentation}
-   */
-  from(source) {
-    const isPartialSelect = !!this.fields;
-    const src = source;
-    let fields;
-    if (this.fields) {
-      fields = this.fields;
-    } else if (is(src, Subquery)) {
-      fields = Object.fromEntries(
-        Object.keys(src._.selectedFields).map((key) => [key, src[key]])
-      );
-    } else if (is(src, PgViewBase)) {
-      fields = src[ViewBaseConfig].selectedFields;
-    } else if (is(src, SQL)) {
-      fields = {};
-    } else {
-      fields = getTableColumns(src);
-    }
-    return new PgSelectBase({
-      table: src,
-      fields,
-      isPartialSelect,
-      session: this.session,
-      dialect: this.dialect,
-      withList: this.withList,
-      distinct: this.distinct
-    }).setToken(this.authToken);
-  }
-};
-var PgSelectQueryBuilderBase = class extends TypedQueryBuilder {
-  static {
-    __name(this, "PgSelectQueryBuilderBase");
-  }
-  static [entityKind] = "PgSelectQueryBuilder";
-  _;
-  config;
-  joinsNotNullableMap;
-  tableName;
-  isPartialSelect;
-  session;
-  dialect;
-  cacheConfig = void 0;
-  usedTables = /* @__PURE__ */ new Set();
-  constructor({ table, fields, isPartialSelect, session, dialect, withList, distinct }) {
-    super();
-    this.config = {
-      withList,
-      table,
-      fields: { ...fields },
-      distinct,
-      setOperators: []
-    };
-    this.isPartialSelect = isPartialSelect;
-    this.session = session;
-    this.dialect = dialect;
-    this._ = {
-      selectedFields: fields,
-      config: this.config
-    };
-    this.tableName = getTableLikeName(table);
-    this.joinsNotNullableMap = typeof this.tableName === "string" ? { [this.tableName]: true } : {};
-    for (const item of extractUsedTable(table)) this.usedTables.add(item);
-  }
-  /** @internal */
-  getUsedTables() {
-    return [...this.usedTables];
-  }
-  createJoin(joinType, lateral) {
-    return (table, on) => {
-      const baseTableName = this.tableName;
-      const tableName = getTableLikeName(table);
-      for (const item of extractUsedTable(table)) this.usedTables.add(item);
-      if (typeof tableName === "string" && this.config.joins?.some((join) => join.alias === tableName)) {
-        throw new Error(`Alias "${tableName}" is already used in this query`);
-      }
-      if (!this.isPartialSelect) {
-        if (Object.keys(this.joinsNotNullableMap).length === 1 && typeof baseTableName === "string") {
-          this.config.fields = {
-            [baseTableName]: this.config.fields
-          };
-        }
-        if (typeof tableName === "string" && !is(table, SQL)) {
-          const selection = is(table, Subquery) ? table._.selectedFields : is(table, View) ? table[ViewBaseConfig].selectedFields : table[Table.Symbol.Columns];
-          this.config.fields[tableName] = selection;
-        }
-      }
-      if (typeof on === "function") {
-        on = on(
-          new Proxy(
-            this.config.fields,
-            new SelectionProxyHandler({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
-          )
-        );
-      }
-      if (!this.config.joins) {
-        this.config.joins = [];
-      }
-      this.config.joins.push({ on, table, joinType, alias: tableName, lateral });
-      if (typeof tableName === "string") {
-        switch (joinType) {
-          case "left": {
-            this.joinsNotNullableMap[tableName] = false;
-            break;
-          }
-          case "right": {
-            this.joinsNotNullableMap = Object.fromEntries(
-              Object.entries(this.joinsNotNullableMap).map(([key]) => [key, false])
-            );
-            this.joinsNotNullableMap[tableName] = true;
-            break;
-          }
-          case "cross":
-          case "inner": {
-            this.joinsNotNullableMap[tableName] = true;
-            break;
-          }
-          case "full": {
-            this.joinsNotNullableMap = Object.fromEntries(
-              Object.entries(this.joinsNotNullableMap).map(([key]) => [key, false])
-            );
-            this.joinsNotNullableMap[tableName] = false;
-            break;
-          }
-        }
-      }
-      return this;
-    };
-  }
-  /**
-   * Executes a `left join` operation by adding another table to the current query.
-   *
-   * Calling this method associates each row of the table with the corresponding row from the joined table, if a match is found. If no matching row exists, it sets all columns of the joined table to null.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#left-join}
-   *
-   * @param table the table to join.
-   * @param on the `on` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all users and their pets
-   * const usersWithPets: { user: User; pets: Pet | null; }[] = await db.select()
-   *   .from(users)
-   *   .leftJoin(pets, eq(users.id, pets.ownerId))
-   *
-   * // Select userId and petId
-   * const usersIdsAndPetIds: { userId: number; petId: number | null; }[] = await db.select({
-   *   userId: users.id,
-   *   petId: pets.id,
-   * })
-   *   .from(users)
-   *   .leftJoin(pets, eq(users.id, pets.ownerId))
-   * ```
-   */
-  leftJoin = this.createJoin("left", false);
-  /**
-   * Executes a `left join lateral` operation by adding subquery to the current query.
-   *
-   * A `lateral` join allows the right-hand expression to refer to columns from the left-hand side.
-   *
-   * Calling this method associates each row of the table with the corresponding row from the joined table, if a match is found. If no matching row exists, it sets all columns of the joined table to null.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#left-join-lateral}
-   *
-   * @param table the subquery to join.
-   * @param on the `on` clause.
-   */
-  leftJoinLateral = this.createJoin("left", true);
-  /**
-   * Executes a `right join` operation by adding another table to the current query.
-   *
-   * Calling this method associates each row of the joined table with the corresponding row from the main table, if a match is found. If no matching row exists, it sets all columns of the main table to null.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#right-join}
-   *
-   * @param table the table to join.
-   * @param on the `on` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all users and their pets
-   * const usersWithPets: { user: User | null; pets: Pet; }[] = await db.select()
-   *   .from(users)
-   *   .rightJoin(pets, eq(users.id, pets.ownerId))
-   *
-   * // Select userId and petId
-   * const usersIdsAndPetIds: { userId: number | null; petId: number; }[] = await db.select({
-   *   userId: users.id,
-   *   petId: pets.id,
-   * })
-   *   .from(users)
-   *   .rightJoin(pets, eq(users.id, pets.ownerId))
-   * ```
-   */
-  rightJoin = this.createJoin("right", false);
-  /**
-   * Executes an `inner join` operation, creating a new table by combining rows from two tables that have matching values.
-   *
-   * Calling this method retrieves rows that have corresponding entries in both joined tables. Rows without matching entries in either table are excluded, resulting in a table that includes only matching pairs.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#inner-join}
-   *
-   * @param table the table to join.
-   * @param on the `on` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all users and their pets
-   * const usersWithPets: { user: User; pets: Pet; }[] = await db.select()
-   *   .from(users)
-   *   .innerJoin(pets, eq(users.id, pets.ownerId))
-   *
-   * // Select userId and petId
-   * const usersIdsAndPetIds: { userId: number; petId: number; }[] = await db.select({
-   *   userId: users.id,
-   *   petId: pets.id,
-   * })
-   *   .from(users)
-   *   .innerJoin(pets, eq(users.id, pets.ownerId))
-   * ```
-   */
-  innerJoin = this.createJoin("inner", false);
-  /**
-   * Executes an `inner join lateral` operation, creating a new table by combining rows from two queries that have matching values.
-   *
-   * A `lateral` join allows the right-hand expression to refer to columns from the left-hand side.
-   *
-   * Calling this method retrieves rows that have corresponding entries in both joined tables. Rows without matching entries in either table are excluded, resulting in a table that includes only matching pairs.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#inner-join-lateral}
-   *
-   * @param table the subquery to join.
-   * @param on the `on` clause.
-   */
-  innerJoinLateral = this.createJoin("inner", true);
-  /**
-   * Executes a `full join` operation by combining rows from two tables into a new table.
-   *
-   * Calling this method retrieves all rows from both main and joined tables, merging rows with matching values and filling in `null` for non-matching columns.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#full-join}
-   *
-   * @param table the table to join.
-   * @param on the `on` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all users and their pets
-   * const usersWithPets: { user: User | null; pets: Pet | null; }[] = await db.select()
-   *   .from(users)
-   *   .fullJoin(pets, eq(users.id, pets.ownerId))
-   *
-   * // Select userId and petId
-   * const usersIdsAndPetIds: { userId: number | null; petId: number | null; }[] = await db.select({
-   *   userId: users.id,
-   *   petId: pets.id,
-   * })
-   *   .from(users)
-   *   .fullJoin(pets, eq(users.id, pets.ownerId))
-   * ```
-   */
-  fullJoin = this.createJoin("full", false);
-  /**
-   * Executes a `cross join` operation by combining rows from two tables into a new table.
-   *
-   * Calling this method retrieves all rows from both main and joined tables, merging all rows from each table.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#cross-join}
-   *
-   * @param table the table to join.
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all users, each user with every pet
-   * const usersWithPets: { user: User; pets: Pet; }[] = await db.select()
-   *   .from(users)
-   *   .crossJoin(pets)
-   *
-   * // Select userId and petId
-   * const usersIdsAndPetIds: { userId: number; petId: number; }[] = await db.select({
-   *   userId: users.id,
-   *   petId: pets.id,
-   * })
-   *   .from(users)
-   *   .crossJoin(pets)
-   * ```
-   */
-  crossJoin = this.createJoin("cross", false);
-  /**
-   * Executes a `cross join lateral` operation by combining rows from two queries into a new table.
-   *
-   * A `lateral` join allows the right-hand expression to refer to columns from the left-hand side.
-   *
-   * Calling this method retrieves all rows from both main and joined queries, merging all rows from each query.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#cross-join-lateral}
-   *
-   * @param table the query to join.
-   */
-  crossJoinLateral = this.createJoin("cross", true);
-  createSetOperator(type, isAll) {
-    return (rightSelection) => {
-      const rightSelect = typeof rightSelection === "function" ? rightSelection(getPgSetOperators()) : rightSelection;
-      if (!haveSameKeys(this.getSelectedFields(), rightSelect.getSelectedFields())) {
-        throw new Error(
-          "Set operator error (union / intersect / except): selected fields are not the same or are in a different order"
-        );
-      }
-      this.config.setOperators.push({ type, isAll, rightSelect });
-      return this;
-    };
-  }
-  /**
-   * Adds `union` set operator to the query.
-   *
-   * Calling this method will combine the result sets of the `select` statements and remove any duplicate rows that appear across them.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/set-operations#union}
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all unique names from customers and users tables
-   * await db.select({ name: users.name })
-   *   .from(users)
-   *   .union(
-   *     db.select({ name: customers.name }).from(customers)
-   *   );
-   * // or
-   * import { union } from 'drizzle-orm/pg-core'
-   *
-   * await union(
-   *   db.select({ name: users.name }).from(users),
-   *   db.select({ name: customers.name }).from(customers)
-   * );
-   * ```
-   */
-  union = this.createSetOperator("union", false);
-  /**
-   * Adds `union all` set operator to the query.
-   *
-   * Calling this method will combine the result-set of the `select` statements and keep all duplicate rows that appear across them.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/set-operations#union-all}
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all transaction ids from both online and in-store sales
-   * await db.select({ transaction: onlineSales.transactionId })
-   *   .from(onlineSales)
-   *   .unionAll(
-   *     db.select({ transaction: inStoreSales.transactionId }).from(inStoreSales)
-   *   );
-   * // or
-   * import { unionAll } from 'drizzle-orm/pg-core'
-   *
-   * await unionAll(
-   *   db.select({ transaction: onlineSales.transactionId }).from(onlineSales),
-   *   db.select({ transaction: inStoreSales.transactionId }).from(inStoreSales)
-   * );
-   * ```
-   */
-  unionAll = this.createSetOperator("union", true);
-  /**
-   * Adds `intersect` set operator to the query.
-   *
-   * Calling this method will retain only the rows that are present in both result sets and eliminate duplicates.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/set-operations#intersect}
-   *
-   * @example
-   *
-   * ```ts
-   * // Select course names that are offered in both departments A and B
-   * await db.select({ courseName: depA.courseName })
-   *   .from(depA)
-   *   .intersect(
-   *     db.select({ courseName: depB.courseName }).from(depB)
-   *   );
-   * // or
-   * import { intersect } from 'drizzle-orm/pg-core'
-   *
-   * await intersect(
-   *   db.select({ courseName: depA.courseName }).from(depA),
-   *   db.select({ courseName: depB.courseName }).from(depB)
-   * );
-   * ```
-   */
-  intersect = this.createSetOperator("intersect", false);
-  /**
-   * Adds `intersect all` set operator to the query.
-   *
-   * Calling this method will retain only the rows that are present in both result sets including all duplicates.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/set-operations#intersect-all}
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all products and quantities that are ordered by both regular and VIP customers
-   * await db.select({
-   *   productId: regularCustomerOrders.productId,
-   *   quantityOrdered: regularCustomerOrders.quantityOrdered
-   * })
-   * .from(regularCustomerOrders)
-   * .intersectAll(
-   *   db.select({
-   *     productId: vipCustomerOrders.productId,
-   *     quantityOrdered: vipCustomerOrders.quantityOrdered
-   *   })
-   *   .from(vipCustomerOrders)
-   * );
-   * // or
-   * import { intersectAll } from 'drizzle-orm/pg-core'
-   *
-   * await intersectAll(
-   *   db.select({
-   *     productId: regularCustomerOrders.productId,
-   *     quantityOrdered: regularCustomerOrders.quantityOrdered
-   *   })
-   *   .from(regularCustomerOrders),
-   *   db.select({
-   *     productId: vipCustomerOrders.productId,
-   *     quantityOrdered: vipCustomerOrders.quantityOrdered
-   *   })
-   *   .from(vipCustomerOrders)
-   * );
-   * ```
-   */
-  intersectAll = this.createSetOperator("intersect", true);
-  /**
-   * Adds `except` set operator to the query.
-   *
-   * Calling this method will retrieve all unique rows from the left query, except for the rows that are present in the result set of the right query.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/set-operations#except}
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all courses offered in department A but not in department B
-   * await db.select({ courseName: depA.courseName })
-   *   .from(depA)
-   *   .except(
-   *     db.select({ courseName: depB.courseName }).from(depB)
-   *   );
-   * // or
-   * import { except } from 'drizzle-orm/pg-core'
-   *
-   * await except(
-   *   db.select({ courseName: depA.courseName }).from(depA),
-   *   db.select({ courseName: depB.courseName }).from(depB)
-   * );
-   * ```
-   */
-  except = this.createSetOperator("except", false);
-  /**
-   * Adds `except all` set operator to the query.
-   *
-   * Calling this method will retrieve all rows from the left query, except for the rows that are present in the result set of the right query.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/set-operations#except-all}
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all products that are ordered by regular customers but not by VIP customers
-   * await db.select({
-   *   productId: regularCustomerOrders.productId,
-   *   quantityOrdered: regularCustomerOrders.quantityOrdered,
-   * })
-   * .from(regularCustomerOrders)
-   * .exceptAll(
-   *   db.select({
-   *     productId: vipCustomerOrders.productId,
-   *     quantityOrdered: vipCustomerOrders.quantityOrdered,
-   *   })
-   *   .from(vipCustomerOrders)
-   * );
-   * // or
-   * import { exceptAll } from 'drizzle-orm/pg-core'
-   *
-   * await exceptAll(
-   *   db.select({
-   *     productId: regularCustomerOrders.productId,
-   *     quantityOrdered: regularCustomerOrders.quantityOrdered
-   *   })
-   *   .from(regularCustomerOrders),
-   *   db.select({
-   *     productId: vipCustomerOrders.productId,
-   *     quantityOrdered: vipCustomerOrders.quantityOrdered
-   *   })
-   *   .from(vipCustomerOrders)
-   * );
-   * ```
-   */
-  exceptAll = this.createSetOperator("except", true);
-  /** @internal */
-  addSetOperators(setOperators) {
-    this.config.setOperators.push(...setOperators);
-    return this;
-  }
-  /**
-   * Adds a `where` clause to the query.
-   *
-   * Calling this method will select only those rows that fulfill a specified condition.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/select#filtering}
-   *
-   * @param where the `where` clause.
-   *
-   * @example
-   * You can use conditional operators and `sql function` to filter the rows to be selected.
-   *
-   * ```ts
-   * // Select all cars with green color
-   * await db.select().from(cars).where(eq(cars.color, 'green'));
-   * // or
-   * await db.select().from(cars).where(sql`${cars.color} = 'green'`)
-   * ```
-   *
-   * You can logically combine conditional operators with `and()` and `or()` operators:
-   *
-   * ```ts
-   * // Select all BMW cars with a green color
-   * await db.select().from(cars).where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
-   *
-   * // Select all cars with the green or blue color
-   * await db.select().from(cars).where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
-   * ```
-   */
-  where(where) {
-    if (typeof where === "function") {
-      where = where(
-        new Proxy(
-          this.config.fields,
-          new SelectionProxyHandler({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
-        )
-      );
-    }
-    this.config.where = where;
-    return this;
-  }
-  /**
-   * Adds a `having` clause to the query.
-   *
-   * Calling this method will select only those rows that fulfill a specified condition. It is typically used with aggregate functions to filter the aggregated data based on a specified condition.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/select#aggregations}
-   *
-   * @param having the `having` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all brands with more than one car
-   * await db.select({
-   * 	brand: cars.brand,
-   * 	count: sql<number>`cast(count(${cars.id}) as int)`,
-   * })
-   *   .from(cars)
-   *   .groupBy(cars.brand)
-   *   .having(({ count }) => gt(count, 1));
-   * ```
-   */
-  having(having) {
-    if (typeof having === "function") {
-      having = having(
-        new Proxy(
-          this.config.fields,
-          new SelectionProxyHandler({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
-        )
-      );
-    }
-    this.config.having = having;
-    return this;
-  }
-  groupBy(...columns) {
-    if (typeof columns[0] === "function") {
-      const groupBy = columns[0](
-        new Proxy(
-          this.config.fields,
-          new SelectionProxyHandler({ sqlAliasedBehavior: "alias", sqlBehavior: "sql" })
-        )
-      );
-      this.config.groupBy = Array.isArray(groupBy) ? groupBy : [groupBy];
-    } else {
-      this.config.groupBy = columns;
-    }
-    return this;
-  }
-  orderBy(...columns) {
-    if (typeof columns[0] === "function") {
-      const orderBy = columns[0](
-        new Proxy(
-          this.config.fields,
-          new SelectionProxyHandler({ sqlAliasedBehavior: "alias", sqlBehavior: "sql" })
-        )
-      );
-      const orderByArray = Array.isArray(orderBy) ? orderBy : [orderBy];
-      if (this.config.setOperators.length > 0) {
-        this.config.setOperators.at(-1).orderBy = orderByArray;
-      } else {
-        this.config.orderBy = orderByArray;
-      }
-    } else {
-      const orderByArray = columns;
-      if (this.config.setOperators.length > 0) {
-        this.config.setOperators.at(-1).orderBy = orderByArray;
-      } else {
-        this.config.orderBy = orderByArray;
-      }
-    }
-    return this;
-  }
-  /**
-   * Adds a `limit` clause to the query.
-   *
-   * Calling this method will set the maximum number of rows that will be returned by this query.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/select#limit--offset}
-   *
-   * @param limit the `limit` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Get the first 10 people from this query.
-   * await db.select().from(people).limit(10);
-   * ```
-   */
-  limit(limit) {
-    if (this.config.setOperators.length > 0) {
-      this.config.setOperators.at(-1).limit = limit;
-    } else {
-      this.config.limit = limit;
-    }
-    return this;
-  }
-  /**
-   * Adds an `offset` clause to the query.
-   *
-   * Calling this method will skip a number of rows when returning results from this query.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/select#limit--offset}
-   *
-   * @param offset the `offset` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Get the 10th-20th people from this query.
-   * await db.select().from(people).offset(10).limit(10);
-   * ```
-   */
-  offset(offset) {
-    if (this.config.setOperators.length > 0) {
-      this.config.setOperators.at(-1).offset = offset;
-    } else {
-      this.config.offset = offset;
-    }
-    return this;
-  }
-  /**
-   * Adds a `for` clause to the query.
-   *
-   * Calling this method will specify a lock strength for this query that controls how strictly it acquires exclusive access to the rows being queried.
-   *
-   * See docs: {@link https://www.postgresql.org/docs/current/sql-select.html#SQL-FOR-UPDATE-SHARE}
-   *
-   * @param strength the lock strength.
-   * @param config the lock configuration.
-   */
-  for(strength, config2 = {}) {
-    this.config.lockingClause = { strength, config: config2 };
-    return this;
-  }
-  /** @internal */
-  getSQL() {
-    return this.dialect.buildSelectQuery(this.config);
-  }
-  toSQL() {
-    const { typings: _typings, ...rest } = this.dialect.sqlToQuery(this.getSQL());
-    return rest;
-  }
-  as(alias2) {
-    const usedTables = [];
-    usedTables.push(...extractUsedTable(this.config.table));
-    if (this.config.joins) {
-      for (const it2 of this.config.joins) usedTables.push(...extractUsedTable(it2.table));
-    }
-    return new Proxy(
-      new Subquery(this.getSQL(), this.config.fields, alias2, false, [...new Set(usedTables)]),
-      new SelectionProxyHandler({ alias: alias2, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
-    );
-  }
-  /** @internal */
-  getSelectedFields() {
-    return new Proxy(
-      this.config.fields,
-      new SelectionProxyHandler({ alias: this.tableName, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
-    );
-  }
-  $dynamic() {
-    return this;
-  }
-  $withCache(config2) {
-    this.cacheConfig = config2 === void 0 ? { config: {}, enable: true, autoInvalidate: true } : config2 === false ? { enable: false } : { enable: true, autoInvalidate: true, ...config2 };
-    return this;
-  }
-};
-var PgSelectBase = class extends PgSelectQueryBuilderBase {
-  static {
-    __name(this, "PgSelectBase");
-  }
-  static [entityKind] = "PgSelect";
-  /** @internal */
-  _prepare(name) {
-    const { session, config: config2, dialect, joinsNotNullableMap, authToken, cacheConfig, usedTables } = this;
-    if (!session) {
-      throw new Error("Cannot execute a query on a query builder. Please use a database instance instead.");
-    }
-    const { fields } = config2;
-    return tracer.startActiveSpan("drizzle.prepareQuery", () => {
-      const fieldsList = orderSelectedFields(fields);
-      const query = session.prepareQuery(dialect.sqlToQuery(this.getSQL()), fieldsList, name, true, void 0, {
-        type: "select",
-        tables: [...usedTables]
-      }, cacheConfig);
-      query.joinsNotNullableMap = joinsNotNullableMap;
-      return query.setToken(authToken);
-    });
-  }
-  /**
-   * Create a prepared statement for this query. This allows
-   * the database to remember this query for the given session
-   * and call it by name, rather than specifying the full query.
-   *
-   * {@link https://www.postgresql.org/docs/current/sql-prepare.html | Postgres prepare documentation}
-   */
-  prepare(name) {
-    return this._prepare(name);
-  }
-  authToken;
-  /** @internal */
-  setToken(token) {
-    this.authToken = token;
-    return this;
-  }
-  execute = /* @__PURE__ */ __name((placeholderValues) => {
-    return tracer.startActiveSpan("drizzle.operation", () => {
-      return this._prepare().execute(placeholderValues, this.authToken);
-    });
-  }, "execute");
-};
-applyMixins(PgSelectBase, [QueryPromise]);
-function createSetOperator(type, isAll) {
-  return (leftSelect, rightSelect, ...restSelects) => {
-    const setOperators = [rightSelect, ...restSelects].map((select) => ({
-      type,
-      isAll,
-      rightSelect: select
-    }));
-    for (const setOperator of setOperators) {
-      if (!haveSameKeys(leftSelect.getSelectedFields(), setOperator.rightSelect.getSelectedFields())) {
-        throw new Error(
-          "Set operator error (union / intersect / except): selected fields are not the same or are in a different order"
-        );
-      }
-    }
-    return leftSelect.addSetOperators(setOperators);
-  };
-}
-__name(createSetOperator, "createSetOperator");
-var getPgSetOperators = /* @__PURE__ */ __name(() => ({
-  union,
-  unionAll,
-  intersect,
-  intersectAll,
-  except,
-  exceptAll
-}), "getPgSetOperators");
-var union = createSetOperator("union", false);
-var unionAll = createSetOperator("union", true);
-var intersect = createSetOperator("intersect", false);
-var intersectAll = createSetOperator("intersect", true);
-var except = createSetOperator("except", false);
-var exceptAll = createSetOperator("except", true);
-
-// node_modules/drizzle-orm/pg-core/query-builders/query-builder.js
-var QueryBuilder = class {
-  static {
-    __name(this, "QueryBuilder");
-  }
-  static [entityKind] = "PgQueryBuilder";
-  dialect;
-  dialectConfig;
-  constructor(dialect) {
-    this.dialect = is(dialect, PgDialect) ? dialect : void 0;
-    this.dialectConfig = is(dialect, PgDialect) ? void 0 : dialect;
-  }
-  $with = /* @__PURE__ */ __name((alias2, selection) => {
-    const queryBuilder = this;
-    const as2 = /* @__PURE__ */ __name((qb) => {
-      if (typeof qb === "function") {
-        qb = qb(queryBuilder);
-      }
-      return new Proxy(
-        new WithSubquery(
-          qb.getSQL(),
-          selection ?? ("getSelectedFields" in qb ? qb.getSelectedFields() ?? {} : {}),
-          alias2,
-          true
-        ),
-        new SelectionProxyHandler({ alias: alias2, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
-      );
-    }, "as");
-    return { as: as2 };
-  }, "$with");
-  with(...queries) {
-    const self = this;
-    function select(fields) {
-      return new PgSelectBuilder({
-        fields: fields ?? void 0,
-        session: void 0,
-        dialect: self.getDialect(),
-        withList: queries
-      });
-    }
-    __name(select, "select");
-    function selectDistinct(fields) {
-      return new PgSelectBuilder({
-        fields: fields ?? void 0,
-        session: void 0,
-        dialect: self.getDialect(),
-        distinct: true
-      });
-    }
-    __name(selectDistinct, "selectDistinct");
-    function selectDistinctOn(on, fields) {
-      return new PgSelectBuilder({
-        fields: fields ?? void 0,
-        session: void 0,
-        dialect: self.getDialect(),
-        distinct: { on }
-      });
-    }
-    __name(selectDistinctOn, "selectDistinctOn");
-    return { select, selectDistinct, selectDistinctOn };
-  }
-  select(fields) {
-    return new PgSelectBuilder({
-      fields: fields ?? void 0,
-      session: void 0,
-      dialect: this.getDialect()
-    });
-  }
-  selectDistinct(fields) {
-    return new PgSelectBuilder({
-      fields: fields ?? void 0,
-      session: void 0,
-      dialect: this.getDialect(),
-      distinct: true
-    });
-  }
-  selectDistinctOn(on, fields) {
-    return new PgSelectBuilder({
-      fields: fields ?? void 0,
-      session: void 0,
-      dialect: this.getDialect(),
-      distinct: { on }
-    });
-  }
-  // Lazy load dialect to avoid circular dependency
-  getDialect() {
-    if (!this.dialect) {
-      this.dialect = new PgDialect(this.dialectConfig);
-    }
-    return this.dialect;
-  }
-};
-
-// node_modules/drizzle-orm/pg-core/utils.js
-function extractUsedTable(table) {
-  if (is(table, PgTable)) {
-    return [table[Schema] ? `${table[Schema]}.${table[Table.Symbol.BaseName]}` : table[Table.Symbol.BaseName]];
-  }
-  if (is(table, Subquery)) {
-    return table._.usedTables ?? [];
-  }
-  if (is(table, SQL)) {
-    return table.usedTables ?? [];
-  }
-  return [];
-}
-__name(extractUsedTable, "extractUsedTable");
-
-// node_modules/drizzle-orm/pg-core/query-builders/delete.js
-var PgDeleteBase = class extends QueryPromise {
-  static {
-    __name(this, "PgDeleteBase");
-  }
-  constructor(table, session, dialect, withList) {
-    super();
-    this.session = session;
-    this.dialect = dialect;
-    this.config = { table, withList };
-  }
-  static [entityKind] = "PgDelete";
-  config;
-  cacheConfig;
-  /**
-   * Adds a `where` clause to the query.
-   *
-   * Calling this method will delete only those rows that fulfill a specified condition.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/delete}
-   *
-   * @param where the `where` clause.
-   *
-   * @example
-   * You can use conditional operators and `sql function` to filter the rows to be deleted.
-   *
-   * ```ts
-   * // Delete all cars with green color
-   * await db.delete(cars).where(eq(cars.color, 'green'));
-   * // or
-   * await db.delete(cars).where(sql`${cars.color} = 'green'`)
-   * ```
-   *
-   * You can logically combine conditional operators with `and()` and `or()` operators:
-   *
-   * ```ts
-   * // Delete all BMW cars with a green color
-   * await db.delete(cars).where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
-   *
-   * // Delete all cars with the green or blue color
-   * await db.delete(cars).where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
-   * ```
-   */
-  where(where) {
-    this.config.where = where;
-    return this;
-  }
-  returning(fields = this.config.table[Table.Symbol.Columns]) {
-    this.config.returningFields = fields;
-    this.config.returning = orderSelectedFields(fields);
-    return this;
-  }
-  /** @internal */
-  getSQL() {
-    return this.dialect.buildDeleteQuery(this.config);
-  }
-  toSQL() {
-    const { typings: _typings, ...rest } = this.dialect.sqlToQuery(this.getSQL());
-    return rest;
-  }
-  /** @internal */
-  _prepare(name) {
-    return tracer.startActiveSpan("drizzle.prepareQuery", () => {
-      return this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), this.config.returning, name, true, void 0, {
-        type: "delete",
-        tables: extractUsedTable(this.config.table)
-      }, this.cacheConfig);
-    });
-  }
-  prepare(name) {
-    return this._prepare(name);
-  }
-  authToken;
-  /** @internal */
-  setToken(token) {
-    this.authToken = token;
-    return this;
-  }
-  execute = /* @__PURE__ */ __name((placeholderValues) => {
-    return tracer.startActiveSpan("drizzle.operation", () => {
-      return this._prepare().execute(placeholderValues, this.authToken);
-    });
-  }, "execute");
-  /** @internal */
-  getSelectedFields() {
-    return this.config.returningFields ? new Proxy(
-      this.config.returningFields,
-      new SelectionProxyHandler({
-        alias: getTableName(this.config.table),
-        sqlAliasedBehavior: "alias",
-        sqlBehavior: "error"
-      })
-    ) : void 0;
-  }
-  $dynamic() {
-    return this;
-  }
-};
-
-// node_modules/drizzle-orm/pg-core/query-builders/insert.js
-var PgInsertBuilder = class {
-  static {
-    __name(this, "PgInsertBuilder");
-  }
-  constructor(table, session, dialect, withList, overridingSystemValue_) {
-    this.table = table;
-    this.session = session;
-    this.dialect = dialect;
-    this.withList = withList;
-    this.overridingSystemValue_ = overridingSystemValue_;
-  }
-  static [entityKind] = "PgInsertBuilder";
-  authToken;
-  /** @internal */
-  setToken(token) {
-    this.authToken = token;
-    return this;
-  }
-  overridingSystemValue() {
-    this.overridingSystemValue_ = true;
-    return this;
-  }
-  values(values) {
-    values = Array.isArray(values) ? values : [values];
-    if (values.length === 0) {
-      throw new Error("values() must be called with at least one value");
-    }
-    const mappedValues = values.map((entry) => {
-      const result = {};
-      const cols = this.table[Table.Symbol.Columns];
-      for (const colKey of Object.keys(entry)) {
-        const colValue = entry[colKey];
-        result[colKey] = is(colValue, SQL) ? colValue : new Param(colValue, cols[colKey]);
-      }
-      return result;
-    });
-    return new PgInsertBase(
-      this.table,
-      mappedValues,
-      this.session,
-      this.dialect,
-      this.withList,
-      false,
-      this.overridingSystemValue_
-    ).setToken(this.authToken);
-  }
-  select(selectQuery) {
-    const select = typeof selectQuery === "function" ? selectQuery(new QueryBuilder()) : selectQuery;
-    if (!is(select, SQL) && !haveSameKeys(this.table[Columns], select._.selectedFields)) {
-      throw new Error(
-        "Insert select error: selected fields are not the same or are in a different order compared to the table definition"
-      );
-    }
-    return new PgInsertBase(this.table, select, this.session, this.dialect, this.withList, true);
-  }
-};
-var PgInsertBase = class extends QueryPromise {
-  static {
-    __name(this, "PgInsertBase");
-  }
-  constructor(table, values, session, dialect, withList, select, overridingSystemValue_) {
-    super();
-    this.session = session;
-    this.dialect = dialect;
-    this.config = { table, values, withList, select, overridingSystemValue_ };
-  }
-  static [entityKind] = "PgInsert";
-  config;
-  cacheConfig;
-  returning(fields = this.config.table[Table.Symbol.Columns]) {
-    this.config.returningFields = fields;
-    this.config.returning = orderSelectedFields(fields);
-    return this;
-  }
-  /**
-   * Adds an `on conflict do nothing` clause to the query.
-   *
-   * Calling this method simply avoids inserting a row as its alternative action.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/insert#on-conflict-do-nothing}
-   *
-   * @param config The `target` and `where` clauses.
-   *
-   * @example
-   * ```ts
-   * // Insert one row and cancel the insert if there's a conflict
-   * await db.insert(cars)
-   *   .values({ id: 1, brand: 'BMW' })
-   *   .onConflictDoNothing();
-   *
-   * // Explicitly specify conflict target
-   * await db.insert(cars)
-   *   .values({ id: 1, brand: 'BMW' })
-   *   .onConflictDoNothing({ target: cars.id });
-   * ```
-   */
-  onConflictDoNothing(config2 = {}) {
-    if (config2.target === void 0) {
-      this.config.onConflict = sql`do nothing`;
-    } else {
-      let targetColumn = "";
-      targetColumn = Array.isArray(config2.target) ? config2.target.map((it2) => this.dialect.escapeName(this.dialect.casing.getColumnCasing(it2))).join(",") : this.dialect.escapeName(this.dialect.casing.getColumnCasing(config2.target));
-      const whereSql = config2.where ? sql` where ${config2.where}` : void 0;
-      this.config.onConflict = sql`(${sql.raw(targetColumn)})${whereSql} do nothing`;
-    }
-    return this;
-  }
-  /**
-   * Adds an `on conflict do update` clause to the query.
-   *
-   * Calling this method will update the existing row that conflicts with the row proposed for insertion as its alternative action.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/insert#upserts-and-conflicts}
-   *
-   * @param config The `target`, `set` and `where` clauses.
-   *
-   * @example
-   * ```ts
-   * // Update the row if there's a conflict
-   * await db.insert(cars)
-   *   .values({ id: 1, brand: 'BMW' })
-   *   .onConflictDoUpdate({
-   *     target: cars.id,
-   *     set: { brand: 'Porsche' }
-   *   });
-   *
-   * // Upsert with 'where' clause
-   * await db.insert(cars)
-   *   .values({ id: 1, brand: 'BMW' })
-   *   .onConflictDoUpdate({
-   *     target: cars.id,
-   *     set: { brand: 'newBMW' },
-   *     targetWhere: sql`${cars.createdAt} > '2023-01-01'::date`,
-   *   });
-   * ```
-   */
-  onConflictDoUpdate(config2) {
-    if (config2.where && (config2.targetWhere || config2.setWhere)) {
-      throw new Error(
-        'You cannot use both "where" and "targetWhere"/"setWhere" at the same time - "where" is deprecated, use "targetWhere" or "setWhere" instead.'
-      );
-    }
-    const whereSql = config2.where ? sql` where ${config2.where}` : void 0;
-    const targetWhereSql = config2.targetWhere ? sql` where ${config2.targetWhere}` : void 0;
-    const setWhereSql = config2.setWhere ? sql` where ${config2.setWhere}` : void 0;
-    const setSql = this.dialect.buildUpdateSet(this.config.table, mapUpdateSet(this.config.table, config2.set));
-    let targetColumn = "";
-    targetColumn = Array.isArray(config2.target) ? config2.target.map((it2) => this.dialect.escapeName(this.dialect.casing.getColumnCasing(it2))).join(",") : this.dialect.escapeName(this.dialect.casing.getColumnCasing(config2.target));
-    this.config.onConflict = sql`(${sql.raw(targetColumn)})${targetWhereSql} do update set ${setSql}${whereSql}${setWhereSql}`;
-    return this;
-  }
-  /** @internal */
-  getSQL() {
-    return this.dialect.buildInsertQuery(this.config);
-  }
-  toSQL() {
-    const { typings: _typings, ...rest } = this.dialect.sqlToQuery(this.getSQL());
-    return rest;
-  }
-  /** @internal */
-  _prepare(name) {
-    return tracer.startActiveSpan("drizzle.prepareQuery", () => {
-      return this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), this.config.returning, name, true, void 0, {
-        type: "insert",
-        tables: extractUsedTable(this.config.table)
-      }, this.cacheConfig);
-    });
-  }
-  prepare(name) {
-    return this._prepare(name);
-  }
-  authToken;
-  /** @internal */
-  setToken(token) {
-    this.authToken = token;
-    return this;
-  }
-  execute = /* @__PURE__ */ __name((placeholderValues) => {
-    return tracer.startActiveSpan("drizzle.operation", () => {
-      return this._prepare().execute(placeholderValues, this.authToken);
-    });
-  }, "execute");
-  /** @internal */
-  getSelectedFields() {
-    return this.config.returningFields ? new Proxy(
-      this.config.returningFields,
-      new SelectionProxyHandler({
-        alias: getTableName(this.config.table),
-        sqlAliasedBehavior: "alias",
-        sqlBehavior: "error"
-      })
-    ) : void 0;
-  }
-  $dynamic() {
-    return this;
-  }
-};
-
-// node_modules/drizzle-orm/pg-core/query-builders/refresh-materialized-view.js
-var PgRefreshMaterializedView = class extends QueryPromise {
-  static {
-    __name(this, "PgRefreshMaterializedView");
-  }
-  constructor(view, session, dialect) {
-    super();
-    this.session = session;
-    this.dialect = dialect;
-    this.config = { view };
-  }
-  static [entityKind] = "PgRefreshMaterializedView";
-  config;
-  concurrently() {
-    if (this.config.withNoData !== void 0) {
-      throw new Error("Cannot use concurrently and withNoData together");
-    }
-    this.config.concurrently = true;
-    return this;
-  }
-  withNoData() {
-    if (this.config.concurrently !== void 0) {
-      throw new Error("Cannot use concurrently and withNoData together");
-    }
-    this.config.withNoData = true;
-    return this;
-  }
-  /** @internal */
-  getSQL() {
-    return this.dialect.buildRefreshMaterializedViewQuery(this.config);
-  }
-  toSQL() {
-    const { typings: _typings, ...rest } = this.dialect.sqlToQuery(this.getSQL());
-    return rest;
-  }
-  /** @internal */
-  _prepare(name) {
-    return tracer.startActiveSpan("drizzle.prepareQuery", () => {
-      return this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), void 0, name, true);
-    });
-  }
-  prepare(name) {
-    return this._prepare(name);
-  }
-  authToken;
-  /** @internal */
-  setToken(token) {
-    this.authToken = token;
-    return this;
-  }
-  execute = /* @__PURE__ */ __name((placeholderValues) => {
-    return tracer.startActiveSpan("drizzle.operation", () => {
-      return this._prepare().execute(placeholderValues, this.authToken);
-    });
-  }, "execute");
-};
-
-// node_modules/drizzle-orm/pg-core/query-builders/update.js
-var PgUpdateBuilder = class {
-  static {
-    __name(this, "PgUpdateBuilder");
-  }
-  constructor(table, session, dialect, withList) {
-    this.table = table;
-    this.session = session;
-    this.dialect = dialect;
-    this.withList = withList;
-  }
-  static [entityKind] = "PgUpdateBuilder";
-  authToken;
-  setToken(token) {
-    this.authToken = token;
-    return this;
-  }
-  set(values) {
-    return new PgUpdateBase(
-      this.table,
-      mapUpdateSet(this.table, values),
-      this.session,
-      this.dialect,
-      this.withList
-    ).setToken(this.authToken);
-  }
-};
-var PgUpdateBase = class extends QueryPromise {
-  static {
-    __name(this, "PgUpdateBase");
-  }
-  constructor(table, set2, session, dialect, withList) {
-    super();
-    this.session = session;
-    this.dialect = dialect;
-    this.config = { set: set2, table, withList, joins: [] };
-    this.tableName = getTableLikeName(table);
-    this.joinsNotNullableMap = typeof this.tableName === "string" ? { [this.tableName]: true } : {};
-  }
-  static [entityKind] = "PgUpdate";
-  config;
-  tableName;
-  joinsNotNullableMap;
-  cacheConfig;
-  from(source) {
-    const src = source;
-    const tableName = getTableLikeName(src);
-    if (typeof tableName === "string") {
-      this.joinsNotNullableMap[tableName] = true;
-    }
-    this.config.from = src;
-    return this;
-  }
-  getTableLikeFields(table) {
-    if (is(table, PgTable)) {
-      return table[Table.Symbol.Columns];
-    } else if (is(table, Subquery)) {
-      return table._.selectedFields;
-    }
-    return table[ViewBaseConfig].selectedFields;
-  }
-  createJoin(joinType) {
-    return (table, on) => {
-      const tableName = getTableLikeName(table);
-      if (typeof tableName === "string" && this.config.joins.some((join) => join.alias === tableName)) {
-        throw new Error(`Alias "${tableName}" is already used in this query`);
-      }
-      if (typeof on === "function") {
-        const from = this.config.from && !is(this.config.from, SQL) ? this.getTableLikeFields(this.config.from) : void 0;
-        on = on(
-          new Proxy(
-            this.config.table[Table.Symbol.Columns],
-            new SelectionProxyHandler({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
-          ),
-          from && new Proxy(
-            from,
-            new SelectionProxyHandler({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
-          )
-        );
-      }
-      this.config.joins.push({ on, table, joinType, alias: tableName });
-      if (typeof tableName === "string") {
-        switch (joinType) {
-          case "left": {
-            this.joinsNotNullableMap[tableName] = false;
-            break;
-          }
-          case "right": {
-            this.joinsNotNullableMap = Object.fromEntries(
-              Object.entries(this.joinsNotNullableMap).map(([key]) => [key, false])
-            );
-            this.joinsNotNullableMap[tableName] = true;
-            break;
-          }
-          case "inner": {
-            this.joinsNotNullableMap[tableName] = true;
-            break;
-          }
-          case "full": {
-            this.joinsNotNullableMap = Object.fromEntries(
-              Object.entries(this.joinsNotNullableMap).map(([key]) => [key, false])
-            );
-            this.joinsNotNullableMap[tableName] = false;
-            break;
-          }
-        }
-      }
-      return this;
-    };
-  }
-  leftJoin = this.createJoin("left");
-  rightJoin = this.createJoin("right");
-  innerJoin = this.createJoin("inner");
-  fullJoin = this.createJoin("full");
-  /**
-   * Adds a 'where' clause to the query.
-   *
-   * Calling this method will update only those rows that fulfill a specified condition.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/update}
-   *
-   * @param where the 'where' clause.
-   *
-   * @example
-   * You can use conditional operators and `sql function` to filter the rows to be updated.
-   *
-   * ```ts
-   * // Update all cars with green color
-   * await db.update(cars).set({ color: 'red' })
-   *   .where(eq(cars.color, 'green'));
-   * // or
-   * await db.update(cars).set({ color: 'red' })
-   *   .where(sql`${cars.color} = 'green'`)
-   * ```
-   *
-   * You can logically combine conditional operators with `and()` and `or()` operators:
-   *
-   * ```ts
-   * // Update all BMW cars with a green color
-   * await db.update(cars).set({ color: 'red' })
-   *   .where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
-   *
-   * // Update all cars with the green or blue color
-   * await db.update(cars).set({ color: 'red' })
-   *   .where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
-   * ```
-   */
-  where(where) {
-    this.config.where = where;
-    return this;
-  }
-  returning(fields) {
-    if (!fields) {
-      fields = Object.assign({}, this.config.table[Table.Symbol.Columns]);
-      if (this.config.from) {
-        const tableName = getTableLikeName(this.config.from);
-        if (typeof tableName === "string" && this.config.from && !is(this.config.from, SQL)) {
-          const fromFields = this.getTableLikeFields(this.config.from);
-          fields[tableName] = fromFields;
-        }
-        for (const join of this.config.joins) {
-          const tableName2 = getTableLikeName(join.table);
-          if (typeof tableName2 === "string" && !is(join.table, SQL)) {
-            const fromFields = this.getTableLikeFields(join.table);
-            fields[tableName2] = fromFields;
-          }
-        }
-      }
-    }
-    this.config.returningFields = fields;
-    this.config.returning = orderSelectedFields(fields);
-    return this;
-  }
-  /** @internal */
-  getSQL() {
-    return this.dialect.buildUpdateQuery(this.config);
-  }
-  toSQL() {
-    const { typings: _typings, ...rest } = this.dialect.sqlToQuery(this.getSQL());
-    return rest;
-  }
-  /** @internal */
-  _prepare(name) {
-    const query = this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), this.config.returning, name, true, void 0, {
-      type: "insert",
-      tables: extractUsedTable(this.config.table)
-    }, this.cacheConfig);
-    query.joinsNotNullableMap = this.joinsNotNullableMap;
-    return query;
-  }
-  prepare(name) {
-    return this._prepare(name);
-  }
-  authToken;
-  /** @internal */
-  setToken(token) {
-    this.authToken = token;
-    return this;
-  }
-  execute = /* @__PURE__ */ __name((placeholderValues) => {
-    return this._prepare().execute(placeholderValues, this.authToken);
-  }, "execute");
-  /** @internal */
-  getSelectedFields() {
-    return this.config.returningFields ? new Proxy(
-      this.config.returningFields,
-      new SelectionProxyHandler({
-        alias: getTableName(this.config.table),
-        sqlAliasedBehavior: "alias",
-        sqlBehavior: "error"
-      })
-    ) : void 0;
-  }
-  $dynamic() {
-    return this;
-  }
-};
-
-// node_modules/drizzle-orm/pg-core/query-builders/count.js
-var PgCountBuilder = class _PgCountBuilder extends SQL {
-  static {
-    __name(this, "PgCountBuilder");
-  }
-  constructor(params) {
-    super(_PgCountBuilder.buildEmbeddedCount(params.source, params.filters).queryChunks);
-    this.params = params;
-    this.mapWith(Number);
-    this.session = params.session;
-    this.sql = _PgCountBuilder.buildCount(
-      params.source,
-      params.filters
-    );
-  }
-  sql;
-  token;
-  static [entityKind] = "PgCountBuilder";
-  [Symbol.toStringTag] = "PgCountBuilder";
-  session;
-  static buildEmbeddedCount(source, filters) {
-    return sql`(select count(*) from ${source}${sql.raw(" where ").if(filters)}${filters})`;
-  }
-  static buildCount(source, filters) {
-    return sql`select count(*) as count from ${source}${sql.raw(" where ").if(filters)}${filters};`;
-  }
-  /** @intrnal */
-  setToken(token) {
-    this.token = token;
-    return this;
-  }
-  then(onfulfilled, onrejected) {
-    return Promise.resolve(this.session.count(this.sql, this.token)).then(
-      onfulfilled,
-      onrejected
-    );
-  }
-  catch(onRejected) {
-    return this.then(void 0, onRejected);
-  }
-  finally(onFinally) {
-    return this.then(
-      (value) => {
-        onFinally?.();
-        return value;
-      },
-      (reason) => {
-        onFinally?.();
-        throw reason;
-      }
-    );
-  }
-};
-
-// node_modules/drizzle-orm/pg-core/query-builders/query.js
-var RelationalQueryBuilder = class {
-  static {
-    __name(this, "RelationalQueryBuilder");
-  }
-  constructor(fullSchema, schema, tableNamesMap, table, tableConfig, dialect, session) {
-    this.fullSchema = fullSchema;
-    this.schema = schema;
-    this.tableNamesMap = tableNamesMap;
-    this.table = table;
-    this.tableConfig = tableConfig;
-    this.dialect = dialect;
-    this.session = session;
-  }
-  static [entityKind] = "PgRelationalQueryBuilder";
-  findMany(config2) {
-    return new PgRelationalQuery(
-      this.fullSchema,
-      this.schema,
-      this.tableNamesMap,
-      this.table,
-      this.tableConfig,
-      this.dialect,
-      this.session,
-      config2 ? config2 : {},
-      "many"
-    );
-  }
-  findFirst(config2) {
-    return new PgRelationalQuery(
-      this.fullSchema,
-      this.schema,
-      this.tableNamesMap,
-      this.table,
-      this.tableConfig,
-      this.dialect,
-      this.session,
-      config2 ? { ...config2, limit: 1 } : { limit: 1 },
-      "first"
-    );
-  }
-};
-var PgRelationalQuery = class extends QueryPromise {
-  static {
-    __name(this, "PgRelationalQuery");
-  }
-  constructor(fullSchema, schema, tableNamesMap, table, tableConfig, dialect, session, config2, mode) {
-    super();
-    this.fullSchema = fullSchema;
-    this.schema = schema;
-    this.tableNamesMap = tableNamesMap;
-    this.table = table;
-    this.tableConfig = tableConfig;
-    this.dialect = dialect;
-    this.session = session;
-    this.config = config2;
-    this.mode = mode;
-  }
-  static [entityKind] = "PgRelationalQuery";
-  /** @internal */
-  _prepare(name) {
-    return tracer.startActiveSpan("drizzle.prepareQuery", () => {
-      const { query, builtQuery } = this._toSQL();
-      return this.session.prepareQuery(
-        builtQuery,
-        void 0,
-        name,
-        true,
-        (rawRows, mapColumnValue) => {
-          const rows = rawRows.map(
-            (row) => mapRelationalRow(this.schema, this.tableConfig, row, query.selection, mapColumnValue)
-          );
-          if (this.mode === "first") {
-            return rows[0];
-          }
-          return rows;
-        }
-      );
-    });
-  }
-  prepare(name) {
-    return this._prepare(name);
-  }
-  _getQuery() {
-    return this.dialect.buildRelationalQueryWithoutPK({
-      fullSchema: this.fullSchema,
-      schema: this.schema,
-      tableNamesMap: this.tableNamesMap,
-      table: this.table,
-      tableConfig: this.tableConfig,
-      queryConfig: this.config,
-      tableAlias: this.tableConfig.tsName
-    });
-  }
-  /** @internal */
-  getSQL() {
-    return this._getQuery().sql;
-  }
-  _toSQL() {
-    const query = this._getQuery();
-    const builtQuery = this.dialect.sqlToQuery(query.sql);
-    return { query, builtQuery };
-  }
-  toSQL() {
-    return this._toSQL().builtQuery;
-  }
-  authToken;
-  /** @internal */
-  setToken(token) {
-    this.authToken = token;
-    return this;
-  }
-  execute() {
-    return tracer.startActiveSpan("drizzle.operation", () => {
-      return this._prepare().execute(void 0, this.authToken);
-    });
-  }
-};
-
-// node_modules/drizzle-orm/pg-core/query-builders/raw.js
-var PgRaw = class extends QueryPromise {
-  static {
-    __name(this, "PgRaw");
-  }
-  constructor(execute, sql2, query, mapBatchResult) {
-    super();
-    this.execute = execute;
-    this.sql = sql2;
-    this.query = query;
-    this.mapBatchResult = mapBatchResult;
-  }
-  static [entityKind] = "PgRaw";
-  /** @internal */
-  getSQL() {
-    return this.sql;
-  }
-  getQuery() {
-    return this.query;
-  }
-  mapResult(result, isFromBatch) {
-    return isFromBatch ? this.mapBatchResult(result) : result;
-  }
-  _prepare() {
-    return this;
-  }
-  /** @internal */
-  isResponseInArrayMode() {
-    return false;
-  }
-};
-
-// node_modules/drizzle-orm/pg-core/db.js
-var PgDatabase = class {
-  static {
-    __name(this, "PgDatabase");
-  }
-  constructor(dialect, session, schema) {
-    this.dialect = dialect;
-    this.session = session;
-    this._ = schema ? {
-      schema: schema.schema,
-      fullSchema: schema.fullSchema,
-      tableNamesMap: schema.tableNamesMap,
-      session
-    } : {
-      schema: void 0,
-      fullSchema: {},
-      tableNamesMap: {},
-      session
-    };
-    this.query = {};
-    if (this._.schema) {
-      for (const [tableName, columns] of Object.entries(this._.schema)) {
-        this.query[tableName] = new RelationalQueryBuilder(
-          schema.fullSchema,
-          this._.schema,
-          this._.tableNamesMap,
-          schema.fullSchema[tableName],
-          columns,
-          dialect,
-          session
-        );
-      }
-    }
-    this.$cache = { invalidate: /* @__PURE__ */ __name(async (_params) => {
-    }, "invalidate") };
-  }
-  static [entityKind] = "PgDatabase";
-  query;
-  /**
-   * Creates a subquery that defines a temporary named result set as a CTE.
-   *
-   * It is useful for breaking down complex queries into simpler parts and for reusing the result set in subsequent parts of the query.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/select#with-clause}
-   *
-   * @param alias The alias for the subquery.
-   *
-   * Failure to provide an alias will result in a DrizzleTypeError, preventing the subquery from being referenced in other queries.
-   *
-   * @example
-   *
-   * ```ts
-   * // Create a subquery with alias 'sq' and use it in the select query
-   * const sq = db.$with('sq').as(db.select().from(users).where(eq(users.id, 42)));
-   *
-   * const result = await db.with(sq).select().from(sq);
-   * ```
-   *
-   * To select arbitrary SQL values as fields in a CTE and reference them in other CTEs or in the main query, you need to add aliases to them:
-   *
-   * ```ts
-   * // Select an arbitrary SQL value as a field in a CTE and reference it in the main query
-   * const sq = db.$with('sq').as(db.select({
-   *   name: sql<string>`upper(${users.name})`.as('name'),
-   * })
-   * .from(users));
-   *
-   * const result = await db.with(sq).select({ name: sq.name }).from(sq);
-   * ```
-   */
-  $with = /* @__PURE__ */ __name((alias2, selection) => {
-    const self = this;
-    const as2 = /* @__PURE__ */ __name((qb) => {
-      if (typeof qb === "function") {
-        qb = qb(new QueryBuilder(self.dialect));
-      }
-      return new Proxy(
-        new WithSubquery(
-          qb.getSQL(),
-          selection ?? ("getSelectedFields" in qb ? qb.getSelectedFields() ?? {} : {}),
-          alias2,
-          true
-        ),
-        new SelectionProxyHandler({ alias: alias2, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
-      );
-    }, "as");
-    return { as: as2 };
-  }, "$with");
-  $count(source, filters) {
-    return new PgCountBuilder({ source, filters, session: this.session });
-  }
-  $cache;
-  /**
-   * Incorporates a previously defined CTE (using `$with`) into the main query.
-   *
-   * This method allows the main query to reference a temporary named result set.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/select#with-clause}
-   *
-   * @param queries The CTEs to incorporate into the main query.
-   *
-   * @example
-   *
-   * ```ts
-   * // Define a subquery 'sq' as a CTE using $with
-   * const sq = db.$with('sq').as(db.select().from(users).where(eq(users.id, 42)));
-   *
-   * // Incorporate the CTE 'sq' into the main query and select from it
-   * const result = await db.with(sq).select().from(sq);
-   * ```
-   */
-  with(...queries) {
-    const self = this;
-    function select(fields) {
-      return new PgSelectBuilder({
-        fields: fields ?? void 0,
-        session: self.session,
-        dialect: self.dialect,
-        withList: queries
-      });
-    }
-    __name(select, "select");
-    function selectDistinct(fields) {
-      return new PgSelectBuilder({
-        fields: fields ?? void 0,
-        session: self.session,
-        dialect: self.dialect,
-        withList: queries,
-        distinct: true
-      });
-    }
-    __name(selectDistinct, "selectDistinct");
-    function selectDistinctOn(on, fields) {
-      return new PgSelectBuilder({
-        fields: fields ?? void 0,
-        session: self.session,
-        dialect: self.dialect,
-        withList: queries,
-        distinct: { on }
-      });
-    }
-    __name(selectDistinctOn, "selectDistinctOn");
-    function update(table) {
-      return new PgUpdateBuilder(table, self.session, self.dialect, queries);
-    }
-    __name(update, "update");
-    function insert(table) {
-      return new PgInsertBuilder(table, self.session, self.dialect, queries);
-    }
-    __name(insert, "insert");
-    function delete_(table) {
-      return new PgDeleteBase(table, self.session, self.dialect, queries);
-    }
-    __name(delete_, "delete_");
-    return { select, selectDistinct, selectDistinctOn, update, insert, delete: delete_ };
-  }
-  select(fields) {
-    return new PgSelectBuilder({
-      fields: fields ?? void 0,
-      session: this.session,
-      dialect: this.dialect
-    });
-  }
-  selectDistinct(fields) {
-    return new PgSelectBuilder({
-      fields: fields ?? void 0,
-      session: this.session,
-      dialect: this.dialect,
-      distinct: true
-    });
-  }
-  selectDistinctOn(on, fields) {
-    return new PgSelectBuilder({
-      fields: fields ?? void 0,
-      session: this.session,
-      dialect: this.dialect,
-      distinct: { on }
-    });
-  }
-  /**
-   * Creates an update query.
-   *
-   * Calling this method without `.where()` clause will update all rows in a table. The `.where()` clause specifies which rows should be updated.
-   *
-   * Use `.set()` method to specify which values to update.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/update}
-   *
-   * @param table The table to update.
-   *
-   * @example
-   *
-   * ```ts
-   * // Update all rows in the 'cars' table
-   * await db.update(cars).set({ color: 'red' });
-   *
-   * // Update rows with filters and conditions
-   * await db.update(cars).set({ color: 'red' }).where(eq(cars.brand, 'BMW'));
-   *
-   * // Update with returning clause
-   * const updatedCar: Car[] = await db.update(cars)
-   *   .set({ color: 'red' })
-   *   .where(eq(cars.id, 1))
-   *   .returning();
-   * ```
-   */
-  update(table) {
-    return new PgUpdateBuilder(table, this.session, this.dialect);
-  }
-  /**
-   * Creates an insert query.
-   *
-   * Calling this method will create new rows in a table. Use `.values()` method to specify which values to insert.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/insert}
-   *
-   * @param table The table to insert into.
-   *
-   * @example
-   *
-   * ```ts
-   * // Insert one row
-   * await db.insert(cars).values({ brand: 'BMW' });
-   *
-   * // Insert multiple rows
-   * await db.insert(cars).values([{ brand: 'BMW' }, { brand: 'Porsche' }]);
-   *
-   * // Insert with returning clause
-   * const insertedCar: Car[] = await db.insert(cars)
-   *   .values({ brand: 'BMW' })
-   *   .returning();
-   * ```
-   */
-  insert(table) {
-    return new PgInsertBuilder(table, this.session, this.dialect);
-  }
-  /**
-   * Creates a delete query.
-   *
-   * Calling this method without `.where()` clause will delete all rows in a table. The `.where()` clause specifies which rows should be deleted.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/delete}
-   *
-   * @param table The table to delete from.
-   *
-   * @example
-   *
-   * ```ts
-   * // Delete all rows in the 'cars' table
-   * await db.delete(cars);
-   *
-   * // Delete rows with filters and conditions
-   * await db.delete(cars).where(eq(cars.color, 'green'));
-   *
-   * // Delete with returning clause
-   * const deletedCar: Car[] = await db.delete(cars)
-   *   .where(eq(cars.id, 1))
-   *   .returning();
-   * ```
-   */
-  delete(table) {
-    return new PgDeleteBase(table, this.session, this.dialect);
-  }
-  refreshMaterializedView(view) {
-    return new PgRefreshMaterializedView(view, this.session, this.dialect);
-  }
-  authToken;
-  execute(query) {
-    const sequel = typeof query === "string" ? sql.raw(query) : query.getSQL();
-    const builtQuery = this.dialect.sqlToQuery(sequel);
-    const prepared = this.session.prepareQuery(
-      builtQuery,
-      void 0,
-      void 0,
-      false
-    );
-    return new PgRaw(
-      () => prepared.execute(void 0, this.authToken),
-      sequel,
-      builtQuery,
-      (result) => prepared.mapResult(result, true)
-    );
-  }
-  transaction(transaction, config2) {
-    return this.session.transaction(transaction, config2);
-  }
-};
-
-// node_modules/drizzle-orm/cache/core/cache.js
-var Cache = class {
-  static {
-    __name(this, "Cache");
-  }
-  static [entityKind] = "Cache";
-};
-var NoopCache = class extends Cache {
-  static {
-    __name(this, "NoopCache");
-  }
-  strategy() {
-    return "all";
-  }
-  static [entityKind] = "NoopCache";
-  async get(_key) {
-    return void 0;
-  }
-  async put(_hashedQuery, _response, _tables, _config) {
-  }
-  async onMutate(_params) {
-  }
-};
-async function hashQuery(sql2, params) {
-  const dataToHash = `${sql2}-${JSON.stringify(params)}`;
-  const encoder = new TextEncoder();
-  const data = encoder.encode(dataToHash);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = [...new Uint8Array(hashBuffer)];
-  const hashHex = hashArray.map((b2) => b2.toString(16).padStart(2, "0")).join("");
-  return hashHex;
-}
-__name(hashQuery, "hashQuery");
-
-// node_modules/drizzle-orm/pg-core/alias.js
-function alias(table, alias2) {
-  return new Proxy(table, new TableAliasProxyHandler(alias2, false));
-}
-__name(alias, "alias");
-
-// node_modules/drizzle-orm/pg-core/session.js
-var PgPreparedQuery = class {
-  static {
-    __name(this, "PgPreparedQuery");
-  }
-  constructor(query, cache, queryMetadata, cacheConfig) {
-    this.query = query;
-    this.cache = cache;
-    this.queryMetadata = queryMetadata;
-    this.cacheConfig = cacheConfig;
-    if (cache && cache.strategy() === "all" && cacheConfig === void 0) {
-      this.cacheConfig = { enable: true, autoInvalidate: true };
-    }
-    if (!this.cacheConfig?.enable) {
-      this.cacheConfig = void 0;
-    }
-  }
-  authToken;
-  getQuery() {
-    return this.query;
-  }
-  mapResult(response, _isFromBatch) {
-    return response;
-  }
-  /** @internal */
-  setToken(token) {
-    this.authToken = token;
-    return this;
-  }
-  static [entityKind] = "PgPreparedQuery";
-  /** @internal */
-  joinsNotNullableMap;
-  /** @internal */
-  async queryWithCache(queryString, params, query) {
-    if (this.cache === void 0 || is(this.cache, NoopCache) || this.queryMetadata === void 0) {
-      try {
-        return await query();
-      } catch (e) {
-        throw new DrizzleQueryError(queryString, params, e);
-      }
-    }
-    if (this.cacheConfig && !this.cacheConfig.enable) {
-      try {
-        return await query();
-      } catch (e) {
-        throw new DrizzleQueryError(queryString, params, e);
-      }
-    }
-    if ((this.queryMetadata.type === "insert" || this.queryMetadata.type === "update" || this.queryMetadata.type === "delete") && this.queryMetadata.tables.length > 0) {
-      try {
-        const [res] = await Promise.all([
-          query(),
-          this.cache.onMutate({ tables: this.queryMetadata.tables })
-        ]);
-        return res;
-      } catch (e) {
-        throw new DrizzleQueryError(queryString, params, e);
-      }
-    }
-    if (!this.cacheConfig) {
-      try {
-        return await query();
-      } catch (e) {
-        throw new DrizzleQueryError(queryString, params, e);
-      }
-    }
-    if (this.queryMetadata.type === "select") {
-      const fromCache = await this.cache.get(
-        this.cacheConfig.tag ?? await hashQuery(queryString, params),
-        this.queryMetadata.tables,
-        this.cacheConfig.tag !== void 0,
-        this.cacheConfig.autoInvalidate
-      );
-      if (fromCache === void 0) {
-        let result;
-        try {
-          result = await query();
-        } catch (e) {
-          throw new DrizzleQueryError(queryString, params, e);
-        }
-        await this.cache.put(
-          this.cacheConfig.tag ?? await hashQuery(queryString, params),
-          result,
-          // make sure we send tables that were used in a query only if user wants to invalidate it on each write
-          this.cacheConfig.autoInvalidate ? this.queryMetadata.tables : [],
-          this.cacheConfig.tag !== void 0,
-          this.cacheConfig.config
-        );
-        return result;
-      }
-      return fromCache;
-    }
-    try {
-      return await query();
-    } catch (e) {
-      throw new DrizzleQueryError(queryString, params, e);
-    }
-  }
-};
-var PgSession = class {
-  static {
-    __name(this, "PgSession");
-  }
-  constructor(dialect) {
-    this.dialect = dialect;
-  }
-  static [entityKind] = "PgSession";
-  /** @internal */
-  execute(query, token) {
-    return tracer.startActiveSpan("drizzle.operation", () => {
-      const prepared = tracer.startActiveSpan("drizzle.prepareQuery", () => {
-        return this.prepareQuery(
-          this.dialect.sqlToQuery(query),
-          void 0,
-          void 0,
-          false
-        );
-      });
-      return prepared.setToken(token).execute(void 0, token);
-    });
-  }
-  all(query) {
-    return this.prepareQuery(
-      this.dialect.sqlToQuery(query),
-      void 0,
-      void 0,
-      false
-    ).all();
-  }
-  /** @internal */
-  async count(sql2, token) {
-    const res = await this.execute(sql2, token);
-    return Number(
-      res[0]["count"]
-    );
-  }
-};
-var PgTransaction = class extends PgDatabase {
-  static {
-    __name(this, "PgTransaction");
-  }
-  constructor(dialect, session, schema, nestedIndex = 0) {
-    super(dialect, session, schema);
-    this.schema = schema;
-    this.nestedIndex = nestedIndex;
-  }
-  static [entityKind] = "PgTransaction";
-  rollback() {
-    throw new TransactionRollbackError();
-  }
-  /** @internal */
-  getTransactionConfigSQL(config2) {
-    const chunks = [];
-    if (config2.isolationLevel) {
-      chunks.push(`isolation level ${config2.isolationLevel}`);
-    }
-    if (config2.accessMode) {
-      chunks.push(config2.accessMode);
-    }
-    if (typeof config2.deferrable === "boolean") {
-      chunks.push(config2.deferrable ? "deferrable" : "not deferrable");
-    }
-    return sql.raw(chunks.join(" "));
-  }
-  setTransaction(config2) {
-    return this.session.execute(sql`set transaction ${this.getTransactionConfigSQL(config2)}`);
-  }
-};
+// node_modules/drizzle-orm/neon-http/driver.js
+init_modules_watch_stub();
+init_entity();
+init_db();
+init_dialect();
+init_relations();
+init_utils();
 
 // node_modules/drizzle-orm/neon-http/session.js
+init_modules_watch_stub();
+init_entity();
+init_pg_core();
+init_session();
+init_sql();
+init_utils();
 var rawQueryConfig = {
   arrayMode: false,
   fullResults: true
@@ -15260,6 +17267,8 @@ __export(schema_exports, {
   teacherProfiles: () => teacherProfiles,
   users: () => users
 });
+init_modules_watch_stub();
+init_pg_core();
 var roleEnum = pgEnum("role", ["admin", "teacher", "user", "student"]);
 var enrollmentStatusEnum = pgEnum("enrollment_status", [
   "pending",
@@ -15366,6 +17375,7 @@ function getDb(env) {
 __name(getDb, "getDb");
 
 // src/middlewares/botAuth.js
+init_modules_watch_stub();
 async function botAuth(c, next) {
   const key = c.req.header("X-Bot-Key");
   if (!key || key !== c.env.BOT_API_KEY) {
@@ -15374,6 +17384,15 @@ async function botAuth(c, next) {
   await next();
 }
 __name(botAuth, "botAuth");
+
+// src/routes/users.js
+init_modules_watch_stub();
+
+// src/validators/users.js
+init_modules_watch_stub();
+
+// node_modules/zod/index.js
+init_modules_watch_stub();
 
 // node_modules/zod/v4/classic/external.js
 var external_exports = {};
@@ -15476,7 +17495,7 @@ __export(external_exports, {
   bigint: () => bigint3,
   boolean: () => boolean3,
   catch: () => _catch2,
-  check: () => check,
+  check: () => check2,
   cidrv4: () => cidrv42,
   cidrv6: () => cidrv62,
   clone: () => clone,
@@ -15637,6 +17656,7 @@ __export(external_exports, {
   xid: () => xid2,
   xor: () => xor
 });
+init_modules_watch_stub();
 
 // node_modules/zod/v4/core/index.js
 var core_exports2 = {};
@@ -15954,6 +17974,10 @@ __export(core_exports2, {
   version: () => version2,
   withParser: () => withParser
 });
+init_modules_watch_stub();
+
+// node_modules/zod/v4/core/core.js
+init_modules_watch_stub();
 
 // node_modules/zod/v4/core/util.js
 var util_exports = {};
@@ -16034,6 +18058,7 @@ __export(util_exports, {
   uint8ArrayToHex: () => uint8ArrayToHex,
   unwrapMessage: () => unwrapMessage
 });
+init_modules_watch_stub();
 function assertEqual(val) {
   return val;
 }
@@ -17016,7 +19041,11 @@ function config(newConfig) {
 }
 __name(config, "config");
 
+// node_modules/zod/v4/core/parse.js
+init_modules_watch_stub();
+
 // node_modules/zod/v4/core/errors.js
+init_modules_watch_stub();
 function _getMessage() {
   const internals = this._zod;
   internals.message ?? (internals.message = JSON.stringify(internals.def, jsonStringifyReplacer, 2));
@@ -17379,6 +19408,12 @@ var _safeDecodeAsync = /* @__PURE__ */ __name((_Err) => async (schema, value, _c
 }, "_safeDecodeAsync");
 var safeDecodeAsync = /* @__PURE__ */ _safeDecodeAsync($ZodRealError);
 
+// node_modules/zod/v4/core/schemas.js
+init_modules_watch_stub();
+
+// node_modules/zod/v4/core/checks.js
+init_modules_watch_stub();
+
 // node_modules/zod/v4/core/regexes.js
 var regexes_exports = {};
 __export(regexes_exports, {
@@ -17447,6 +19482,7 @@ __export(regexes_exports, {
   uuid7: () => uuid7,
   xid: () => xid
 });
+init_modules_watch_stub();
 var cuid = /^[cC][0-9a-z]{6,}$/;
 var cuid2 = /^[0-9a-z]+$/;
 var ulid = /^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$/;
@@ -18037,6 +20073,7 @@ var $ZodCheckOverwrite = /* @__PURE__ */ $constructor("$ZodCheckOverwrite", (ins
 });
 
 // node_modules/zod/v4/core/doc.js
+init_modules_watch_stub();
 var Doc = class {
   static {
     __name(this, "Doc");
@@ -18081,6 +20118,7 @@ ${content.join("\n")}
 };
 
 // node_modules/zod/v4/core/versions.js
+init_modules_watch_stub();
 var version2 = {
   major: 4,
   minor: 6,
@@ -18857,11 +20895,11 @@ var $ZodDate = /* @__PURE__ */ $constructor("$ZodDate", (inst, def) => {
     return payload;
   };
 });
-function handleArrayResult(result, final, index) {
+function handleArrayResult(result, final, index2) {
   if (result.issues.length) {
-    final.issues.push(...prefixIssues(index, result.issues));
+    final.issues.push(...prefixIssues(index2, result.issues));
   }
-  final.value[index] = result.value;
+  final.value[index2] = result.value;
 }
 __name(handleArrayResult, "handleArrayResult");
 var $ZodArray = /* @__PURE__ */ $constructor("$ZodArray", (inst, def) => {
@@ -19480,14 +21518,14 @@ function mergeValues(a2, b2) {
       return { valid: false, mergeErrorPath: [] };
     }
     const newArray = [];
-    for (let index = 0; index < a2.length; index++) {
-      const itemA = a2[index];
-      const itemB = b2[index];
+    for (let index2 = 0; index2 < a2.length; index2++) {
+      const itemA = a2[index2];
+      const itemB = b2[index2];
       const sharedValue = mergeValues(itemA, itemB);
       if (!sharedValue.valid) {
         return {
           valid: false,
-          mergeErrorPath: [index, ...sharedValue.mergeErrorPath]
+          mergeErrorPath: [index2, ...sharedValue.mergeErrorPath]
         };
       }
       newArray.push(sharedValue.data);
@@ -19641,11 +21679,11 @@ function getTupleOptStart(items, key) {
   return 0;
 }
 __name(getTupleOptStart, "getTupleOptStart");
-function handleTupleResult(result, final, index) {
+function handleTupleResult(result, final, index2) {
   if (result.issues.length) {
-    final.issues.push(...prefixIssues(index, result.issues));
+    final.issues.push(...prefixIssues(index2, result.issues));
   }
-  final.value[index] = result.value;
+  final.value[index2] = result.value;
 }
 __name(handleTupleResult, "handleTupleResult");
 function handleTupleResults(itemResults, final, items, input2, optoutStart) {
@@ -20545,6 +22583,7 @@ function handleRefineResult(result, payload, input2, inst) {
 __name(handleRefineResult, "handleRefineResult");
 
 // node_modules/zod/v4/core/memoizer.js
+init_modules_watch_stub();
 var $ZodCyclicError = class extends Error {
   static {
     __name(this, "$ZodCyclicError");
@@ -20576,7 +22615,7 @@ function isRecursive(inst, stack, resolve) {
     return PROVEN;
   stack.add(inst);
   let result = NONE;
-  const check2 = /* @__PURE__ */ __name((child) => {
+  const check3 = /* @__PURE__ */ __name((child) => {
     if (result !== PROVEN && child?._zod) {
       const answer = isRecursive(child, stack, resolve);
       if (answer > result)
@@ -20605,32 +22644,32 @@ function isRecursive(inst, stack, resolve) {
     case "object": {
       const raw2 = rawShape(def);
       merge2(raw2 ? shape(raw2, true) : ASSUMED);
-      check2(def.catchall);
+      check3(def.catchall);
       break;
     }
     case "array":
-      check2(def.element);
+      check3(def.element);
       break;
     case "tuple":
       for (const el of def.items)
-        check2(el);
-      check2(def.rest);
+        check3(el);
+      check3(def.rest);
       break;
     case "record":
     case "map":
-      check2(def.keyType);
-      check2(def.valueType);
+      check3(def.keyType);
+      check3(def.valueType);
       break;
     case "set":
-      check2(def.valueType);
+      check3(def.valueType);
       break;
     case "union":
       for (const el of def.options)
-        check2(el);
+        check3(el);
       break;
     case "intersection":
-      check2(def.left);
-      check2(def.right);
+      check3(def.left);
+      check3(def.right);
       break;
     case "optional":
     case "nullable":
@@ -20641,15 +22680,15 @@ function isRecursive(inst, stack, resolve) {
     case "nonoptional":
     case "promise":
     case "success":
-      check2(def.innerType);
+      check3(def.innerType);
       break;
     case "pipe":
-      check2(def.in);
-      check2(def.out);
+      check3(def.in);
+      check3(def.out);
       break;
     case "function":
-      check2(def.input);
-      check2(def.output);
+      check3(def.input);
+      check3(def.output);
       break;
     // `$ZodLazy` caches its inner on the def, so a resolved edge is followed exactly
     case "lazy": {
@@ -20690,10 +22729,10 @@ function isRecursive(inst, stack, resolve) {
         if (!value || typeof value !== "object")
           continue;
         if (value._zod)
-          check2(value);
+          check3(value);
         else if (Array.isArray(value))
           for (const el of value)
-            check2(el);
+            check3(el);
       }
     }
   }
@@ -20899,8 +22938,10 @@ __export(locales_exports, {
   zhCN: () => zh_CN_default,
   zhTW: () => zh_TW_default
 });
+init_modules_watch_stub();
 
 // node_modules/zod/v4/locales/ar.js
+init_modules_watch_stub();
 var error = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u062D\u0631\u0641", verb: "\u0623\u0646 \u064A\u062D\u0648\u064A" },
@@ -21015,6 +23056,7 @@ function ar_default() {
 __name(ar_default, "default");
 
 // node_modules/zod/v4/locales/az.js
+init_modules_watch_stub();
 var error2 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "simvol", verb: "olmal\u0131d\u0131r" },
@@ -21128,6 +23170,7 @@ function az_default() {
 __name(az_default, "default");
 
 // node_modules/zod/v4/locales/be.js
+init_modules_watch_stub();
 function getBelarusianPlural(count2, one, few, many) {
   const absCount = Math.abs(count2);
   const lastDigit = absCount % 10;
@@ -21300,6 +23343,7 @@ function be_default() {
 __name(be_default, "default");
 
 // node_modules/zod/v4/locales/bg.js
+init_modules_watch_stub();
 var error4 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u0441\u0438\u043C\u0432\u043E\u043B\u0430", verb: "\u0434\u0430 \u0441\u044A\u0434\u044A\u0440\u0436\u0430" },
@@ -21428,6 +23472,7 @@ function bg_default() {
 __name(bg_default, "default");
 
 // node_modules/zod/v4/locales/bn.js
+init_modules_watch_stub();
 var error5 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u0985\u0995\u09CD\u09B7\u09B0", verb: "\u09A5\u09BE\u0995\u09A4\u09C7 \u09B9\u09AC\u09C7" },
@@ -21544,6 +23589,7 @@ function bn_default() {
 __name(bn_default, "default");
 
 // node_modules/zod/v4/locales/ca.js
+init_modules_watch_stub();
 var error6 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "car\xE0cters", verb: "contenir" },
@@ -21660,6 +23706,7 @@ function ca_default() {
 __name(ca_default, "default");
 
 // node_modules/zod/v4/locales/ckb.js
+init_modules_watch_stub();
 var error7 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u067E\u06CC\u062A", verb: "\u0628\u06CE\u062A" },
@@ -21795,6 +23842,7 @@ function ckb_default() {
 __name(ckb_default, "default");
 
 // node_modules/zod/v4/locales/cs.js
+init_modules_watch_stub();
 var error8 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "znak\u016F", verb: "m\xEDt" },
@@ -21914,6 +23962,7 @@ function cs_default() {
 __name(cs_default, "default");
 
 // node_modules/zod/v4/locales/da.js
+init_modules_watch_stub();
 var error9 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "tegn", verb: "havde" },
@@ -22037,6 +24086,7 @@ function da_default() {
 __name(da_default, "default");
 
 // node_modules/zod/v4/locales/de.js
+init_modules_watch_stub();
 var error10 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "Zeichen", verb: "zu haben" },
@@ -22153,6 +24203,7 @@ function de_default() {
 __name(de_default, "default");
 
 // node_modules/zod/v4/locales/el.js
+init_modules_watch_stub();
 var error11 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u03C7\u03B1\u03C1\u03B1\u03BA\u03C4\u03AE\u03C1\u03B5\u03C2", verb: "\u03BD\u03B1 \u03AD\u03C7\u03B5\u03B9" },
@@ -22268,6 +24319,7 @@ function el_default() {
 __name(el_default, "default");
 
 // node_modules/zod/v4/locales/en.js
+init_modules_watch_stub();
 var error12 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "characters", verb: "to have" },
@@ -22396,6 +24448,7 @@ function en_default() {
 __name(en_default, "default");
 
 // node_modules/zod/v4/locales/eo.js
+init_modules_watch_stub();
 var error13 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "karaktrojn", verb: "havi" },
@@ -22513,6 +24566,7 @@ function eo_default() {
 __name(eo_default, "default");
 
 // node_modules/zod/v4/locales/es.js
+init_modules_watch_stub();
 var error14 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "caracteres", verb: "tener" },
@@ -22652,6 +24706,7 @@ function es_default() {
 __name(es_default, "default");
 
 // node_modules/zod/v4/locales/fa.js
+init_modules_watch_stub();
 var error15 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u06A9\u0627\u0631\u0627\u06A9\u062A\u0631", verb: "\u062F\u0627\u0634\u062A\u0647 \u0628\u0627\u0634\u062F" },
@@ -22774,6 +24829,7 @@ function fa_default() {
 __name(fa_default, "default");
 
 // node_modules/zod/v4/locales/fi.js
+init_modules_watch_stub();
 var error16 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "merkki\xE4", subject: "merkkijonon" },
@@ -22894,6 +24950,7 @@ function fi_default() {
 __name(fi_default, "default");
 
 // node_modules/zod/v4/locales/fr.js
+init_modules_watch_stub();
 var error17 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "caract\xE8res", verb: "avoir" },
@@ -23026,6 +25083,7 @@ function fr_default() {
 __name(fr_default, "default");
 
 // node_modules/zod/v4/locales/fr-CA.js
+init_modules_watch_stub();
 var error18 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "caract\xE8res", verb: "avoir" },
@@ -23141,6 +25199,7 @@ function fr_CA_default() {
 __name(fr_CA_default, "default");
 
 // node_modules/zod/v4/locales/gu.js
+init_modules_watch_stub();
 var error19 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u0A85\u0A95\u0ACD\u0AB7\u0AB0", verb: "\u0AB9\u0ACB\u0AB5\u0ABE \u0A9C\u0ACB\u0A88\u0A8F" },
@@ -23257,6 +25316,7 @@ function gu_default() {
 __name(gu_default, "default");
 
 // node_modules/zod/v4/locales/he.js
+init_modules_watch_stub();
 var error20 = /* @__PURE__ */ __name(() => {
   const TypeNames = {
     string: { label: "\u05DE\u05D7\u05E8\u05D5\u05D6\u05EA", gender: "f" },
@@ -23460,6 +25520,7 @@ function he_default() {
 __name(he_default, "default");
 
 // node_modules/zod/v4/locales/hi.js
+init_modules_watch_stub();
 var error21 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u0905\u0915\u094D\u0937\u0930", verb: "\u0930\u0916\u0928\u0947 \u0915\u0947 \u0932\u093F\u090F" },
@@ -23574,6 +25635,7 @@ function hi_default() {
 __name(hi_default, "default");
 
 // node_modules/zod/v4/locales/hr.js
+init_modules_watch_stub();
 var error22 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "znakova", verb: "imati" },
@@ -23703,6 +25765,7 @@ function hr_default() {
 __name(hr_default, "default");
 
 // node_modules/zod/v4/locales/hu.js
+init_modules_watch_stub();
 var error23 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "karakter", verb: "legyen" },
@@ -23819,6 +25882,7 @@ function hu_default() {
 __name(hu_default, "default");
 
 // node_modules/zod/v4/locales/hy.js
+init_modules_watch_stub();
 function getArmenianPlural(count2, one, many) {
   return Math.abs(count2) === 1 ? one : many;
 }
@@ -23982,6 +26046,7 @@ function hy_default() {
 __name(hy_default, "default");
 
 // node_modules/zod/v4/locales/id.js
+init_modules_watch_stub();
 var error25 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "karakter", verb: "memiliki" },
@@ -24096,6 +26161,7 @@ function id_default() {
 __name(id_default, "default");
 
 // node_modules/zod/v4/locales/is.js
+init_modules_watch_stub();
 var error26 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "stafi", verb: "a\xF0 hafa" },
@@ -24213,6 +26279,7 @@ function is_default() {
 __name(is_default, "default");
 
 // node_modules/zod/v4/locales/it.js
+init_modules_watch_stub();
 var error27 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "caratteri", verb: "avere" },
@@ -24329,6 +26396,7 @@ function it_default() {
 __name(it_default, "default");
 
 // node_modules/zod/v4/locales/ja.js
+init_modules_watch_stub();
 var error28 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u6587\u5B57", verb: "\u3067\u3042\u308B" },
@@ -24444,6 +26512,7 @@ function ja_default() {
 __name(ja_default, "default");
 
 // node_modules/zod/v4/locales/ka.js
+init_modules_watch_stub();
 var error29 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u10E1\u10D8\u10DB\u10D1\u10DD\u10DA\u10DD", verb: "\u10E3\u10DC\u10D3\u10D0 \u10E8\u10D4\u10D8\u10EA\u10D0\u10D5\u10D3\u10D4\u10E1" },
@@ -24563,7 +26632,11 @@ function ka_default() {
 }
 __name(ka_default, "default");
 
+// node_modules/zod/v4/locales/kh.js
+init_modules_watch_stub();
+
 // node_modules/zod/v4/locales/km.js
+init_modules_watch_stub();
 var error30 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u178F\u17BD\u17A2\u1780\u17D2\u179F\u179A", verb: "\u1782\u17BD\u179A\u1798\u17B6\u1793" },
@@ -24688,6 +26761,7 @@ function kh_default() {
 __name(kh_default, "default");
 
 // node_modules/zod/v4/locales/kn.js
+init_modules_watch_stub();
 var error31 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u0C85\u0C95\u0CCD\u0CB7\u0CB0\u0C97\u0CB3\u0CC1", verb: "\u0CB9\u0CCA\u0C82\u0CA6\u0CB2\u0CC1" },
@@ -24806,6 +26880,7 @@ function kn_default() {
 __name(kn_default, "default");
 
 // node_modules/zod/v4/locales/ko.js
+init_modules_watch_stub();
 var error32 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\uBB38\uC790", verb: "to have" },
@@ -24925,6 +27000,7 @@ function ko_default() {
 __name(ko_default, "default");
 
 // node_modules/zod/v4/locales/lt.js
+init_modules_watch_stub();
 var capitalizeFirstCharacter = /* @__PURE__ */ __name((text2) => {
   return text2.charAt(0).toUpperCase() + text2.slice(1);
 }, "capitalizeFirstCharacter");
@@ -25136,6 +27212,7 @@ function lt_default() {
 __name(lt_default, "default");
 
 // node_modules/zod/v4/locales/mk.js
+init_modules_watch_stub();
 var error34 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u0437\u043D\u0430\u0446\u0438", verb: "\u0434\u0430 \u0438\u043C\u0430\u0430\u0442" },
@@ -25253,6 +27330,7 @@ function mk_default() {
 __name(mk_default, "default");
 
 // node_modules/zod/v4/locales/ms.js
+init_modules_watch_stub();
 var error35 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "aksara", verb: "mempunyai" },
@@ -25368,6 +27446,7 @@ function ms_default() {
 __name(ms_default, "default");
 
 // node_modules/zod/v4/locales/ne.js
+init_modules_watch_stub();
 var error36 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u0905\u0915\u094D\u0937\u0930", verb: "\u0939\u0941\u0928\u0941\u092A\u0930\u094D\u091B" },
@@ -25482,6 +27561,7 @@ function ne_default() {
 __name(ne_default, "default");
 
 // node_modules/zod/v4/locales/nl.js
+init_modules_watch_stub();
 var error37 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "tekens", verb: "heeft" },
@@ -25600,6 +27680,7 @@ function nl_default() {
 __name(nl_default, "default");
 
 // node_modules/zod/v4/locales/nn.js
+init_modules_watch_stub();
 var error38 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "teikn", verb: "\xE5 ha" },
@@ -25716,6 +27797,7 @@ function nn_default() {
 __name(nn_default, "default");
 
 // node_modules/zod/v4/locales/no.js
+init_modules_watch_stub();
 var error39 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "tegn", verb: "\xE5 ha" },
@@ -25832,6 +27914,7 @@ function no_default() {
 __name(no_default, "default");
 
 // node_modules/zod/v4/locales/ota.js
+init_modules_watch_stub();
 var error40 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "harf", verb: "olmal\u0131d\u0131r" },
@@ -25949,6 +28032,7 @@ function ota_default() {
 __name(ota_default, "default");
 
 // node_modules/zod/v4/locales/ps.js
+init_modules_watch_stub();
 var error41 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u062A\u0648\u06A9\u064A", verb: "\u0648\u0644\u0631\u064A" },
@@ -26071,6 +28155,7 @@ function ps_default() {
 __name(ps_default, "default");
 
 // node_modules/zod/v4/locales/pl.js
+init_modules_watch_stub();
 var error42 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "znak\xF3w", verb: "mie\u0107" },
@@ -26188,6 +28273,7 @@ function pl_default() {
 __name(pl_default, "default");
 
 // node_modules/zod/v4/locales/pt.js
+init_modules_watch_stub();
 var error43 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "caracteres" },
@@ -26335,6 +28421,7 @@ function pt_default() {
 __name(pt_default, "default");
 
 // node_modules/zod/v4/locales/pt-BR.js
+init_modules_watch_stub();
 var error44 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "caracteres" },
@@ -26483,6 +28570,7 @@ function pt_BR_default() {
 __name(pt_BR_default, "default");
 
 // node_modules/zod/v4/locales/ro.js
+init_modules_watch_stub();
 var error45 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "caractere", verb: "s\u0103 aib\u0103" },
@@ -26608,6 +28696,7 @@ function ro_default() {
 __name(ro_default, "default");
 
 // node_modules/zod/v4/locales/ru.js
+init_modules_watch_stub();
 function getRussianPlural(count2, one, few, many) {
   const absCount = Math.abs(count2);
   const lastDigit = absCount % 10;
@@ -26780,6 +28869,7 @@ function ru_default() {
 __name(ru_default, "default");
 
 // node_modules/zod/v4/locales/sk.js
+init_modules_watch_stub();
 var error47 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "znakov", verb: "ma\u0165" },
@@ -26899,6 +28989,7 @@ function sk_default() {
 __name(sk_default, "default");
 
 // node_modules/zod/v4/locales/sl.js
+init_modules_watch_stub();
 var error48 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "znakov", verb: "imeti" },
@@ -27016,6 +29107,7 @@ function sl_default() {
 __name(sl_default, "default");
 
 // node_modules/zod/v4/locales/sv.js
+init_modules_watch_stub();
 var error49 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "tecken", verb: "att ha" },
@@ -27134,6 +29226,7 @@ function sv_default() {
 __name(sv_default, "default");
 
 // node_modules/zod/v4/locales/ta.js
+init_modules_watch_stub();
 var error50 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u0B8E\u0BB4\u0BC1\u0BA4\u0BCD\u0BA4\u0BC1\u0B95\u0BCD\u0B95\u0BB3\u0BCD", verb: "\u0B95\u0BCA\u0BA3\u0BCD\u0B9F\u0BBF\u0BB0\u0BC1\u0B95\u0BCD\u0B95 \u0BB5\u0BC7\u0BA3\u0BCD\u0B9F\u0BC1\u0BAE\u0BCD" },
@@ -27252,6 +29345,7 @@ function ta_default() {
 __name(ta_default, "default");
 
 // node_modules/zod/v4/locales/tg.js
+init_modules_watch_stub();
 var error51 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u0430\u043B\u043E\u043C\u0430\u0442", verb: "\u0434\u043E\u0448\u0442\u0430 \u0431\u043E\u0448\u0430\u0434" },
@@ -27371,6 +29465,7 @@ function tg_default() {
 __name(tg_default, "default");
 
 // node_modules/zod/v4/locales/th.js
+init_modules_watch_stub();
 var error52 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23", verb: "\u0E04\u0E27\u0E23\u0E21\u0E35" },
@@ -27489,6 +29584,7 @@ function th_default() {
 __name(th_default, "default");
 
 // node_modules/zod/v4/locales/tk.js
+init_modules_watch_stub();
 var error53 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "simwol", verb: "bolmaly" },
@@ -27599,6 +29695,7 @@ function tk_default() {
 __name(tk_default, "default");
 
 // node_modules/zod/v4/locales/tr.js
+init_modules_watch_stub();
 var error54 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "karakter", verb: "olmal\u0131" },
@@ -27711,7 +29808,11 @@ function tr_default() {
 }
 __name(tr_default, "default");
 
+// node_modules/zod/v4/locales/ua.js
+init_modules_watch_stub();
+
 // node_modules/zod/v4/locales/uk.js
+init_modules_watch_stub();
 var error55 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u0441\u0438\u043C\u0432\u043E\u043B\u0456\u0432", verb: "\u043C\u0430\u0442\u0438\u043C\u0435" },
@@ -27834,6 +29935,7 @@ function ua_default() {
 __name(ua_default, "default");
 
 // node_modules/zod/v4/locales/ur.js
+init_modules_watch_stub();
 var error56 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u062D\u0631\u0648\u0641", verb: "\u06C1\u0648\u0646\u0627" },
@@ -27952,6 +30054,7 @@ function ur_default() {
 __name(ur_default, "default");
 
 // node_modules/zod/v4/locales/uz.js
+init_modules_watch_stub();
 var error57 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "belgi", verb: "bo\u2018lishi kerak" },
@@ -28068,6 +30171,7 @@ function uz_default() {
 __name(uz_default, "default");
 
 // node_modules/zod/v4/locales/vi.js
+init_modules_watch_stub();
 var error58 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "k\xFD t\u1EF1", verb: "c\xF3" },
@@ -28184,6 +30288,7 @@ function vi_default() {
 __name(vi_default, "default");
 
 // node_modules/zod/v4/locales/zh-CN.js
+init_modules_watch_stub();
 var error59 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u5B57\u7B26", verb: "\u5305\u542B" },
@@ -28301,6 +30406,7 @@ function zh_CN_default() {
 __name(zh_CN_default, "default");
 
 // node_modules/zod/v4/locales/zh-TW.js
+init_modules_watch_stub();
 var error60 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\u5B57\u5143", verb: "\u64C1\u6709" },
@@ -28416,6 +30522,7 @@ function zh_TW_default() {
 __name(zh_TW_default, "default");
 
 // node_modules/zod/v4/locales/yo.js
+init_modules_watch_stub();
 var error61 = /* @__PURE__ */ __name(() => {
   const Sizable = {
     string: { unit: "\xE0mi", verb: "n\xED" },
@@ -28531,6 +30638,7 @@ function yo_default() {
 __name(yo_default, "default");
 
 // node_modules/zod/v4/core/registries.js
+init_modules_watch_stub();
 var _a2;
 var $output = /* @__PURE__ */ Symbol("ZodOutput");
 var $input = /* @__PURE__ */ Symbol("ZodInput");
@@ -28585,6 +30693,7 @@ __name(registry, "registry");
 var globalRegistry = globalThis.__zod_globalRegistry;
 
 // node_modules/zod/v4/core/compile.js
+init_modules_watch_stub();
 var INVALID = /* @__PURE__ */ Symbol.for("zod.compile.invalid");
 var FALLBACK_FLAG = /* @__PURE__ */ Symbol.for("zod.compile.fallback");
 var ZodCompileAsyncError = class extends Error {
@@ -28797,8 +30906,8 @@ function generateChecks(doc, ctx, schema, accessor) {
   if (!schemaChecks || schemaChecks.length === 0)
     return accessor;
   let currentAccessor = accessor;
-  for (const check2 of schemaChecks) {
-    const def = check2._zod.def;
+  for (const check3 of schemaChecks) {
+    const def = check3._zod.def;
     if (def.when && !WHEN_DEFAULTED_CHECKS.has(def.check)) {
       throw new ZodCompileUnsupportedError(`check with a custom "when" condition`);
     }
@@ -28846,7 +30955,7 @@ function generateChecks(doc, ctx, schema, accessor) {
         currentAccessor = generateStringFormatCheck(doc, ctx, def, currentAccessor);
         break;
       case "custom":
-        currentAccessor = generateCustomRefineCheck(doc, ctx, check2, currentAccessor);
+        currentAccessor = generateCustomRefineCheck(doc, ctx, check3, currentAccessor);
         break;
       case "bigint_format":
         generateBigIntFormatCheck(doc, def, currentAccessor);
@@ -28862,7 +30971,7 @@ function generateChecks(doc, ctx, schema, accessor) {
         break;
       case "overwrite": {
         const newAccessor = newVar(ctx);
-        generateOverwriteCheck(doc, ctx, check2, currentAccessor, newAccessor);
+        generateOverwriteCheck(doc, ctx, check3, currentAccessor, newAccessor);
         currentAccessor = newAccessor;
         break;
       }
@@ -28997,8 +31106,8 @@ function generatePropertyCheck(doc, ctx, def, accessor) {
   generateCheck(doc, ctx, def.schema, propAccessor);
 }
 __name(generatePropertyCheck, "generatePropertyCheck");
-function generateOverwriteCheck(doc, ctx, check2, currentAccessor, newAccessor) {
-  const tx = check2._zod.def.tx;
+function generateOverwriteCheck(doc, ctx, check3, currentAccessor, newAccessor) {
+  const tx = check3._zod.def.tx;
   if (!tx) {
     throw new ZodCompileUnsupportedError("overwrite check without a transform function");
   }
@@ -29017,8 +31126,8 @@ function pushIssue(issue2) {
   this.issues.push(issue2);
 }
 __name(pushIssue, "pushIssue");
-function generateCustomRefineCheck(doc, ctx, check2, accessor) {
-  const def = check2._zod.def;
+function generateCustomRefineCheck(doc, ctx, check3, accessor) {
+  const def = check3._zod.def;
   if (def.fn) {
     if (isAsyncFunction(def.fn)) {
       throw new ZodCompileAsyncError("z.compile: async .refine() predicates are not supported");
@@ -29031,11 +31140,11 @@ function generateCustomRefineCheck(doc, ctx, check2, accessor) {
     doc.write(`if (!${resVar}) return INVALID;`);
     return accessor;
   }
-  if (check2._zod.check) {
-    if (isAsyncFunction(check2._zod.check)) {
+  if (check3._zod.check) {
+    if (isAsyncFunction(check3._zod.check)) {
       throw new ZodCompileAsyncError("z.compile: async .superRefine() / check functions are not supported");
     }
-    const checkFn = check2._zod.check;
+    const checkFn = check3._zod.check;
     const helperFn = /* @__PURE__ */ __name((value) => {
       const fakePayload = { value, issues: [], addIssue: pushIssue };
       const result = checkFn(fakePayload);
@@ -30267,6 +32376,7 @@ function generateTransformCheck(doc, ctx, schema, accessor) {
 __name(generateTransformCheck, "generateTransformCheck");
 
 // node_modules/zod/v4/core/api.js
+init_modules_watch_stub();
 function snapshotChecks(def) {
   if (def.checks)
     def.checks = [...def.checks];
@@ -31444,6 +33554,7 @@ function _stringFormat(Class2, format, fnOrRegex, _params = {}) {
 __name(_stringFormat, "_stringFormat");
 
 // node_modules/zod/v4/core/to-json-schema.js
+init_modules_watch_stub();
 function assignProps(target, ...sources) {
   for (const source of sources) {
     for (const key of Reflect.ownKeys(source)) {
@@ -31986,6 +34097,7 @@ var createStandardJSONSchemaMethod = /* @__PURE__ */ __name((schema, io2, proces
 }, "createStandardJSONSchemaMethod");
 
 // node_modules/zod/v4/core/json-schema-processors.js
+init_modules_watch_stub();
 var narrowMin = /* @__PURE__ */ __name((agg, key, value) => {
   if (agg[key] === void 0 || value > agg[key])
     agg[key] = value;
@@ -32740,6 +34852,7 @@ function toJSONSchema(input2, params) {
 __name(toJSONSchema, "toJSONSchema");
 
 // node_modules/zod/v4/core/json-schema-generator.js
+init_modules_watch_stub();
 var JSONSchemaGenerator = class {
   static {
     __name(this, "JSONSchemaGenerator");
@@ -32822,6 +34935,7 @@ var JSONSchemaGenerator = class {
 
 // node_modules/zod/v4/core/json-schema.js
 var json_schema_exports = {};
+init_modules_watch_stub();
 
 // node_modules/zod/v4/classic/schemas.js
 var schemas_exports2 = {};
@@ -32912,7 +35026,7 @@ __export(schemas_exports2, {
   bigint: () => bigint3,
   boolean: () => boolean3,
   catch: () => _catch2,
-  check: () => check,
+  check: () => check2,
   cidrv4: () => cidrv42,
   cidrv6: () => cidrv62,
   codec: () => codec,
@@ -33003,6 +35117,7 @@ __export(schemas_exports2, {
   xid: () => xid2,
   xor: () => xor
 });
+init_modules_watch_stub();
 
 // node_modules/zod/v4/classic/checks.js
 var checks_exports2 = {};
@@ -33038,8 +35153,13 @@ __export(checks_exports2, {
   trim: () => _trim,
   uppercase: () => _uppercase
 });
+init_modules_watch_stub();
+
+// node_modules/zod/v4/classic/parse.js
+init_modules_watch_stub();
 
 // node_modules/zod/v4/classic/errors.js
+init_modules_watch_stub();
 var _installedErrorProtos = /* @__PURE__ */ new WeakSet([Object.prototype, Error.prototype]);
 function _lazyMethod(proto, key, make) {
   Object.defineProperty(proto, key, {
@@ -33140,8 +35260,8 @@ var ZodType = /* @__PURE__ */ $constructor("ZodType", (inst, def) => {
     reg.add(this, meta3);
     return this;
   },
-  refine(check2, params) {
-    return this.check(refine(check2, params));
+  refine(check3, params) {
+    return this.check(refine(check3, params));
   },
   superRefine(refinement, params) {
     return this.check(superRefine(refinement, params));
@@ -34588,7 +36708,7 @@ var ZodCustom = /* @__PURE__ */ $constructor("ZodCustom", (inst, def) => {
   ZodType.init(inst, def);
   inst._zod.processJSONSchema = (ctx, json3, params) => customProcessor(inst, ctx, json3, params);
 });
-function check(fn) {
+function check2(fn) {
   const ch = new $ZodCheck({
     check: "custom"
     // ...util.normalizeParams(params),
@@ -34596,7 +36716,7 @@ function check(fn) {
   ch._zod.check = fn;
   return ch;
 }
-__name(check, "check");
+__name(check2, "check");
 function custom(fn, _params) {
   return _custom(ZodCustom, fn ?? (() => true), _params);
 }
@@ -34663,6 +36783,7 @@ function preprocess(fn, schema) {
 __name(preprocess, "preprocess");
 
 // node_modules/zod/v4/classic/compat.js
+init_modules_watch_stub();
 var ZodIssueCode = {
   invalid_type: "invalid_type",
   too_big: "too_big",
@@ -34690,6 +36811,9 @@ var ZodFirstPartyTypeKind;
 /* @__PURE__ */ (function(ZodFirstPartyTypeKind2) {
 })(ZodFirstPartyTypeKind || (ZodFirstPartyTypeKind = {}));
 
+// node_modules/zod/v4/classic/from-json-schema.js
+init_modules_watch_stub();
+
 // node_modules/zod/v4/classic/iso.js
 var iso_exports = {};
 __export(iso_exports, {
@@ -34702,6 +36826,7 @@ __export(iso_exports, {
   duration: () => duration2,
   time: () => time4
 });
+init_modules_watch_stub();
 function datetime2(params) {
   return _isoDateTime(ZodISODateTime, params);
 }
@@ -34811,7 +36936,7 @@ function detectVersion(schema, defaultTarget) {
 }
 __name(detectVersion, "detectVersion");
 function applyMinItems(items, minItems) {
-  return items.map((item, index) => index < minItems ? item : item.optional());
+  return items.map((item, index2) => index2 < minItems ? item : item.optional());
 }
 __name(applyMinItems, "applyMinItems");
 function decodeJSONPointerSegment(segment) {
@@ -35465,7 +37590,11 @@ function fromJSONSchema(schema, params) {
 }
 __name(fromJSONSchema, "fromJSONSchema");
 
+// node_modules/zod/v4/classic/deep-partial.js
+init_modules_watch_stub();
+
 // node_modules/zod/v4/core/visit.js
+init_modules_watch_stub();
 var RESOLVING = /* @__PURE__ */ Symbol("z.visit/resolving");
 function visit(schema, fnOrHandlers) {
   const fn = typeof fnOrHandlers === "function" ? fnOrHandlers : (node2, rewritten) => {
@@ -35637,6 +37766,7 @@ function deepPartial(schema) {
 __name(deepPartial, "deepPartial");
 
 // node_modules/zod/v4/classic/in-out.js
+init_modules_watch_stub();
 function withChecks(side, checks) {
   if (!checks?.length)
     return side;
@@ -35680,6 +37810,7 @@ __export(coerce_exports, {
   number: () => number3,
   string: () => string3
 });
+init_modules_watch_stub();
 function string3(params) {
   return _coercedString(ZodString, params);
 }
@@ -35709,6 +37840,7 @@ var registerSchema = external_exports.object({
 });
 
 // src/config/roles.js
+init_modules_watch_stub();
 function isAdminId(env, telegramId) {
   return (env.ADMIN_IDS || "").split(",").map((s) => s.trim()).includes(String(telegramId));
 }
@@ -35746,7 +37878,11 @@ router.post("/", async (c) => {
 });
 var users_default = router;
 
+// src/routes/courses.js
+init_modules_watch_stub();
+
 // src/validators/courses.js
+init_modules_watch_stub();
 var time5 = external_exports.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Vaqt HH:MM ko'rinishida bo'lsin");
 var slotSchema = external_exports.object({
   weekday: external_exports.number().int().min(1).max(7),
@@ -35765,6 +37901,7 @@ var createCourseSchema = external_exports.object({
 });
 
 // src/services/scheduleService.js
+init_modules_watch_stub();
 async function findConflict(db, { weekday, startTime, endTime }) {
   const [row] = await db.select({
     title: courses.title,
@@ -35791,14 +37928,37 @@ function hasInternalOverlap(slots) {
 __name(hasInternalOverlap, "hasInternalOverlap");
 
 // src/services/paymentService.js
+init_modules_watch_stub();
 async function ensurePaymentsForPeriod(db, period) {
   const rows = await db.select({ enrollmentId: enrollments.id, price: courses.price }).from(enrollments).innerJoin(courses, eq(enrollments.courseId, courses.id)).where(eq(enrollments.status, "active"));
   if (rows.length === 0) return;
   await db.insert(payments).values(rows.map((r) => ({ enrollmentId: r.enrollmentId, period, amountDue: r.price }))).onConflictDoNothing({ target: [payments.enrollmentId, payments.period] });
 }
 __name(ensurePaymentsForPeriod, "ensurePaymentsForPeriod");
+async function ensureTeacherPayouts(db, period) {
+  const rows = await db.select({
+    teacherId: courses.teacherId,
+    totalPaid: sql`coalesce(sum(${payments.amountPaid}), 0)`.mapWith(Number)
+  }).from(payments).innerJoin(enrollments, eq(payments.enrollmentId, enrollments.id)).innerJoin(courses, eq(enrollments.courseId, courses.id)).where(and(eq(payments.period, period), eq(enrollments.status, "active"))).groupBy(courses.teacherId);
+  for (const r of rows) {
+    const amountDue = Math.round(r.totalPaid * 0.3);
+    await db.insert(teacherPayouts).values({ teacherId: r.teacherId, period, amountDue }).onConflictDoUpdate({ target: [teacherPayouts.teacherId, teacherPayouts.period], set: { amountDue } });
+  }
+}
+__name(ensureTeacherPayouts, "ensureTeacherPayouts");
+
+// src/validators/attendance.js
+init_modules_watch_stub();
+var attendanceSchema = external_exports.object({
+  telegramId: external_exports.number().int().positive(),
+  records: external_exports.array(external_exports.object({
+    enrollmentId: external_exports.number().int().positive(),
+    present: external_exports.boolean()
+  })).min(1)
+});
 
 // src/utils/time.js
+init_modules_watch_stub();
 function tashkentDate() {
   return new Date(Date.now() + 5 * 60 * 60 * 1e3).toISOString().slice(0, 10);
 }
@@ -35910,9 +38070,38 @@ router2.get("/:id/students", async (c) => {
   }).from(enrollments).innerJoin(users, eq(enrollments.studentId, users.id)).leftJoin(payments, and(eq(payments.enrollmentId, enrollments.id), eq(payments.period, period))).where(and(eq(enrollments.courseId, courseId), eq(enrollments.status, "active"))).orderBy(asc(users.fullName));
   return c.json({ courseTitle: course.title, price: course.price, period, students: rows });
 });
+async function loadCoursesByTeacherId(db, teacherId) {
+  return loadCourses(db, and(eq(courses.isActive, true), eq(courses.teacherId, teacherId)));
+}
+__name(loadCoursesByTeacherId, "loadCoursesByTeacherId");
+router2.post("/:id/attendance", async (c) => {
+  const courseId = Number(c.req.param("id"));
+  const parsed = attendanceSchema.safeParse(await c.req.json());
+  if (!Number.isInteger(courseId) || !parsed.success) return c.json({ error: "Ma'lumot noto'g'ri" }, 400);
+  const { telegramId, records } = parsed.data;
+  const db = getDb(c.env);
+  const [teacher] = await db.select().from(users).where(eq(users.telegramId, telegramId));
+  if (!teacher) return c.json({ error: "Topilmadi" }, 404);
+  const [course] = await db.select().from(courses).where(and(eq(courses.id, courseId), eq(courses.teacherId, teacher.id)));
+  if (!course) return c.json({ error: "Kurs topilmadi" }, 404);
+  const own2 = await db.select({ id: enrollments.id }).from(enrollments).where(and(eq(enrollments.courseId, courseId), eq(enrollments.status, "active")));
+  const ownIds = new Set(own2.map((o) => o.id));
+  const filtered = records.filter((r) => ownIds.has(r.enrollmentId));
+  if (filtered.length === 0) return c.json({ error: "Bunday o'quvchilar topilmadi" }, 400);
+  const date6 = tashkentDate();
+  for (const r of filtered) {
+    await db.insert(attendance).values({ enrollmentId: r.enrollmentId, date: date6, present: r.present }).onConflictDoUpdate({ target: [attendance.enrollmentId, attendance.date], set: { present: r.present } });
+  }
+  return c.json({ ok: true, date: date6, count: filtered.length });
+});
 var courses_default = router2;
 
+// src/routes/enrollments.js
+init_modules_watch_stub();
+init_pg_core();
+
 // src/validators/enrollments.js
+init_modules_watch_stub();
 var joinSchema = external_exports.object({
   telegramId: external_exports.number().int().positive(),
   courseId: external_exports.number().int().positive()
@@ -36068,7 +38257,12 @@ router3.get("/course/:courseId/rating", async (c) => {
 });
 var enrollments_default = router3;
 
+// src/routes/payments.js
+init_modules_watch_stub();
+init_pg_core();
+
 // src/validators/payments.js
+init_modules_watch_stub();
 var markPaidSchema = external_exports.object({ telegramId: external_exports.number().int().positive() });
 var markPartialSchema = external_exports.object({
   telegramId: external_exports.number().int().positive(),
@@ -36120,6 +38314,7 @@ router4.post("/:enrollmentId/mark-partial", async (c) => {
 var payments_default = router4;
 
 // src/routes/teachers.js
+init_modules_watch_stub();
 var router5 = new Hono2();
 router5.get("/:tgId/balance", async (c) => {
   const tgId = Number(c.req.param("tgId"));
@@ -36145,6 +38340,219 @@ router5.get("/:tgId/balance", async (c) => {
 });
 var teachers_default = router5;
 
+// src/routes/admin.js
+init_modules_watch_stub();
+
+// src/validators/admin.js
+init_modules_watch_stub();
+var promoteSchema = external_exports.object({
+  userId: external_exports.number().int().positive(),
+  subject: external_exports.string().trim().min(2).max(100),
+  photo: external_exports.string().nullish(),
+  certificate: external_exports.string().nullish()
+});
+var payoutPartialSchema = external_exports.object({
+  amount: external_exports.number().int().min(0).max(1e8)
+});
+
+// src/routes/admin.js
+var router6 = new Hono2();
+async function requireAdmin(db, tgId) {
+  const [u] = await db.select().from(users).where(eq(users.telegramId, tgId));
+  return u && u.role === "admin" ? u : null;
+}
+__name(requireAdmin, "requireAdmin");
+router6.get("/:tgId/stats", async (c) => {
+  const db = getDb(c.env);
+  if (!await requireAdmin(db, Number(c.req.param("tgId")))) return c.json({ error: "Ruxsat yo'q" }, 403);
+  const period = tashkentPeriod();
+  await ensurePaymentsForPeriod(db, period);
+  const [byRole] = await db.select({
+    users: sql`count(*) filter (where ${users.role} = 'user')`,
+    teachers: sql`count(*) filter (where ${users.role} = 'teacher')`,
+    students: sql`count(*) filter (where ${users.role} = 'student')`
+  }).from(users);
+  const [{ value: coursesCount }] = await db.select({ value: sql`count(*)` }).from(courses).where(eq(courses.isActive, true));
+  const periodRows = await db.select({ amountDue: payments.amountDue, amountPaid: payments.amountPaid }).from(payments).innerJoin(enrollments, eq(payments.enrollmentId, enrollments.id)).where(and(eq(payments.period, period), eq(enrollments.status, "active")));
+  const totalDue = periodRows.reduce((s, r) => s + r.amountDue, 0);
+  const totalPaid = periodRows.reduce((s, r) => s + r.amountPaid, 0);
+  return c.json({
+    period,
+    usersCount: Number(byRole.users),
+    teachersCount: Number(byRole.teachers),
+    studentsCount: Number(byRole.students),
+    coursesCount: Number(coursesCount),
+    totalDue,
+    totalPaid,
+    totalDebt: totalDue - totalPaid
+  });
+});
+router6.get("/:tgId/users", async (c) => {
+  const db = getDb(c.env);
+  if (!await requireAdmin(db, Number(c.req.param("tgId")))) return c.json({ error: "Ruxsat yo'q" }, 403);
+  const rows = await db.select({
+    id: users.id,
+    fullName: users.fullName,
+    phone: users.phone,
+    telegramId: users.telegramId,
+    createdAt: users.createdAt
+  }).from(users).where(eq(users.role, "user")).orderBy(desc(users.createdAt));
+  return c.json(rows);
+});
+router6.get("/:tgId/teachers", async (c) => {
+  const db = getDb(c.env);
+  if (!await requireAdmin(db, Number(c.req.param("tgId")))) return c.json({ error: "Ruxsat yo'q" }, 403);
+  const rows = await db.select({
+    id: users.id,
+    fullName: users.fullName,
+    phone: users.phone,
+    photo: teacherProfiles.photo,
+    subject: teacherProfiles.subject,
+    certificate: teacherProfiles.certificate
+  }).from(users).leftJoin(teacherProfiles, eq(teacherProfiles.userId, users.id)).where(eq(users.role, "teacher")).orderBy(asc(users.fullName));
+  return c.json(rows);
+});
+router6.get("/:tgId/teachers/:teacherId/courses", async (c) => {
+  const db = getDb(c.env);
+  if (!await requireAdmin(db, Number(c.req.param("tgId")))) return c.json({ error: "Ruxsat yo'q" }, 403);
+  return c.json(await loadCoursesByTeacherId(db, Number(c.req.param("teacherId"))));
+});
+router6.get("/:tgId/teacher-candidates", async (c) => {
+  const db = getDb(c.env);
+  if (!await requireAdmin(db, Number(c.req.param("tgId")))) return c.json({ error: "Ruxsat yo'q" }, 403);
+  const rows = await db.select({ id: users.id, fullName: users.fullName, phone: users.phone }).from(users).where(eq(users.role, "user")).orderBy(desc(users.createdAt));
+  return c.json(rows);
+});
+router6.post("/:tgId/teachers", async (c) => {
+  const db = getDb(c.env);
+  if (!await requireAdmin(db, Number(c.req.param("tgId")))) return c.json({ error: "Ruxsat yo'q" }, 403);
+  const parsed = promoteSchema.safeParse(await c.req.json());
+  if (!parsed.success) return c.json({ error: "Ma'lumot noto'g'ri" }, 400);
+  const { userId, subject, photo, certificate } = parsed.data;
+  const [candidate] = await db.select().from(users).where(and(eq(users.id, userId), eq(users.role, "user")));
+  if (!candidate) return c.json({ error: "Foydalanuvchi topilmadi yoki allaqachon rol o'zgargan" }, 404);
+  await db.update(users).set({ role: "teacher" }).where(eq(users.id, userId));
+  await db.insert(teacherProfiles).values({ userId, subject, photo, certificate }).onConflictDoUpdate({ target: teacherProfiles.userId, set: { subject, photo, certificate } });
+  return c.json({ ok: true, fullName: candidate.fullName, telegramId: candidate.telegramId });
+});
+router6.delete("/:tgId/teachers/:teacherId", async (c) => {
+  const db = getDb(c.env);
+  if (!await requireAdmin(db, Number(c.req.param("tgId")))) return c.json({ error: "Ruxsat yo'q" }, 403);
+  const teacherId = Number(c.req.param("teacherId"));
+  const [teacher] = await db.select().from(users).where(and(eq(users.id, teacherId), eq(users.role, "teacher")));
+  if (!teacher) return c.json({ error: "O'qituvchi topilmadi" }, 404);
+  await db.update(courses).set({ isActive: false }).where(eq(courses.teacherId, teacherId));
+  await db.delete(teacherProfiles).where(eq(teacherProfiles.userId, teacherId));
+  await db.update(users).set({ role: "user" }).where(eq(users.id, teacherId));
+  return c.json({ ok: true, fullName: teacher.fullName });
+});
+router6.get("/:tgId/students", async (c) => {
+  const db = getDb(c.env);
+  if (!await requireAdmin(db, Number(c.req.param("tgId")))) return c.json({ error: "Ruxsat yo'q" }, 403);
+  const period = tashkentPeriod();
+  await ensurePaymentsForPeriod(db, period);
+  const teacherUser2 = users;
+  const { alias: alias2 } = await Promise.resolve().then(() => (init_pg_core(), pg_core_exports));
+  const teacherAlias = alias2(users, "teacher_alias");
+  const rows = await db.select({
+    enrollmentId: enrollments.id,
+    studentName: users.fullName,
+    studentTgId: users.telegramId,
+    courseTitle: courses.title,
+    teacherName: teacherAlias.fullName,
+    amountDue: payments.amountDue,
+    amountPaid: payments.amountPaid,
+    status: payments.status
+  }).from(enrollments).innerJoin(users, eq(enrollments.studentId, users.id)).innerJoin(courses, eq(enrollments.courseId, courses.id)).innerJoin(teacherAlias, eq(courses.teacherId, teacherAlias.id)).leftJoin(payments, and(eq(payments.enrollmentId, enrollments.id), eq(payments.period, period))).where(eq(enrollments.status, "active")).orderBy(asc(users.fullName));
+  return c.json({ period, students: rows });
+});
+router6.post("/:tgId/students/:enrollmentId/mark-paid", async (c) => {
+  const db = getDb(c.env);
+  if (!await requireAdmin(db, Number(c.req.param("tgId")))) return c.json({ error: "Ruxsat yo'q" }, 403);
+  const enrollmentId = Number(c.req.param("enrollmentId"));
+  const period = tashkentPeriod();
+  const [payment] = await db.select().from(payments).where(and(eq(payments.enrollmentId, enrollmentId), eq(payments.period, period)));
+  if (!payment) return c.json({ error: "To'lov yozuvi topilmadi" }, 404);
+  const [updated] = await db.update(payments).set({ amountPaid: payment.amountDue, status: "paid", updatedAt: /* @__PURE__ */ new Date() }).where(eq(payments.id, payment.id)).returning();
+  return c.json(updated);
+});
+router6.get("/:tgId/finance", async (c) => {
+  const db = getDb(c.env);
+  if (!await requireAdmin(db, Number(c.req.param("tgId")))) return c.json({ error: "Ruxsat yo'q" }, 403);
+  const period = tashkentPeriod();
+  await ensureTeacherPayouts(db, period);
+  const rows = await db.select({
+    teacherId: teacherPayouts.teacherId,
+    teacherName: users.fullName,
+    amountDue: teacherPayouts.amountDue,
+    amountPaid: teacherPayouts.amountPaid,
+    status: teacherPayouts.status
+  }).from(teacherPayouts).innerJoin(users, eq(teacherPayouts.teacherId, users.id)).where(eq(teacherPayouts.period, period)).orderBy(asc(users.fullName));
+  const totalDue = rows.reduce((s, r) => s + r.amountDue, 0);
+  const totalPaid = rows.reduce((s, r) => s + r.amountPaid, 0);
+  return c.json({ period, totalDue, totalPaid, totalDebt: totalDue - totalPaid, teachers: rows });
+});
+router6.post("/:tgId/payouts/:teacherId/mark-paid", async (c) => {
+  const db = getDb(c.env);
+  if (!await requireAdmin(db, Number(c.req.param("tgId")))) return c.json({ error: "Ruxsat yo'q" }, 403);
+  const teacherId = Number(c.req.param("teacherId"));
+  const period = tashkentPeriod();
+  const [payout] = await db.select().from(teacherPayouts).where(and(eq(teacherPayouts.teacherId, teacherId), eq(teacherPayouts.period, period)));
+  if (!payout) return c.json({ error: "Yozuv topilmadi" }, 404);
+  const [updated] = await db.update(teacherPayouts).set({ amountPaid: payout.amountDue, status: "paid", updatedAt: /* @__PURE__ */ new Date() }).where(eq(teacherPayouts.id, payout.id)).returning();
+  return c.json(updated);
+});
+router6.post("/:tgId/payouts/:teacherId/mark-partial", async (c) => {
+  const db = getDb(c.env);
+  if (!await requireAdmin(db, Number(c.req.param("tgId")))) return c.json({ error: "Ruxsat yo'q" }, 403);
+  const parsed = payoutPartialSchema.safeParse(await c.req.json());
+  if (!parsed.success) return c.json({ error: "Ma'lumot noto'g'ri" }, 400);
+  const teacherId = Number(c.req.param("teacherId"));
+  const period = tashkentPeriod();
+  const [payout] = await db.select().from(teacherPayouts).where(and(eq(teacherPayouts.teacherId, teacherId), eq(teacherPayouts.period, period)));
+  if (!payout) return c.json({ error: "Yozuv topilmadi" }, 404);
+  const amount = Math.min(parsed.data.amount, payout.amountDue);
+  const status = amount >= payout.amountDue ? "paid" : amount > 0 ? "partial" : "unpaid";
+  const [updated] = await db.update(teacherPayouts).set({ amountPaid: amount, status, updatedAt: /* @__PURE__ */ new Date() }).where(eq(teacherPayouts.id, payout.id)).returning();
+  return c.json(updated);
+});
+router6.get("/:tgId/suggestions", async (c) => {
+  const db = getDb(c.env);
+  if (!await requireAdmin(db, Number(c.req.param("tgId")))) return c.json({ error: "Ruxsat yo'q" }, 403);
+  const rows = await db.select({
+    id: suggestions.id,
+    text: suggestions.text,
+    createdAt: suggestions.createdAt,
+    fromName: users.fullName,
+    fromRole: users.role
+  }).from(suggestions).innerJoin(users, eq(suggestions.fromUserId, users.id)).orderBy(desc(suggestions.createdAt));
+  return c.json(rows);
+});
+var admin_default = router6;
+
+// src/routes/suggestions.js
+init_modules_watch_stub();
+
+// src/validators/suggestions.js
+init_modules_watch_stub();
+var suggestionSchema = external_exports.object({
+  telegramId: external_exports.number().int().positive(),
+  text: external_exports.string().trim().min(3).max(500)
+});
+
+// src/routes/suggestions.js
+var router7 = new Hono2();
+router7.post("/", async (c) => {
+  const parsed = suggestionSchema.safeParse(await c.req.json());
+  if (!parsed.success) return c.json({ error: "Ma'lumot noto'g'ri" }, 400);
+  const db = getDb(c.env);
+  const [user] = await db.select().from(users).where(eq(users.telegramId, parsed.data.telegramId));
+  if (!user) return c.json({ error: "Foydalanuvchi topilmadi" }, 404);
+  const [created] = await db.insert(suggestions).values({ fromUserId: user.id, text: parsed.data.text }).returning();
+  return c.json(created, 201);
+});
+var suggestions_default = router7;
+
 // src/index.js
 var app = new Hono2();
 app.use("*", logger());
@@ -36161,6 +38569,8 @@ api.route("/courses", courses_default);
 api.route("/enrollments", enrollments_default);
 api.route("/payments", payments_default);
 api.route("/teachers", teachers_default);
+api.route("/admin", admin_default);
+api.route("/suggestions", suggestions_default);
 app.route("/api", api);
 app.onError((err, c) => {
   console.error(err);
@@ -36169,6 +38579,7 @@ app.onError((err, c) => {
 var src_default = app;
 
 // node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
+init_modules_watch_stub();
 var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
   try {
     return await middlewareCtx.next(request, env);
@@ -36187,6 +38598,7 @@ var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 var middleware_ensure_req_body_drained_default = drainBody;
 
 // node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts
+init_modules_watch_stub();
 function reduceError(e) {
   return {
     name: e?.name,
@@ -36215,7 +38627,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-73QsgR/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-J7Sxwp/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -36223,6 +38635,7 @@ var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
 var middleware_insertion_facade_default = src_default;
 
 // node_modules/wrangler/templates/middleware/common.ts
+init_modules_watch_stub();
 var __facade_middleware__ = [];
 function __facade_register__(...args) {
   __facade_middleware__.push(...args.flat());
@@ -36247,7 +38660,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-73QsgR/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-J7Sxwp/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

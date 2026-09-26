@@ -2,6 +2,8 @@ from aiogram.types import InlineKeyboardButton as Btn, InlineKeyboardMarkup as M
 
 from callbacks.students import MyStudentsCB
 from callbacks.attendance import AttendanceCB
+from utils import labels as L
+from callbacks.attendance import AttendanceCB
 
 
 def course_pick_kb(courses: list[dict]) -> Markup:
