@@ -13,8 +13,13 @@ from handlers.teacher import attendance as teacher_attendance, my_courses, cours
 from handlers.student import my as student_my, schedule as student_schedule, rating as student_rating
 from handlers.common import help as common_help
 from handlers.admin import (
-    stats as admin_stats, menu as admin_menu, teacher as admin_teachers,
-    students as admin_students, finance as admin_finance, suggestions as admin_suggestions,
+    stats as admin_stats, 
+    menu as admin_menu, 
+    teacher as admin_teachers,
+    students as admin_students, 
+    finance as admin_finance, 
+    suggestions as admin_suggestions,
+    broadcast as admin_broadcast
 )
 
 from middlewares.auth import AuthMiddleware
@@ -40,7 +45,6 @@ async def main():
     dp.include_router(teacher_students.router)
     dp.include_router(teacher_attendance.router)
     dp.include_router(teacher_balance.router)
-    dp.include_router(teacher_suggest.router)
     dp.include_router(user_terms.router)
     #--------O'quvchiga aylangan bo'lsa ------#
     dp.include_router(student_my.router)
@@ -54,6 +58,8 @@ async def main():
     dp.include_router(admin_students.router)
     dp.include_router(admin_finance.router)
     dp.include_router(admin_suggestions.router)
+    dp.include_router(admin_broadcast.router)
+    dp.include_router(teacher_suggest.router)
     #---------------------------------------#
     dp.include_router(fallback.router)
 

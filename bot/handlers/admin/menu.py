@@ -6,6 +6,7 @@ from api import admin as admin_api
 from api.client import ApiClient
 from filters.role import RoleFilter
 from keyboards.reply.admin import admin_menu, admin_users_menu
+from keyboards.inline.broadcast import broadcast_button
 from utils import labels as L
 from utils.formatters import format_plain_users
 
@@ -28,4 +29,4 @@ async def back_to_admin_menu(message: Message, state: FSMContext):
 @router.message(F.text == L.PLAIN_USERS)
 async def show_plain_users(message: Message, api: ApiClient):
     rows = await admin_api.plain_users(api, message.from_user.id)
-    await message.answer(format_plain_users(rows))
+    await message.answer(format_plain_users(rows), reply_markup=broadcast_button("users"))

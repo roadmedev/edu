@@ -75,7 +75,7 @@ router.get('/:tgId/teachers', async (c) => {
   if (!(await requireAdmin(db, Number(c.req.param('tgId'))))) return c.json({ error: 'Ruxsat yo\'q' }, 403);
 
   const rows = await db.select({
-    id: users.id, fullName: users.fullName, phone: users.phone,
+    id: users.id, fullName: users.fullName, phone: users.phone, telegramId: users.telegramId,
     photo: teacherProfiles.photo, subject: teacherProfiles.subject, certificate: teacherProfiles.certificate,
   }).from(users)
     .leftJoin(teacherProfiles, eq(teacherProfiles.userId, users.id))

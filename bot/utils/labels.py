@@ -24,3 +24,4 @@ PLAIN_USERS = "🙍 Oddiy foydalanuvchilar"
 ADD_TEACHER = "➕ Yangi o'qituvchi qo'shish"
 
 ATTENDANCE = "📋 Bugungi davomat"
+BROADCAST = "📢 Xabar yuborish"
