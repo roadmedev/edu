@@ -9,6 +9,7 @@ from api.client import ApiClient, ApiError
 from callbacks.admin import CandidateCB, TeacherAdminCB, TeacherFlowCB
 from filters.role import RoleFilter
 from keyboards.inline.admin import (
+    candidates_kb,
     confirm_delete_teacher_kb, 
     skip_cert_kb, 
     teacher_card_kb,

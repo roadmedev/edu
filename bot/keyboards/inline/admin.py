@@ -39,7 +39,7 @@ def student_list_kb(students: list[dict]) -> Markup:
         [Btn(text=s["studentName"], callback_data=StudentAdminCB(action="view", enrollment_id=s["enrollmentId"]).pack())]
         for s in students
     ]
-    rows.append(Btn(text=L.BROADCAST, callback_data=BroadcastCB(action="start", target="students").pack()))
+    rows.append([Btn(text=L.BROADCAST, callback_data=BroadcastCB(action="start", target="students").pack())])
     return Markup(inline_keyboard=rows)
 
 
@@ -53,7 +53,7 @@ def student_detail_kb(enrollment_id: int, paid: bool) -> Markup:
     rows.append([Btn(text="🔙 Orqaga", callback_data=StudentAdminCB(action="back", enrollment_id=0).pack())])
     return Markup(inline_keyboard=rows)
 
-def teacher_header_kb() -> Markup:
+def teachers_header_kb() -> Markup:
     return Markup(inline_keyboard=[
         [Btn(text=L.ADD_TEACHER, callback_data="admin_add_teacher")],
         [Btn(text=L.BROADCAST, callback_data=BroadcastCB(action="start", target="teachers").pack())],

@@ -110,3 +110,15 @@ export const attendance = pgTable('attendance', {
   date: date('date').notNull(),
   present: boolean('present').notNull().default(true),
 }, (t) => [unique().on(t.enrollmentId, t.date)]);
+
+
+// ---------- OTP kodlari (veb kirish uchun) ----------
+export const otpCodes = pgTable('otp_codes', {
+  id: serial('id').primaryKey(),
+  phone: text('phone').notNull(),
+  code: text('code').notNull(),
+  telegramId: bigint('telegram_id', { mode: 'number' }).notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  used: boolean('used').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});

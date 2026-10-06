@@ -120,15 +120,16 @@ def format_balance(b: dict) -> str:
 
 
 def format_stats(s: dict) -> str:
+    label = f"{s['period']}-yil" if s.get("isYear") else s["period"]
     return (
-        f"📊 <b>Markaz statistikasi</b> ({s['period']})\n\n"
+        f"📊 <b>Markaz statistikasi</b> ({label})\n\n"
         f"🙍 Oddiy foydalanuvchilar: <b>{s['usersCount']}</b>\n"
         f"👨‍🏫 O'qituvchilar: <b>{s['teachersCount']}</b>\n"
         f"🎓 O'quvchilar: <b>{s['studentsCount']}</b>\n"
         f"📚 Faol kurslar: <b>{s['coursesCount']}</b>\n\n"
-        f"💰 Kutilayotgan summa: {money(s['totalDue'])}\n"
-        f"✅ Tushgan summa: {money(s['totalPaid'])}\n"
-        f"🔴 Umumiy qarzdorlik: {money(s['totalDebt'])}"
+        f"✅ Jami tushirim: {money(s['totalPaid'])}\n"
+        f"💰 Markazning ulushi: {money(s['centerShare'])}\n"
+        f"🔴 Umumiy qarzdorlardan: {money(s['totalDebt'])}"
     )
 
 

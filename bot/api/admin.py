@@ -1,8 +1,17 @@
 from api.client import ApiClient
 
 
-async def stats(api: ApiClient, tg_id: int) -> dict:
-    return await api.get(f"/admin/{tg_id}/stats")
+async def stats(api: ApiClient, tg_id: int, period: str | None = None, year: str | None = None) -> dict:
+    params = {}
+    if period:
+        params["period"] = period
+    if year:
+        params["year"] = year
+    return await api.get(f"/admin/{tg_id}/stats", params=params)
+
+
+async def stats_periods(api: ApiClient, tg_id: int) -> dict:
+    return await api.get(f"/admin/{tg_id}/stats/periods")
 
 
 async def plain_users(api: ApiClient, tg_id: int) -> list[dict]:

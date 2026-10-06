@@ -17,13 +17,18 @@ async function requireAdmin(db, tgId) {
   return u && u.role === 'admin' ? u : null;
 }
 
+
 // ---------- Statistika ----------
 router.get('/:tgId/stats', async (c) => {
   const db = getDb(c.env);
   if (!(await requireAdmin(db, Number(c.req.param('tgId'))))) return c.json({ error: 'Ruxsat yo\'q' }, 403);
 
-  const period = tashkentPeriod();
-  await ensurePaymentsForPeriod(db, period);
+  const periodParam = c.req.query('period');  // '2026-09'
+  const yearParam = c.req.query('year');      // '2026'
+  const currentPeriod = tashkentPeriod();
+
+  // Faqat joriy oy ko'rsatilayotganda yangi to'lov yozuvlarini "dangasa" yaratamiz
+  if (!periodParam && !yearParam) await ensurePaymentsForPeriod(db, currentPeriod);
 
   const [byRole] = await db
     .select({
@@ -36,25 +41,51 @@ router.get('/:tgId/stats', async (c) => {
   const [{ value: coursesCount }] = await db.select({ value: sql`count(*)` }).from(courses)
     .where(eq(courses.isActive, true));
 
-  const periodRows = await db.select({ amountDue: payments.amountDue, amountPaid: payments.amountPaid })
-    .from(payments)
-    .innerJoin(enrollments, eq(payments.enrollmentId, enrollments.id))
-    .where(and(eq(payments.period, period), eq(enrollments.status, 'active')));
+  let periodRows;
+  let label;
+  const isYear = Boolean(yearParam);
+
+  if (isYear) {
+    periodRows = await db.select({ amountDue: payments.amountDue, amountPaid: payments.amountPaid })
+      .from(payments)
+      .where(sql`${payments.period} like ${yearParam + '-%'}`);
+    label = yearParam;
+  } else {
+    const period = periodParam || currentPeriod;
+    periodRows = await db.select({ amountDue: payments.amountDue, amountPaid: payments.amountPaid })
+      .from(payments)
+      .where(eq(payments.period, period));
+    label = period;
+  }
 
   const totalDue = periodRows.reduce((s, r) => s + r.amountDue, 0);
   const totalPaid = periodRows.reduce((s, r) => s + r.amountPaid, 0);
 
   return c.json({
-    period,
+    period: label,
+    isYear,
     usersCount: Number(byRole.users),
     teachersCount: Number(byRole.teachers),
     studentsCount: Number(byRole.students),
     coursesCount: Number(coursesCount),
-    totalDue,
     totalPaid,
+    centerShare: Math.round(totalPaid * 0.3),
     totalDebt: totalDue - totalPaid,
   });
 });
+
+// Mavjud oylar/yillar ro'yxati (tugmalar uchun)
+router.get('/:tgId/stats/periods', async (c) => {
+  const db = getDb(c.env);
+  if (!(await requireAdmin(db, Number(c.req.param('tgId'))))) return c.json({ error: 'Ruxsat yo\'q' }, 403);
+
+  const rows = await db.selectDistinct({ period: payments.period }).from(payments).orderBy(desc(payments.period));
+  const periods = rows.map((r) => r.period);
+  const years = [...new Set(periods.map((p) => p.slice(0, 4)))].sort().reverse();
+
+  return c.json({ periods, years });
+});
+
 
 // ---------- Oddiy foydalanuvchilar ----------
 router.get('/:tgId/users', async (c) => {
