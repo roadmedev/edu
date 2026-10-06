@@ -13,7 +13,7 @@ from keyboards.inline.admin import (
     confirm_delete_teacher_kb, 
     skip_cert_kb, 
     teacher_card_kb,
-    teacher_header_kb, 
+    teachers_header_kb, 
 )
 from states.teacher_add import TeacherAdd
 from utils import labels as L
@@ -30,7 +30,7 @@ async def list_teachers(message: Message, api: ApiClient):
     teachers = await admin_api.teachers(api, message.from_user.id)
     await message.answer(
         "👨‍🏫 <b>O'qituvchilar</b>" if teachers else "Hozircha o'qituvchi yo'q.",
-        reply_markup=teacher_header_kb(),
+        reply_markup=teachers_header_kb(),
     )
     for t in teachers:
         text, kb = format_teacher_card(t), teacher_card_kb(t["id"])
